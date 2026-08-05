@@ -9,9 +9,8 @@ export interface BespokeFeature {
 export interface BespokeProcessRow {
   title: string;
   description: string;
-  linkLabel: string;
-  linkHref: string;
   imageLabel: string;
+  imageSrc: string;
 }
 
 export interface BespokeLoveStory {
@@ -36,49 +35,44 @@ export const bespokeFeatures: BespokeFeature[] = [
 export const bespokeIntro = {
   title: "Your Vision, Our Craft",
   description:
-    "Every bespoke piece begins with a conversation. From the first sketch to the final polish, our Hatton Garden goldsmiths guide you through a seamless journey — creating jewellery that is as unique as your story.",
+    "Every bespoke piece begins with a conversation. From the first sketch to the final polish, our Gama Diamond's goldsmiths guide you through a seamless journey — creating jewellery that is as unique as your story.",
 };
 
 export const bespokeProcessRows: BespokeProcessRow[] = [
   {
-    title: "Design Inspiration",
+    title: "Inspiration",
     description:
-      "Share your vision, sketches, or reference images with our design team. We translate your story into a refined concept — from classic solitaires to contemporary silhouettes — ensuring every detail reflects your personal style.",
-    linkLabel: "View more",
-    linkHref: "#",
-    imageLabel: "Design Inspiration",
+      "Share your vision, sketches, or reference images with our design team during a complimentary one-on-one consultation at our Hatton Garden studio. We translate your story into a refined concept — from classic solitaires and three-stone settings to contemporary halo and tension-mount silhouettes — ensuring every detail reflects your personal style. Whether it's an engagement ring, anniversary band, or a family heirloom redesign, we take the time to understand the occasion, your lifestyle, and the aesthetic you love.",
+    imageLabel: "Inspiration",
+    imageSrc: "/bespoke/bespoke_step4.png",
   },
   {
-    title: "Budget & Pricing",
+    title: "Design Process",
     description:
-      "We work transparently within your budget. Our goldsmiths advise on diamond grades, metal choices, and design complexity so you receive exceptional value without compromising on craftsmanship or certification.",
-    linkLabel: "View more",
-    linkHref: "#",
-    imageLabel: "Budget & Pricing",
+      "Our senior designers create detailed hand-drawn sketches and high-resolution 3D CAD renders so you can visualise your piece from every angle before production begins. We work transparently within your budget, advising on diamond grades (colour, clarity, cut, and carat), metal choices — including platinum, 18ct white, yellow, and rose gold — and design complexity. You'll receive a full digital walkthrough with dimensions, side profiles, and setting details, with unlimited revisions until every element is exactly right.",
+    imageLabel: "Design Process",
+    imageSrc: "/bespoke/bespoke_step1.png",
   },
   {
-    title: "Material Selection",
+    title: "3D Wax Printing",
     description:
-      "Choose from ethically sourced natural diamonds, premium lab-grown stones, and precious metals including platinum, 18ct white, yellow, and rose gold. Every gemstone is hand-selected for brilliance.",
-    linkLabel: "View more",
-    linkHref: "#",
-    imageLabel: "Material Selection",
+      "Once your design is approved, we produce a precision 3D wax model using state-of-the-art rapid-prototyping technology. This physical prototype lets you hold and assess the exact proportions, band width, and stone placement of your piece before any precious materials are committed. If adjustments are needed, our team refines the model on the spot — giving you complete confidence that the finished jewellery will sit, feel, and look exactly as envisioned.",
+    imageLabel: "3D Wax Printing",
+    imageSrc: "/bespoke/bespoke_step2.png",
   },
   {
-    title: "Craftsmanship",
+    title: "Production",
     description:
-      "Master goldsmiths bring your design to life using traditional hand-setting techniques combined with precision 3D CAD modelling. Each piece is meticulously crafted in our London workshop.",
-    linkLabel: "View more",
-    linkHref: "#",
-    imageLabel: "Craftsmanship",
+      "Master goldsmiths bring your design to life in our London workshop using traditional hand-setting techniques combined with precision micro-pavé and channel-setting methods. Each piece is cast, hand-finished, and polished through multiple stages — including rhodium plating for white gold pieces — to achieve a flawless surface. Ethically sourced natural diamonds and premium lab-grown stones are individually hand-selected and set under magnification, ensuring optimal brilliance and secure placement.",
+    imageLabel: "Production",
+    imageSrc: "/bespoke/bespoke_step3.png",
   },
   {
-    title: "Quality Control",
+    title: "Your Final Jewellery",
     description:
-      "Every bespoke piece undergoes rigorous quality inspection before delivery. Full GIA or IGI certification, hallmarking, and complimentary annual servicing ensure your jewellery meets the highest standards.",
-    linkLabel: "View more",
-    linkHref: "#",
-    imageLabel: "Quality Control",
+      "Every bespoke piece undergoes rigorous multi-point quality inspection before delivery, including symmetry checks, prong integrity testing, and surface evaluation under 10× magnification. Your jewellery arrives with full GIA or IGI certification, official UK hallmarking, and a bespoke presentation box. We also include complimentary annual servicing — professional cleaning, re-polishing, and prong tightening — along with a lifetime manufacturing warranty to ensure your piece remains as stunning as the day it was crafted.",
+    imageLabel: "Your Final Jewellery",
+    imageSrc: "/bespoke/bespoke_step5.png",
   },
 ];
 

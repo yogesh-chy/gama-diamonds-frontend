@@ -81,10 +81,7 @@ export default function AdminOrdersPage() {
       {/* Header & Search */}
       <div className="admin-flex-between flex-col md:flex-row gap-4">
         <div>
-          <h2 className="admin-section-title text-xl">Orders Management</h2>
-          <p className="admin-section-subtitle">
-            Track customer transactions, shipping destinations, and update fulfillment status.
-          </p>
+          <h2 className="admin-section-title text-xl">Orders</h2>
         </div>
 
         {/* Search Bar */}
@@ -126,12 +123,12 @@ export default function AdminOrdersPage() {
         {loading ? (
           <div className="admin-loading">
             <RefreshCw className="w-4 h-4 animate-spin text-[#c6a45f]" />
-            <span>Loading orders...</span>
+            <span>Loading...</span>
           </div>
         ) : orders.length === 0 ? (
           <div className="admin-empty">
             <ShoppingBag />
-            <p>No orders found matching the filter criteria.</p>
+            <p>No orders found.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -216,8 +213,7 @@ export default function AdminOrdersPage() {
             {/* Status Update Control */}
             <div className="admin-info-panel-gold admin-flex-between flex-col sm:flex-row gap-4">
               <div>
-                <p className="admin-font-semibold admin-text-white uppercase tracking-wider text-xs">Update Order Status</p>
-                <p className="admin-text-muted admin-text-xs">Select new status to transition customer order state</p>
+                <p className="admin-font-semibold admin-text-white uppercase tracking-wider text-xs">Update Status</p>
               </div>
 
               <select

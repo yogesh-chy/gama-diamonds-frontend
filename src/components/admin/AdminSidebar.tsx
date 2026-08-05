@@ -10,9 +10,11 @@ import {
   FolderTree,
   Sparkles,
   Users,
-  ExternalLink,
   LogOut,
   X,
+  ShieldCheck,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -28,27 +30,42 @@ const navItems = [
 
 interface AdminSidebarProps {
   isOpen?: boolean;
+  isCollapsed?: boolean;
   onClose?: () => void;
+  onToggleCollapse?: () => void;
 }
 
-export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
+export function AdminSidebar({
+  isOpen = false,
+  isCollapsed = false,
+  onClose,
+  onToggleCollapse,
+}: AdminSidebarProps) {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
 
-  const sidebarContent = (
-    <div className="admin-sidebar-inner">
-      {/* Brand Logo Header */}
-      <div className="admin-sidebar-brand">
-        <Link href="/admin" onClick={onClose} className="block text-center py-1">
-          <span className="logo-tagline text-center block text-[11px] tracking-[5px]">✦ GAMA ✦</span>
-          <span className="logo-name text-center block text-sm tracking-[3px] mt-0.5">DIAMOND</span>
-          <div className="logo-underline mt-1.5" />
-        </Link>
-        {onClose && (
+  const sidebarInner = (
+    <div className={`admin-sidebar-inner ${isCollapsed ? "collapsed" : ""}`}>
+      {/* Top Sidebar Bar: Standalone toggle icon on the right with NO outer container or text */}
+      <div className="admin-sidebar-top-bar">
+        {onToggleCollapse && (
           <button
-            onClick={onClose}
-            className="admin-sidebar-close"
+            onClick={onToggleCollapse}
+            className="admin-standalone-toggle-btn hidden lg:flex"
+            aria-label="Toggle sidebar"
+            title={isCollapsed ? "Expand Sidebar (Ctrl+\\)" : "Collapse Sidebar (Ctrl+\\)"}
           >
+            {isCollapsed ? (
+              <PanelLeftOpen className="w-5 h-5 text-[#c6a45f] hover:scale-110 transition-transform" />
+            ) : (
+              <PanelLeftClose className="w-5 h-5 text-gray-400 hover:text-white hover:scale-110 transition-transform" />
+            )}
+          </button>
+        )}
+
+        {/* Mobile Close Button */}
+        {onClose && (
+          <button onClick={onClose} className="admin-sidebar-close lg:hidden">
             <X className="w-5 h-5" />
           </button>
         )}
@@ -56,9 +73,6 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
 
       {/* Nav Menu */}
       <div className="admin-sidebar-nav modal-scrollbar">
-        <div className="admin-sidebar-section-label">
-          Management Console
-        </div>
         <div className="admin-sidebar-nav-list">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -72,50 +86,56 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
                 key={item.href}
                 href={item.href}
                 onClick={onClose}
-                className={`admin-nav-link ${isActive ? "active" : ""}`}
+                title={isCollapsed ? item.name : undefined}
+                className={`admin-nav-link ${isActive ? "active" : ""} ${
+                  isCollapsed ? "collapsed-link" : ""
+                }`}
               >
-                <Icon />
-                <span>{item.name}</span>
+                <Icon size={18} />
+                {!isCollapsed && <span>{item.name}</span>}
               </Link>
             );
           })}
         </div>
       </div>
 
-      {/* User Info & Footer */}
+      {/* Footer: Admin Badge & Luxury Sign Out Button */}
       <div className="admin-sidebar-footer">
-        <div className="admin-sidebar-actions">
-          <Link href="/" target="_blank">
-            <ExternalLink className="w-3.5 h-3.5" />
-            <span>Storefront</span>
-          </Link>
+        {!isCollapsed && (
+          <div className="admin-sidebar-badge">
+            <ShieldCheck className="w-4 h-4 text-[#c6a45f]" />
+            <span>ADMIN CONSOLE</span>
+          </div>
+        )}
 
-          <button onClick={() => logout()}>
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Sign Out</span>
-          </button>
-        </div>
+        <button
+          onClick={() => logout()}
+          title="Sign Out"
+          className="admin-sidebar-signout-btn"
+        >
+          <LogOut className="w-4 h-4 shrink-0" />
+          {!isCollapsed && <span>SIGN OUT</span>}
+        </button>
       </div>
     </div>
   );
 
   return (
     <>
-      {/* Desktop Sticky Sidebar Column */}
-      <aside className="admin-sidebar-desktop">
-        {sidebarContent}
+      {/* Desktop Sidebar */}
+      <aside
+        className={`admin-sidebar-desktop ${
+          isCollapsed ? "collapsed-desktop" : ""
+        }`}
+      >
+        {sidebarInner}
       </aside>
 
-      {/* Mobile/Tablet Off-canvas Drawer */}
+      {/* Mobile Off-canvas Drawer */}
       {isOpen && (
         <div className="admin-drawer-overlay">
-          <div
-            className="admin-drawer-backdrop"
-            onClick={onClose}
-          />
-          <aside className="admin-drawer-panel">
-            {sidebarContent}
-          </aside>
+          <div className="admin-drawer-backdrop" onClick={onClose} />
+          <aside className="admin-drawer-panel">{sidebarInner}</aside>
         </div>
       )}
     </>

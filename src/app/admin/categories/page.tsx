@@ -148,10 +148,7 @@ export default function AdminCategoriesPage() {
       {/* Header */}
       <div className="admin-flex-between flex-col md:flex-row gap-4">
         <div>
-          <h2 className="admin-section-title text-xl">Categories & Subcategories</h2>
-          <p className="admin-section-subtitle">
-            Structure fine jewellery collection hierarchy, categories, and sub-divisions.
-          </p>
+          <h2 className="admin-section-title text-xl">Categories</h2>
         </div>
 
         <div className="admin-flex admin-items-center admin-gap-3">
@@ -176,7 +173,7 @@ export default function AdminCategoriesPage() {
       {loading ? (
         <div className="admin-loading">
           <RefreshCw className="w-4 h-4 animate-spin text-[#c6a45f]" />
-          <span>Loading collection hierarchy...</span>
+          <span>Loading...</span>
         </div>
       ) : categories.length === 0 ? (
         <div className="admin-card admin-empty">
@@ -231,7 +228,7 @@ export default function AdminCategoriesPage() {
                 </div>
 
                 {!cat.subcategories || cat.subcategories.length === 0 ? (
-                  <p className="admin-text-muted italic py-2">No subcategories linked.</p>
+                  <p className="admin-text-muted italic py-2">No subcategories yet.</p>
                 ) : (
                   <div className="admin-space-y-2">
                     {cat.subcategories.map((sub) => (

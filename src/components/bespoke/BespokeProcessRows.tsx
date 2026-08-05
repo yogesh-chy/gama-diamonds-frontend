@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
+
+import Image from "next/image";
 import { motion } from "framer-motion";
-import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { bespokeIntro, bespokeProcessRows } from "@/lib/bespokeContent";
 import { fadeInUp } from "@/lib/constants";
 
@@ -80,12 +80,23 @@ export default function BespokeProcessRows() {
                   viewport={{ once: true, margin: "-60px" }}
                   variants={fadeInUp}
                   className="bespoke-process-image"
-                  style={{ order: imageFirst ? 1 : 2 }}
+                  style={{
+                    order: imageFirst ? 1 : 2,
+                    overflow: "hidden",
+                  }}
                 >
-                  <ImagePlaceholder
-                    height="340px"
-                    label={row.imageLabel}
-                    style={{ borderRadius: "0px" }}
+                  <Image
+                    src={row.imageSrc}
+                    alt={row.imageLabel}
+                    width={600}
+                    height={550}
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      display: "block",
+                      objectFit: "cover",
+                    }}
+                    sizes="(max-width: 768px) 100vw, 50vw"
                   />
                 </motion.div>
 
@@ -115,23 +126,10 @@ export default function BespokeProcessRows() {
                       fontSize: "13px",
                       color: "#b0b0b0",
                       lineHeight: 1.85,
-                      marginBottom: "18px",
                     }}
                   >
                     {row.description}
                   </p>
-                  <Link
-                    href={row.linkHref}
-                    style={{
-                      fontFamily: "'Poppins', sans-serif",
-                      fontSize: "12px",
-                      color: "#c6a45f",
-                      textDecoration: "underline",
-                      textUnderlineOffset: "4px",
-                    }}
-                  >
-                    {row.linkLabel}
-                  </Link>
                 </motion.div>
               </div>
             );

@@ -52,10 +52,7 @@ export default function AdminUsersPage() {
       {/* Header & Search */}
       <div className="admin-flex-between flex-col md:flex-row gap-4">
         <div>
-          <h2 className="admin-section-title text-xl">User & Staff Directory</h2>
-          <p className="admin-section-subtitle">
-            Manage registered customer accounts, view order activity, and grant administrator access.
-          </p>
+          <h2 className="admin-section-title text-xl">Users</h2>
         </div>
 
         <form onSubmit={handleSearch} className="admin-flex gap-2 w-full md:w-80">
@@ -83,12 +80,12 @@ export default function AdminUsersPage() {
         {loading ? (
           <div className="admin-loading">
             <RefreshCw className="w-4 h-4 animate-spin text-[#c6a45f]" />
-            <span>Loading user directory...</span>
+            <span>Loading...</span>
           </div>
         ) : users.length === 0 ? (
           <div className="admin-empty">
             <Users />
-            <p>No user accounts found.</p>
+            <p>No users found.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">

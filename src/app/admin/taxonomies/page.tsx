@@ -80,10 +80,7 @@ export default function AdminTaxonomiesPage() {
       {/* Header */}
       <div className="admin-flex-between flex-col md:flex-row gap-4">
         <div>
-          <h2 className="admin-section-title text-xl">Luxury Facets & Taxonomies</h2>
-          <p className="admin-section-subtitle">
-            Manage styles (Solitaire, Halo), diamond types (Lab-Grown, Natural), brands, and curated collections.
-          </p>
+          <h2 className="admin-section-title text-xl">Taxonomies</h2>
         </div>
 
         <button
@@ -91,7 +88,7 @@ export default function AdminTaxonomiesPage() {
           className="admin-btn admin-btn-gold"
         >
           <Plus className="w-4 h-4" />
-          <span>Add New Facet</span>
+          <span>Add New</span>
         </button>
       </div>
 
@@ -126,7 +123,7 @@ export default function AdminTaxonomiesPage() {
           className={`admin-filter-tab admin-flex admin-items-center admin-gap-2 ${activeTab === "collections" ? "active" : ""}`}
         >
           <Layers className="w-4 h-4" />
-          <span>Curated Collections</span>
+          <span>Collections</span>
         </button>
       </div>
 
@@ -134,12 +131,12 @@ export default function AdminTaxonomiesPage() {
       {loading ? (
         <div className="admin-loading">
           <RefreshCw className="w-4 h-4 animate-spin text-[#c6a45f]" />
-          <span>Loading taxonomy records...</span>
+          <span>Loading...</span>
         </div>
       ) : items.length === 0 ? (
         <div className="admin-card admin-empty">
           <Sparkles />
-          <p>No items found under this category.</p>
+          <p>No items found.</p>
         </div>
       ) : (
         <div className="admin-grid-3">
@@ -167,7 +164,7 @@ export default function AdminTaxonomiesPage() {
         <div className="admin-modal-overlay">
           <div className="admin-modal admin-modal-sm admin-space-y-4">
             <div className="admin-modal-header">
-              <h3 className="admin-modal-title uppercase">Add New Facet</h3>
+              <h3 className="admin-modal-title uppercase">Add New Item</h3>
               <button onClick={() => setIsModalOpen(false)} className="admin-modal-close">
                 <X className="w-5 h-5" />
               </button>
@@ -219,7 +216,7 @@ export default function AdminTaxonomiesPage() {
                   Cancel
                 </button>
                 <button type="submit" disabled={saving} className="admin-btn admin-btn-gold">
-                  {saving ? "Saving..." : "Create Facet"}
+                  {saving ? "Saving..." : "Create"}
                 </button>
               </div>
             </form>

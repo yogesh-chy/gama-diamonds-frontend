@@ -37,10 +37,7 @@ export default function AdminCartsPage() {
       {/* Header & Search */}
       <div className="admin-flex-between flex-col md:flex-row gap-4">
         <div>
-          <h2 className="admin-section-title text-xl">Customer Active Carts</h2>
-          <p className="admin-section-subtitle">
-            Inspect real-time items queued in shoppers' active carts before checkout.
-          </p>
+          <h2 className="admin-section-title text-xl">Active Carts</h2>
         </div>
 
         <form onSubmit={handleSearch} className="admin-flex gap-2 w-full md:w-80">
@@ -67,12 +64,12 @@ export default function AdminCartsPage() {
       {loading ? (
         <div className="admin-loading">
           <RefreshCw className="w-5 h-5 animate-spin text-[#c6a45f]" />
-          <span>Fetching live shopping carts...</span>
+          <span>Loading...</span>
         </div>
       ) : carts.length === 0 ? (
         <div className="admin-card admin-empty">
           <ShoppingCart />
-          <p>No active user carts found.</p>
+          <p>No active carts found.</p>
         </div>
       ) : (
         <div className="admin-grid-2">
