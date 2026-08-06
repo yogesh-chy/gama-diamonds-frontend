@@ -19,7 +19,7 @@ const titleMap: Record<string, string> = {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   // Keyboard shortcut (Ctrl + \) or (Cmd + \) to toggle sidebar like ChatGPT
   useEffect(() => {
@@ -35,6 +35,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const currentTitle = titleMap[pathname] || "Admin Console";
 
+  useEffect(() => {
+    if (sidebarMobileOpen) {
+      setSidebarMobileOpen(false);
+    }
+  }, [pathname]);
+
   const toggleSidebar = () => {
     // On mobile screens (<1024px), toggle drawer
     if (window.innerWidth < 1024) {
@@ -47,22 +53,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="admin-shell">
-      {/* Admin Navigation Sidebar Column */}
-      <AdminSidebar
-        isOpen={sidebarMobileOpen}
-        isCollapsed={isSidebarCollapsed}
-        onClose={() => setSidebarMobileOpen(false)}
-        onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
+      {/* Full-width Top Header spanning edge to edge across entire admin page */}
+      <AdminHeader
+        onToggleSidebar={toggleSidebar}
+        isSidebarCollapsed={isSidebarCollapsed}
+        title={currentTitle}
       />
 
-      {/* Main Content Area */}
-      <div className={`admin-main-wrap ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
-        <AdminHeader
-          onToggleSidebar={toggleSidebar}
-          isSidebarCollapsed={isSidebarCollapsed}
-          title={currentTitle}
+      {/* Body containing Sidebar on Left and Main Content on Right */}
+      <div className="admin-body">
+        {/* Admin Navigation Sidebar Column */}
+        <AdminSidebar
+          isOpen={sidebarMobileOpen}
+          isCollapsed={isSidebarCollapsed}
+          onClose={() => setSidebarMobileOpen(false)}
+          onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
         />
-        <main className="admin-content">{children}</main>
+
+        {/* Main Content Area */}
+        <div className={`admin-main-wrap ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
+          <main className="admin-content">{children}</main>
+        </div>
       </div>
     </div>
   );

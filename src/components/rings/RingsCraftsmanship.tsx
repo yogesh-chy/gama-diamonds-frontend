@@ -1,8 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 
 export default function RingsCraftsmanship() {
   const [activeTab, setActiveTab] = useState<"lab" | "natural">("lab");
@@ -84,12 +84,13 @@ export default function RingsCraftsmanship() {
               }}
               className="er-craft-grid"
             >
-              {/* Left Side Image Placeholder */}
-              <div>
-                <ImagePlaceholder
-                  height="420px"
-                  label="Jeweler Inspecting Lab Diamond with Loupe & Tweezers"
-                  style={{ borderRadius: "0px" }}
+              {/* Left Side Diamond Image */}
+              <div style={{ position: "relative", width: "100%", height: "420px" }}>
+                <Image
+                  src="/oval_cut_solitier.png"
+                  alt="Jeweler Inspecting Lab Diamond with Loupe & Tweezers"
+                  fill
+                  style={{ objectFit: "cover", borderRadius: "0px" }}
                 />
               </div>
 
@@ -148,12 +149,13 @@ export default function RingsCraftsmanship() {
               }}
               className="er-craft-grid"
             >
-              {/* Left Side Image Placeholder */}
-              <div>
-                <ImagePlaceholder
-                  height="420px"
-                  label="Earth-Mined Natural Diamond Inspection & Rough Gemstone"
-                  style={{ borderRadius: "0px" }}
+              {/* Left Side Diamond Image */}
+              <div style={{ position: "relative", width: "100%", height: "420px" }}>
+                <Image
+                  src="/1hero.png"
+                  alt="Earth-Mined Natural Diamond Inspection & Rough Gemstone"
+                  fill
+                  style={{ objectFit: "cover", borderRadius: "0px" }}
                 />
               </div>
 

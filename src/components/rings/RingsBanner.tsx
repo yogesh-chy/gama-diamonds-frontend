@@ -1,8 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 
 export default function RingsBanner() {
   return (
@@ -21,11 +21,15 @@ export default function RingsBanner() {
           transition={{ duration: 0.5 }}
           style={{ position: "relative", overflow: "hidden" }}
         >
-          <ImagePlaceholder
-            height="360px"
-            label="Wide Banner — Two Diamond Engagement Rings on Satin Fabric"
-            style={{ borderRadius: "0px", border: "none" }}
-          />
+          <div style={{ position: "relative", width: "100%", height: "360px" }}>
+            <Image
+              src="/2hero.png"
+              alt="Wide Banner — Two Diamond Engagement Rings on Satin Fabric"
+              fill
+              style={{ objectFit: "cover", borderRadius: "0px" }}
+              priority
+            />
+          </div>
 
           {/* Floating gold button at bottom center (flat, no glow) */}
           <div

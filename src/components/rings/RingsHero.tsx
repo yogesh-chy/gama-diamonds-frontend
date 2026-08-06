@@ -1,8 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 
 export default function RingsHero() {
   return (
@@ -31,9 +31,9 @@ export default function RingsHero() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
             style={{
-              background: "#080808",
-              border: "1px solid rgba(255,255,255,0.08)",
-              padding: "60px 48px",
+              background: "transparent",
+              border: "none",
+              padding: "0 24px",
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
@@ -101,18 +101,22 @@ export default function RingsHero() {
             </div>
           </motion.div>
 
-          {/* Right Column Large Ring Tray Image Placeholder */}
+          {/* Right Column Large Ring Tray Image */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
-            style={{ height: "100%", minHeight: "420px" }}
+            style={{ height: "100%", minHeight: "420px", position: "relative" }}
           >
-            <ImagePlaceholder
-              height="100%"
-              label="Engagement Ring Tray — Multi-Shape Ring Display Box"
-              style={{ borderRadius: "0px", height: "100%" }}
-            />
+            <div style={{ position: "relative", width: "100%", height: "100%" }}>
+              <Image
+                src="/1hero.png"
+                alt="Engagement Ring Tray — Multi-Shape Ring Display Box"
+                fill
+                style={{ objectFit: "cover", borderRadius: "0px" }}
+                priority
+              />
+            </div>
           </motion.div>
         </div>
       </div>

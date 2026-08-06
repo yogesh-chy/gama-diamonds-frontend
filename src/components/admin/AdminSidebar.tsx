@@ -56,9 +56,9 @@ export function AdminSidebar({
             title={isCollapsed ? "Expand Sidebar (Ctrl+\\)" : "Collapse Sidebar (Ctrl+\\)"}
           >
             {isCollapsed ? (
-              <PanelLeftOpen className="w-5 h-5 text-[#c6a45f] hover:scale-110 transition-transform" />
+              <PanelLeftOpen className="w-4 h-4 text-[#c6a45f] hover:scale-110 transition-transform" />
             ) : (
-              <PanelLeftClose className="w-5 h-5 text-gray-400 hover:text-white hover:scale-110 transition-transform" />
+              <PanelLeftClose className="w-4 h-4 text-white hover:scale-110 transition-transform" />
             )}
           </button>
         )}

@@ -1,39 +1,45 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 
 const styles = [
   {
     name: "Solitaire Engagement Ring Box",
     href: "/rings?style=solitaire",
     label: "SHOP SOLITAIRE RINGS",
+    imageSrc: "/shopbycategory/engement_ring.png",
   },
   {
     name: "Trilogy Three Stone Ring Box",
     href: "/rings?style=three-stone",
     label: "SHOP TRILOGY THREE STONE RINGS",
+    imageSrc: "/oval_cut_solitier.png",
   },
   {
     name: "Under Halo Ring Box",
     href: "/rings?style=under-halo",
     label: "SHOP UNDER HALO RINGS",
+    imageSrc: "/1hero.png",
   },
   {
     name: "Halo Engagement Ring Box",
     href: "/rings?style=halo",
     label: "SHOP HALO RINGS",
+    imageSrc: "/2hero.png",
   },
   {
     name: "Diamond Shoulder Ring Box",
     href: "/rings?style=diamond-shoulder",
     label: "SHOP DIAMOND SHOULDER RINGS",
+    imageSrc: "/eternity_ring.png",
   },
   {
     name: "Eternity Ring Box",
     href: "/eternity",
     label: "SHOP ETERNITY RINGS",
+    imageSrc: "/shopbycategory/engement_ring.png",
   },
 ];
 
@@ -73,12 +79,15 @@ export default function RingsStyleGrid() {
                 }}
                 className="er-style-card"
               >
-                {/* Velvet box image placeholder */}
-                <ImagePlaceholder
-                  height="340px"
-                  label={item.name}
-                  style={{ borderRadius: "0px" }}
-                />
+                <div style={{ position: "relative", width: "100%", height: "340px" }}>
+                  <Image
+                    src={item.imageSrc}
+                    alt={item.name}
+                    fill
+                    style={{ objectFit: "cover", borderRadius: "0px" }}
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                </div>
 
                 {/* Golden pill button (flat, no glow) floating at bottom center */}
                 <div

@@ -318,15 +318,12 @@ export default function Header() {
           <div style={{ width: "100%" }}>
             <ul className="nav-list">
               {visibleNav.map((item, idx) => (
-                <Fragment key={idx}>
-                  {item.key === "creator" && (
-                    <li className="nav-break" aria-hidden="true" />
-                  )}
-                  <li
-                    onMouseEnter={() => handleMouseEnter(idx)}
-                    onMouseLeave={handleMouseLeave}
-                    className="nav-item"
-                  >
+                <li
+                  key={idx}
+                  onMouseEnter={() => handleMouseEnter(idx)}
+                  onMouseLeave={handleMouseLeave}
+                  className="nav-item"
+                >
                     <Link
                       href={item.href}
                       className={`nav-link nav-item-link${
@@ -337,7 +334,6 @@ export default function Header() {
                     </Link>
 
                   </li>
-                </Fragment>
               ))}
             </ul>
           </div>

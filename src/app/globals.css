@@ -344,10 +344,18 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  column-gap: 16px;
+  gap: 16px;
   padding: 0;
   margin: 0;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  width: 100%;
+}
+
+.nav-list::-webkit-scrollbar {
+  display: none;
 }
 
 .nav-item {
@@ -369,20 +377,11 @@ img {
   transition: color 0.25s ease;
   white-space: nowrap;
   text-decoration: none !important;
-  line-height: 1.35;
 }
 
 .nav-item-link:hover,
 .nav-item-link.active {
   color: #c6a45f !important;
-}
-
-.nav-break {
-  flex-basis: 100%;
-  height: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
 /* Mega Menu */
@@ -1342,6 +1341,14 @@ img {
   background: #000000;
   color: #ffffff;
   display: flex;
+  flex-direction: column;
+}
+
+.admin-body {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
 }
 
 /* ── Sidebar (Desktop) ─────────────────────────────────────── */
@@ -1349,9 +1356,9 @@ img {
   display: none;
   width: 260px;
   flex-shrink: 0;
-  height: 100vh;
+  height: calc(100vh - 84px);
   position: sticky;
-  top: 0;
+  top: 84px;
   z-index: 30;
   transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1393,7 +1400,11 @@ img {
   background: none !important;
   border: none !important;
   box-shadow: none !important;
-  padding: 4px !important;
+  padding: 2px !important;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  min-height: 30px;
   cursor: pointer;
   color: rgba(255, 255, 255, 0.7);
   display: flex;
@@ -1549,11 +1560,12 @@ img {
   flex-direction: column;
   min-width: 0;
   transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  font-size: 12px;
 }
 
 .admin-content {
   flex: 1;
-  padding: 24px 20px;
+  padding: 20px 16px;
   max-width: 1360px;
   width: 100%;
   margin: 0 auto;
@@ -1561,7 +1573,7 @@ img {
 
 @media (min-width: 640px) {
   .admin-content {
-    padding: 32px 36px;
+    padding: 28px 32px;
   }
 }
 
@@ -1574,16 +1586,16 @@ img {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 16px 20px;
+  padding: 12px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 84px;
+  min-height: 76px;
 }
 
 @media (min-width: 640px) {
   .admin-header {
-    padding: 14px 36px;
+    padding: 12px 32px;
   }
 }
 
@@ -1599,7 +1611,7 @@ img {
   justify-content: center;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.7);
+  color: #ffffff;
   cursor: pointer;
   padding: 8px;
   border-radius: 0px !important;
@@ -1613,9 +1625,13 @@ img {
 }
 
 .admin-header-center-logo {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: auto;
 }
 
 .admin-top-logo {
@@ -1995,7 +2011,7 @@ img {
 
 @media (min-width: 1024px) {
   .admin-overview-grid {
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: minmax(0, 3fr) minmax(280px, 1fr);
   }
 }
 
@@ -2979,4 +2995,430 @@ select option {
     border-top: 1px dashed rgba(255, 255, 255, 0.08);
   }
 }
-
+
+/* ─────────────────────────────────────────────────────────────
+   JEWELLERY CREATOR PAGE
+───────────────────────────────────────────────────────────── */
+
+.jc-page {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  color: #1a1a1a;
+  padding: 40px 20px;
+  font-family: 'Poppins', sans-serif;
+}
+
+@media (min-width: 768px) {
+  .jc-page {
+    padding: 60px 40px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .jc-page {
+    padding: 80px 60px;
+  }
+}
+
+.jc-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 48px;
+  max-width: 1360px;
+  width: 100%;
+  margin: 0 auto;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .jc-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+  }
+}
+
+/* ── Collage Grid ── */
+
+.jc-collage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .jc-collage {
+    gap: 16px;
+  }
+}
+
+.jc-collage-row-top,
+.jc-collage-row-btm {
+  display: grid;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .jc-collage-row-top,
+  .jc-collage-row-btm {
+    gap: 16px;
+  }
+}
+
+.jc-collage-row-top {
+  grid-template-columns: 1.4fr 1fr;
+}
+
+.jc-collage-row-btm {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.jc-col-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .jc-col-stack {
+    gap: 16px;
+  }
+}
+
+.jc-img {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #f0efed;
+}
+
+.jc-img-hero {
+  height: 260px;
+}
+
+.jc-img-sm {
+  flex: 1;
+  min-height: 120px;
+}
+
+.jc-img-tall {
+  height: 280px;
+}
+
+@media (min-width: 640px) {
+  .jc-img-hero {
+    height: 320px;
+  }
+  .jc-img-sm {
+    min-height: 148px;
+  }
+  .jc-img-tall {
+    height: 340px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .jc-img-hero {
+    height: 340px;
+  }
+  .jc-img-sm {
+    min-height: 158px;
+  }
+  .jc-img-tall {
+    height: 360px;
+  }
+}
+
+.jc-img-inner {
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.jc-img:hover .jc-img-inner {
+  transform: scale(1.04);
+}
+
+/* Floating centre badge */
+.jc-floating-badge {
+  position: absolute;
+  top: 50%;
+  left: 52%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 22px 28px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.jc-badge-bar {
+  width: 30px;
+  height: 2.5px;
+  background: #1a1a1a;
+  margin-bottom: 10px;
+}
+
+.jc-badge-title {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  color: #1a1a1a;
+  line-height: 1.3;
+}
+
+.jc-badge-italic {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 18px;
+  color: #555555;
+  line-height: 1.3;
+}
+
+/* ── Content Side ── */
+
+.jc-content {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+@media (min-width: 1024px) {
+  .jc-content {
+    gap: 32px;
+  }
+}
+
+.jc-heading {
+  font-family: 'Playfair Display', serif;
+  font-weight: 400;
+  font-size: 32px;
+  line-height: 1.15;
+  color: #1a1a1a;
+  letter-spacing: -0.01em;
+}
+
+.jc-heading em {
+  font-style: italic;
+  font-weight: 300;
+}
+
+@media (min-width: 640px) {
+  .jc-heading {
+    font-size: 40px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .jc-heading {
+    font-size: 48px;
+  }
+}
+
+.jc-subtext {
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.7;
+  color: #666666;
+  max-width: 560px;
+}
+
+@media (min-width: 640px) {
+  .jc-subtext {
+    font-size: 14px;
+  }
+}
+
+/* ── Three path cards ── */
+
+.jc-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .jc-cards {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+}
+
+.jc-card {
+  background: #f8f7f4;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  padding: 28px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.jc-card:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px);
+}
+
+.jc-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1a1a;
+}
+
+.jc-card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.jc-card-desc {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  color: #888888;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.jc-card-link {
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 4px;
+  transition: color 0.25s ease;
+}
+
+.jc-card-link:hover {
+  color: #c6a45f;
+}
+
+.jc-arrow {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+.jc-card-link:hover .jc-arrow,
+.jc-size-strip:hover .jc-arrow {
+  transform: translateX(4px);
+}
+
+/* ── Size guide strip ── */
+
+.jc-size-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #555555;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 0;
+  transition: color 0.25s ease;
+}
+
+.jc-size-strip:hover {
+  color: #1a1a1a;
+}
+
+.jc-new-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: #1a1a1a;
+  color: #ffffff;
+  border-radius: 2px;
+}
+
+/* ── Trust badges ── */
+
+.jc-trust {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+@media (min-width: 640px) {
+  .jc-trust {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+}
+
+.jc-trust-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  flex: 1;
+  padding: 0 16px;
+}
+
+.jc-trust-item strong {
+  font-family: 'Poppins', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #1a1a1a;
+}
+
+.jc-trust-item span {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  color: #888888;
+}
+
+.jc-trust-divider {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .jc-trust-divider {
+    display: block;
+    width: 1px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
+  }
+}
+

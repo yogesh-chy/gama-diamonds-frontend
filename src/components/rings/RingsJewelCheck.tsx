@@ -1,7 +1,7 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
-import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 
 export default function RingsJewelCheck() {
   return (
@@ -23,12 +23,15 @@ export default function RingsJewelCheck() {
         }}
       >
         <div style={{ position: "relative", overflow: "hidden" }}>
-          {/* Satin silk background image placeholder */}
-          <ImagePlaceholder
-            height="360px"
-            label="Satin Fabric Background — Three Gold Diamond Engagement Rings"
-            style={{ borderRadius: "0px", border: "none" }}
-          />
+          <div style={{ position: "relative", width: "100%", height: "360px" }}>
+            <Image
+              src="/1hero.png"
+              alt="Satin Fabric Background — Three Gold Diamond Engagement Rings"
+              fill
+              style={{ objectFit: "cover", borderRadius: "0px" }}
+              priority
+            />
+          </div>
 
           {/* Centered White Card Overlay */}
           <div

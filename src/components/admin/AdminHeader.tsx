@@ -40,18 +40,16 @@ export function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
           className="admin-menu-btn lg:hidden"
           aria-label="Toggle menu"
         >
-          <Menu className="w-5 h-5 text-gray-400 hover:text-white" />
+          <Menu className="w-5 h-5 text-white hover:text-white" />
         </button>
       </div>
 
-      {/* Center Area: Large Top Centered Logo (Points to /admin) */}
-      <div className="admin-header-center-logo">
-        <Link href="/admin" className="admin-top-logo" style={{ textDecoration: "none" }}>
-          <span className="admin-logo-tagline">✦ GAMA ✦</span>
-          <span className="admin-logo-name">DIAMOND</span>
-          <div className="admin-logo-underline" />
-        </Link>
-      </div>
+      {/* Center Area: Exact Landing Page Logo (Points to /admin) */}
+      <Link href="/admin" className="logo-link">
+        <span className="logo-tagline">✦ GAMA ✦</span>
+        <span className="logo-name">DIAMOND</span>
+        <div className="logo-underline" />
+      </Link>
 
       {/* Right Area: View Store & Live Clock */}
       <div className="admin-header-right">
@@ -61,12 +59,12 @@ export function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
           className="admin-header-store-link"
           title="Open Customer Storefront"
         >
-          <ExternalLink size={14} />
+          <ExternalLink size={13} />
           <span>View Store</span>
         </Link>
 
         <div className="admin-header-clock">
-          <Clock size={14} />
+          <Clock size={13} />
           <span>{timeStr || "00:00:00 AM"}</span>
         </div>
       </div>
