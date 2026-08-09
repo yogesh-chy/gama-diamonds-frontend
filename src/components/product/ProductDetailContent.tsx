@@ -433,7 +433,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                   letterSpacing: "1px",
                 }}
               >
-                {formatPrice(product.price)} GBP
+                {formatPrice(product.price)}
               </span>
               <span style={{ fontSize: "11px", color: "#888888" }}>
                 (Includes UK VAT & Fully Insured Express Shipping)
@@ -513,13 +513,13 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                 }}
               >
                 <option value="Full Payment" style={{ background: "#0c0c0c" }}>
-                  Full Payment – {formatPrice(product.price)} GBP
+                  Full Payment – {formatPrice(product.price)}
                 </option>
                 <option value="25% Deposit" style={{ background: "#0c0c0c" }}>
-                  25% Deposit – {formatPrice(product.price * 0.25)} GBP
+                  25% Deposit – {formatPrice(product.price * 0.25)}
                 </option>
                 <option value="50% Deposit" style={{ background: "#0c0c0c" }}>
-                  50% Deposit – {formatPrice(product.price * 0.5)} GBP
+                  50% Deposit – {formatPrice(product.price * 0.5)}
                 </option>
               </select>
             </div>
@@ -547,7 +547,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                 transition: "all 0.3s ease",
               }}
             >
-              <ShoppingBag size={18} /> ADD TO CART • {formatPrice(product.price)} GBP
+              <ShoppingBag size={18} /> ADD TO CART • {formatPrice(product.price)}
             </button>
 
             {/* Urgent Assistance Callout Bar */}
@@ -905,7 +905,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                     marginTop: "auto",
                   }}
                 >
-                  {formatPrice(item.price)} GBP
+                  {formatPrice(item.price)}
                 </div>
               </Link>
             ))}

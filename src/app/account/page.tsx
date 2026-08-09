@@ -18,6 +18,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { authApi } from "@/lib/api/auth";
 import { ordersApi } from "@/lib/api/orders";
@@ -57,6 +58,7 @@ function displayNameFromEmail(email: string | undefined): string {
 
 function AccountDashboardContent() {
   const { user, logout, refreshUser } = useAuth();
+  const { formatPrice } = useCurrency();
   const router = useRouter();
   const displayName = displayNameFromEmail(user?.email);
 
@@ -732,7 +734,7 @@ function AccountDashboardContent() {
                               marginBottom: "4px",
                             }}
                           >
-                            £{Number(order.total_amount).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {formatPrice(Number(order.total_amount))}
                           </div>
                           <Link
                             href={`/account/orders/${order.id}`}

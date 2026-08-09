@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, Fragment } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, User, ShoppingBag, Menu, X, ChevronDown } from "lucide-react";
+import { Search, User, ShoppingBag, Menu, X, ChevronDown, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import {
   BASE_NAV,
   FALLBACK_RINGS_MENU,
@@ -14,7 +14,36 @@ import {
 import { useCurrency } from "@/context/CurrencyContext";
 import { useAuth } from "@/context/AuthContext";
 import { POPULAR_CURRENCIES } from "@/lib/currencyConfig";
+import { adminApi, type AdminProduct } from "@/lib/api/admin";
 import type { MegaMenuData, MegaMenuSection, MegaMenuImage, NavItem } from "@/types";
+
+interface SearchSuggestionProduct {
+  id: string | number;
+  name: string;
+  category?: string;
+  price: number;
+  href: string;
+}
+
+const PRODUCT_TYPES_NAV = [
+  { keywords: ["ring", "engagement", "solitaire", "trilogy", "halo"], label: "Engagement Rings", href: "/rings" },
+  { keywords: ["wedding", "band", "women", "men", "eternity"], label: "Wedding Rings & Bands", href: "/wedding/womens-plain" },
+  { keywords: ["earring", "stud", "hoop", "drop", "pear"], label: "Diamond Earrings", href: "/earrings" },
+  { keywords: ["necklace", "pendant", "chain", "loop"], label: "Necklaces & Pendants", href: "/necklaces" },
+  { keywords: ["bracelet", "tennis", "bangle"], label: "Diamond Bracelets", href: "/bracelets" },
+  { keywords: ["bespoke", "custom", "design"], label: "Bespoke Custom Jewellery", href: "/bespoke" },
+];
+
+const SAMPLE_SEARCH_CATALOG: SearchSuggestionProduct[] = [
+  { id: "1", name: "Novaryn Yellow Cushion Cut Diamond Ring", category: "Trilogy Ring", price: 3045, href: "/product/1" },
+  { id: "2", name: "Pear Shape Solitaire Stud Earrings", category: "Diamond Earrings", price: 370, href: "/product/2" },
+  { id: "3", name: "Round Cut Four Claw Loop Pendant", category: "Diamond Pendant", price: 1020, href: "/product/3" },
+  { id: "4", name: "Victoria 2.03ct Marquise Diamond Ring", category: "Engagement Ring", price: 2400, href: "/product/4" },
+  { id: "5", name: "Emerald Cut Platinum Eternity Band", category: "Eternity Band", price: 1850, href: "/product/5" },
+  { id: "wed-01", name: "Women's Classic Micro-Pave Diamond Wedding Band", category: "Wedding Band", price: 1250, href: "/wedding/womens-plain" },
+  { id: "wed-05", name: "Men's Heavy Court Satin Finish Wedding Band", category: "Men's Wedding Ring", price: 980, href: "/wedding/mens-plain" },
+  { id: "sample-1", name: "Bespoke Pear Cut Solitaire Ring in 18ct White Gold", category: "Bespoke Ring", price: 3450, href: "/product/sample-1" },
+];
 
 function CurrencySelector() {
   const { currency, symbol, flag, setCurrency, isLoaded } = useCurrency();
@@ -77,12 +106,18 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [visibleNav] = useState<NavItem[]>(BASE_NAV);
+  
+  // Search states
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [backendSuggestions, setBackendSuggestions] = useState<SearchSuggestionProduct[]>([]);
+  const [isSearchingBackend, setIsSearchingBackend] = useState(false);
+  
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchWrapRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const { freeDeliveryThreshold, isLoaded } = useCurrency();
+  const { freeDeliveryThreshold, isLoaded, formatPrice } = useCurrency();
   const { isAuthenticated } = useAuth();
   const accountHref = isAuthenticated ? "/account" : "/login";
 
@@ -94,6 +129,17 @@ export default function Header() {
     }
   }, [searchOpen]);
 
+  // Click outside search wrap to close suggestions & bar
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchWrapRef.current && !searchWrapRef.current.contains(e.target as Node)) {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -104,6 +150,48 @@ export default function Header() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  // Fetch product suggestions from Django backend search endpoint
+  useEffect(() => {
+    const query = searchQuery.trim();
+    if (!query) {
+      setBackendSuggestions([]);
+      return;
+    }
+
+    let cancelled = false;
+    setIsSearchingBackend(true);
+
+    const timer = setTimeout(() => {
+      adminApi.getProducts({ search: query, limit: 5, status: "active" })
+        .then((res) => {
+          if (cancelled) return;
+          if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+            const mapped: SearchSuggestionProduct[] = res.data.map((p: AdminProduct) => ({
+              id: p.id,
+              name: p.name,
+              category: p.category || "Jewellery",
+              price: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
+              href: `/product/${p.id}`,
+            }));
+            setBackendSuggestions(mapped);
+          } else {
+            setBackendSuggestions([]);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setBackendSuggestions([]);
+        })
+        .finally(() => {
+          if (!cancelled) setIsSearchingBackend(false);
+        });
+    }, 200);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [searchQuery]);
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -112,6 +200,26 @@ export default function Header() {
       setSearchQuery("");
     }
   };
+
+  // Compute matching product types / category shortcuts
+  const matchingTypes = searchQuery.trim()
+    ? PRODUCT_TYPES_NAV.filter((type) =>
+        type.keywords.some((kw) => kw.toLowerCase().includes(searchQuery.trim().toLowerCase())) ||
+        type.label.toLowerCase().includes(searchQuery.trim().toLowerCase())
+      )
+    : [];
+
+  // Combine backend results with static catalog fallback matching
+  const matchingSampleProducts = searchQuery.trim()
+    ? SAMPLE_SEARCH_CATALOG.filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
+          item.category?.toLowerCase().includes(searchQuery.trim().toLowerCase())
+      )
+    : [];
+
+  const displayedProducts =
+    backendSuggestions.length > 0 ? backendSuggestions : matchingSampleProducts;
 
   const subcategories: Record<string, MegaMenuData> = {
     rings: FALLBACK_RINGS_MENU,
@@ -214,8 +322,9 @@ export default function Header() {
 
             {/* Right – Icons */}
             <div className="header-icons">
-              {/* Search Container with Slide-Left Input */}
+              {/* Search Container with Interactive Dropdown Suggestions */}
               <div
+                ref={searchWrapRef}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -224,68 +333,247 @@ export default function Header() {
               >
                 <AnimatePresence>
                   {searchOpen && (
-                    <motion.form
+                    <motion.div
                       initial={{ width: 0, opacity: 0, scaleX: 0.9 }}
-                      animate={{ width: "260px", opacity: 1, scaleX: 1 }}
+                      animate={{ width: "320px", opacity: 1, scaleX: 1 }}
                       exit={{ width: 0, opacity: 0, scaleX: 0.9 }}
                       transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-                      onSubmit={handleSearchSubmit}
                       style={{
                         position: "absolute",
                         right: "0",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        background: "rgba(10, 10, 10, 0.98)",
-                        border: "1px solid #c6a45f",
-                        borderRadius: "0px",
-                        padding: "6px 12px",
-                        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6)",
+                        top: "-20px",
                         transformOrigin: "right center",
-                        whiteSpace: "nowrap",
-                        zIndex: 20,
-                        overflow: "hidden",
+                        zIndex: 30,
                       }}
                     >
-                      <Search size={16} style={{ color: "#c6a45f", flexShrink: 0 }} />
-                      <input
-                        ref={searchInputRef}
-                        type="text"
-                        placeholder="Search engagement rings, diamonds..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                      <form
+                        onSubmit={handleSearchSubmit}
                         style={{
-                          width: "100%",
-                          background: "transparent",
-                          border: "none",
-                          outline: "none",
-                          color: "#ffffff",
-                          fontFamily: "'Poppins', sans-serif",
-                          fontSize: "12px",
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSearchOpen(false);
-                          setSearchQuery("");
-                        }}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          color: "#8a8a8a",
-                          cursor: "pointer",
                           display: "flex",
                           alignItems: "center",
-                          padding: "2px",
-                          transition: "color 0.2s",
+                          gap: "8px",
+                          background: "rgba(10, 10, 10, 0.98)",
+                          border: "1px solid #c6a45f",
+                          borderRadius: "0px",
+                          padding: "8px 12px",
+                          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.8)",
+                          whiteSpace: "nowrap",
                         }}
-                        onMouseEnter={(e) => (e.currentTarget.style.color = "#c6a45f")}
-                        onMouseLeave={(e) => (e.currentTarget.style.color = "#8a8a8a")}
                       >
-                        <X size={16} />
-                      </button>
-                    </motion.form>
+                        <Search size={16} style={{ color: "#c6a45f", flexShrink: 0 }} />
+                        <input
+                          ref={searchInputRef}
+                          type="text"
+                          placeholder="Search engagement rings, diamonds..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          style={{
+                            width: "100%",
+                            background: "transparent",
+                            border: "none",
+                            outline: "none",
+                            color: "#ffffff",
+                            fontFamily: "'Poppins', sans-serif",
+                            fontSize: "12px",
+                          }}
+                        />
+                        {isSearchingBackend && (
+                          <Loader2 size={14} className="animate-spin" style={{ color: "#c6a45f" }} />
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSearchOpen(false);
+                            setSearchQuery("");
+                          }}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "#8a8a8a",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            padding: "2px",
+                            transition: "color 0.2s",
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.color = "#c6a45f")}
+                          onMouseLeave={(e) => (e.currentTarget.style.color = "#8a8a8a")}
+                        >
+                          <X size={16} />
+                        </button>
+                      </form>
+
+                      {/* Live Suggestions Dropdown Box right below Search Bar */}
+                      {searchQuery.trim().length >= 1 && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 6 }}
+                          transition={{ duration: 0.18 }}
+                          style={{
+                            position: "absolute",
+                            top: "42px",
+                            right: 0,
+                            width: "320px",
+                            background: "rgba(12, 12, 12, 0.98)",
+                            border: "1px solid rgba(198, 164, 95, 0.4)",
+                            boxShadow: "0 12px 32px rgba(0, 0, 0, 0.9)",
+                            zIndex: 40,
+                            padding: "14px",
+                            backdropFilter: "blur(12px)",
+                          }}
+                        >
+                          {/* Suggested Category / Type Links */}
+                          {matchingTypes.length > 0 && (
+                            <div style={{ marginBottom: "14px" }}>
+                              <div
+                                style={{
+                                  fontSize: "9.5px",
+                                  fontWeight: "700",
+                                  color: "#c6a45f",
+                                  letterSpacing: "1.5px",
+                                  textTransform: "uppercase",
+                                  marginBottom: "8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "6px",
+                                }}
+                              >
+                                <Sparkles size={11} /> Suggested Categories
+                              </div>
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                                {matchingTypes.map((type, idx) => (
+                                  <Link
+                                    key={idx}
+                                    href={type.href}
+                                    onClick={() => {
+                                      setSearchOpen(false);
+                                      setSearchQuery("");
+                                    }}
+                                    style={{
+                                      fontSize: "11px",
+                                      color: "#ffffff",
+                                      background: "rgba(198, 164, 95, 0.12)",
+                                      border: "1px solid rgba(198, 164, 95, 0.3)",
+                                      padding: "4px 10px",
+                                      textDecoration: "none",
+                                      fontFamily: "'Poppins', sans-serif",
+                                      transition: "all 0.2s",
+                                    }}
+                                  >
+                                    {type.label}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Matching Products Suggestions */}
+                          <div>
+                            <div
+                              style={{
+                                fontSize: "9.5px",
+                                fontWeight: "700",
+                                color: "#8a8a8a",
+                                letterSpacing: "1.5px",
+                                textTransform: "uppercase",
+                                marginBottom: "8px",
+                              }}
+                            >
+                              Matching Products ({displayedProducts.length})
+                            </div>
+
+                            {displayedProducts.length === 0 ? (
+                              <div style={{ fontSize: "11px", color: "#777777", padding: "8px 0" }}>
+                                No direct product matches for &quot;{searchQuery}&quot;. Press Enter to view all listings.
+                              </div>
+                            ) : (
+                              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                                {displayedProducts.slice(0, 4).map((product) => (
+                                  <Link
+                                    key={product.id}
+                                    href={product.href}
+                                    onClick={() => {
+                                      setSearchOpen(false);
+                                      setSearchQuery("");
+                                    }}
+                                    style={{
+                                      display: "flex",
+                                      justifyContent: "space-between",
+                                      alignItems: "center",
+                                      padding: "6px 8px",
+                                      background: "rgba(255, 255, 255, 0.03)",
+                                      border: "1px solid rgba(255, 255, 255, 0.06)",
+                                      textDecoration: "none",
+                                      transition: "background 0.2s",
+                                    }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(198, 164, 95, 0.15)")}
+                                    onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.03)")}
+                                  >
+                                    <div>
+                                      <div
+                                        style={{
+                                          fontFamily: "'Playfair Display', serif",
+                                          fontSize: "12px",
+                                          color: "#ffffff",
+                                          lineHeight: "1.3",
+                                          maxHeight: "2.6em",
+                                          overflow: "hidden",
+                                        }}
+                                      >
+                                        {product.name}
+                                      </div>
+                                      {product.category && (
+                                        <div style={{ fontSize: "10px", color: "#8a8a8a", marginTop: "2px" }}>
+                                          {product.category}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div
+                                      style={{
+                                        fontFamily: "'Poppins', sans-serif",
+                                        fontSize: "11px",
+                                        fontWeight: "600",
+                                        color: "#c6a45f",
+                                        marginLeft: "12px",
+                                        flexShrink: 0,
+                                      }}
+                                    >
+                                      {formatPrice(product.price)}
+                                    </div>
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Submit / View All Button */}
+                          <button
+                            onClick={handleSearchSubmit}
+                            style={{
+                              width: "100%",
+                              marginTop: "12px",
+                              padding: "8px",
+                              background: "#c6a45f",
+                              color: "#000000",
+                              border: "none",
+                              fontFamily: "'Poppins', sans-serif",
+                              fontSize: "10px",
+                              fontWeight: "700",
+                              letterSpacing: "1.5px",
+                              textTransform: "uppercase",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            View All Search Results <ArrowRight size={12} />
+                          </button>
+                        </motion.div>
+                      )}
+                    </motion.div>
                   )}
                 </AnimatePresence>
 
@@ -338,8 +626,6 @@ export default function Header() {
             </ul>
           </div>
         </nav>
-
-
 
         {/* Mega / Dropdown Menu */}
         <AnimatePresence>

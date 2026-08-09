@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, RotateCcw, ChevronDown } from "lucide-react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
+import { useCurrency } from "@/context/CurrencyContext";
 
 interface Product {
   id: string;
@@ -43,6 +44,7 @@ interface RingsOtherCutsListingProps {
 }
 
 export default function RingsOtherCutsListing({ shapeSlug }: RingsOtherCutsListingProps) {
+  const { formatPrice } = useCurrency();
   const shapeName = useMemo(() => formatShapeTitle(shapeSlug), [shapeSlug]);
 
   // 8 Dynamic products with Image Placeholders only
@@ -855,8 +857,8 @@ export default function RingsOtherCutsListing({ shapeSlug }: RingsOtherCutsListi
                       color: "#999999",
                     }}
                   >
-                    <span>£990.00</span>
-                    <span>£17,150.00</span>
+                    <span>{formatPrice(990)}</span>
+                    <span>{formatPrice(17150)}</span>
                   </div>
                 </div>
               )}
@@ -1031,7 +1033,7 @@ export default function RingsOtherCutsListing({ shapeSlug }: RingsOtherCutsListi
                         marginTop: "auto",
                       }}
                     >
-                      £{product.price.toLocaleString()}.00
+                      {formatPrice(product.price)}
                     </div>
                   </motion.div>
                 </Link>

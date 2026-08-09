@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, RotateCcw, ChevronDown } from "lucide-react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
+import { useCurrency } from "@/context/CurrencyContext";
 
 interface Product {
   id: string;
@@ -96,6 +97,7 @@ interface RingsCategoryListingProps {
 }
 
 export default function RingsCategoryListing({ shapeSlug = "round-brilliant" }: RingsCategoryListingProps) {
+  const { formatPrice } = useCurrency();
   const [selectedMetals, setSelectedMetals] = useState<string[]>([]);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [outOfStockOnly, setOutOfStockOnly] = useState(false);
@@ -558,8 +560,8 @@ export default function RingsCategoryListing({ shapeSlug = "round-brilliant" }: 
                       color: "#999999",
                     }}
                   >
-                    <span>£{minPrice.toLocaleString()}.00</span>
-                    <span>£{maxPrice.toLocaleString()}.00</span>
+                    <span>{formatPrice(minPrice)}</span>
+                    <span>{formatPrice(maxPrice)}</span>
                   </div>
                 </div>
               )}
@@ -734,7 +736,7 @@ export default function RingsCategoryListing({ shapeSlug = "round-brilliant" }: 
                         marginTop: "auto",
                       }}
                     >
-                      £{product.price.toLocaleString()}.00
+                      {formatPrice(product.price)}
                     </div>
                   </motion.div>
                 </Link>

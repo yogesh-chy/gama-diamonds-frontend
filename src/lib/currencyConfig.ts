@@ -122,15 +122,19 @@ export function formatIndianNumber(n: number): string {
 // Major currencies available in the header selector
 export const POPULAR_CURRENCIES: PopularCurrency[] = [
   { code: 'GBP', symbol: '£', flag: '🇬🇧', name: 'GBP – British Pound' },
-  { code: 'USD', symbol: '$', flag: '🇺🇸', name: 'USD – US Dollar' },
   { code: 'EUR', symbol: '€', flag: '🇪🇺', name: 'EUR – Euro' },
   { code: 'INR', symbol: '₹', flag: '🇮🇳', name: 'INR – Indian Rupee' },
+  { code: 'USD', symbol: '$', flag: '🇺🇸', name: 'USD – US Dollar' },
+  { code: 'CHF', symbol: 'Fr', flag: '🇨🇭', name: 'CHF – Swiss Franc' },
+  { code: 'SEK', symbol: 'kr', flag: '🇸🇪', name: 'SEK – Swedish Krona' },
+  { code: 'NOK', symbol: 'kr', flag: '🇳🇴', name: 'NOK – Norwegian Krone' },
+  { code: 'DKK', symbol: 'kr', flag: '🇩🇰', name: 'DKK – Danish Krone' },
+  { code: 'PLN', symbol: 'zł', flag: '🇵🇱', name: 'PLN – Polish Zloty' },
   { code: 'AED', symbol: 'AED', flag: '🇦🇪', name: 'AED – UAE Dirham' },
   { code: 'AUD', symbol: 'A$', flag: '🇦🇺', name: 'AUD – Australian Dollar' },
   { code: 'CAD', symbol: 'CA$', flag: '🇨🇦', name: 'CAD – Canadian Dollar' },
   { code: 'SGD', symbol: 'S$', flag: '🇸🇬', name: 'SGD – Singapore Dollar' },
   { code: 'JPY', symbol: '¥', flag: '🇯🇵', name: 'JPY – Japanese Yen' },
-  { code: 'CHF', symbol: 'Fr', flag: '🇨🇭', name: 'CHF – Swiss Franc' },
 ];
 
 export const CURRENCY_LOCALE_MAP: Record<string, string> = {
@@ -142,7 +146,8 @@ export const CURRENCY_LOCALE_MAP: Record<string, string> = {
   NOK: 'nb-NO', DKK: 'da-DK', PLN: 'pl-PL', NZD: 'en-NZ',
   PKR: 'en-PK', BDT: 'bn-BD', NPR: 'ne-NP',
   TWD: 'zh-TW', PHP: 'fil-PH', VND: 'vi-VN', IDR: 'id-ID',
-  TRY: 'tr-TR', ILS: 'he-IL', MXN: 'es-MX',
+  TRY: 'tr-TR', ILS: 'he-IL', MXN: 'es-MX', CZK: 'cs-CZ',
+  HUF: 'hu-HU', RON: 'ro-RO',
 };
 
 export default CURRENCY_MAP;

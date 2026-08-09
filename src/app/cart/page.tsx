@@ -386,7 +386,7 @@ export default function CartPage() {
                               color: "#c6a45f",
                             }}
                           >
-                            {formatPrice(item.price)} GBP
+                            {formatPrice(item.price)}
                           </div>
                         </div>
 
@@ -458,7 +458,7 @@ export default function CartPage() {
                               color: "#ffffff",
                             }}
                           >
-                            {formatPrice(item.price * (item.quantity || 1))} GBP
+                            {formatPrice(item.price * (item.quantity || 1))}
                           </div>
 
                           {/* Remove button */}
@@ -647,14 +647,14 @@ export default function CartPage() {
                     <div style={{ display: "flex", justifyContent: "space-between", color: "#a0a0a0" }}>
                       <span>Subtotal</span>
                       <span style={{ color: "#ffffff", fontWeight: "600" }}>
-                        {formatPrice(subtotal)} GBP
+                        {formatPrice(subtotal)}
                       </span>
                     </div>
 
                     {discountAmount > 0 && (
                       <div style={{ display: "flex", justifyContent: "space-between", color: "#c6a45f" }}>
                         <span>VIP Discount ({discountPercent}%)</span>
-                        <span>-{formatPrice(discountAmount)} GBP</span>
+                        <span>-{formatPrice(discountAmount)}</span>
                       </div>
                     )}
 
@@ -751,7 +751,7 @@ export default function CartPage() {
                         color: "#c6a45f",
                       }}
                     >
-                      {formatPrice(finalTotal)} GBP
+                      {formatPrice(finalTotal)}
                     </span>
                   </div>
 
@@ -777,7 +777,7 @@ export default function CartPage() {
                         lineHeight: "1.4",
                       }}
                     >
-                      Pay <strong>3 instalments of {formatPrice(klarnaInstallment)} GBP</strong> with 0% APR via Klarna.
+                      Pay <strong>3 instalments of {formatPrice(klarnaInstallment)}</strong> with 0% APR via Klarna.
                     </div>
                   </div>
 

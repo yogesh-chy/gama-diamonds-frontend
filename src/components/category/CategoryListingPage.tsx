@@ -525,10 +525,10 @@ export default function CategoryListingPage({
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 {[
                   { id: "all", label: "All Prices" },
-                  { id: "under-1500", label: "Under £1,500" },
-                  { id: "1500-3000", label: "£1,500 – £3,000" },
-                  { id: "3000-5000", label: "£3,000 – £5,000" },
-                  { id: "above-5000", label: "Over £5,000" },
+                  { id: "under-1500", label: `Under ${formatPrice(1500)}` },
+                  { id: "1500-3000", label: `${formatPrice(1500)} – ${formatPrice(3000)}` },
+                  { id: "3000-5000", label: `${formatPrice(3000)} – ${formatPrice(5000)}` },
+                  { id: "above-5000", label: `Over ${formatPrice(5000)}` },
                 ].map((opt) => (
                   <label
                     key={opt.id}

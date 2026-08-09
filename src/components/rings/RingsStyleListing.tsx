@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, RotateCcw, ChevronDown } from "lucide-react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
+import { useCurrency } from "@/context/CurrencyContext";
 
 interface Product {
   id: string;
@@ -51,6 +52,7 @@ interface RingsStyleListingProps {
 }
 
 export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps) {
+  const { formatPrice } = useCurrency();
   const { name: styleName, title: pageTitle } = useMemo(() => formatStyleTitle(styleSlug), [styleSlug]);
 
   // 8 Dynamic sample products matching this style layout
@@ -920,8 +922,8 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
                       color: "#999999",
                     }}
                   >
-                    <span>£990.00</span>
-                    <span>£20,000.00</span>
+                    <span>{formatPrice(990)}</span>
+                    <span>{formatPrice(20000)}</span>
                   </div>
                 </div>
               )}
@@ -1096,7 +1098,7 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
                             marginBottom: "12px",
                           }}
                         >
-                          £{product.price.toLocaleString()}.00
+                          {formatPrice(product.price)}
                         </div>
 
                         <button

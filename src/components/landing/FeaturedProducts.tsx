@@ -8,9 +8,11 @@ import "swiper/css";
 import "swiper/css/pagination";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { fadeInUp } from "@/lib/constants";
+import { useCurrency } from "@/context/CurrencyContext";
 import type { Product } from "@/types";
 
 export default function FeaturedProducts() {
+  const { formatPrice } = useCurrency();
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
@@ -157,10 +159,7 @@ export default function FeaturedProducts() {
                         fontSize: "13px",
                       }}
                     >
-                      £
-                      {product.price
-                        ? product.price.toLocaleString()
-                        : "1,200"}
+                      {formatPrice(product.price || 1200)}
                     </div>
                   </div>
                 </div>

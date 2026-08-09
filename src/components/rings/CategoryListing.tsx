@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, RotateCcw, ChevronDown } from "lucide-react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
+import { useCurrency } from "@/context/CurrencyContext";
 
 export interface ProductItem {
   id: string;
@@ -81,6 +82,7 @@ export default function CategoryListing({
   hideStyle = false,
   hideMetal = false,
 }: CategoryListingProps) {
+  const { formatPrice } = useCurrency();
   // Filter States
   const [inStockOnly, setInStockOnly] = useState(false);
   const [selectedDiamondTypes, setSelectedDiamondTypes] = useState<string[]>([]);
@@ -1036,8 +1038,8 @@ export default function CategoryListing({
                       color: "#999999",
                     }}
                   >
-                    <span>£{defaultMinPrice.toLocaleString()}</span>
-                    <span>£{defaultMaxPrice.toLocaleString()}</span>
+                    <span>{formatPrice(defaultMinPrice)}</span>
+                    <span>{formatPrice(defaultMaxPrice)}</span>
                   </div>
                 </div>
               )}
@@ -1244,7 +1246,7 @@ export default function CategoryListing({
                           marginTop: "auto",
                         }}
                       >
-                        £{product.price.toLocaleString()}.00
+                        {formatPrice(product.price)}
                       </div>
                     </motion.div>
                   </Link>

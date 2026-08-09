@@ -2,34 +2,38 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
+import { useCurrency } from "@/context/CurrencyContext";
 
 const recentlyViewedItems = [
   {
     title:
       "ROUND CUT SOLITAIRE DIAMOND IN FOUR CLAW SETTING LOOP PENDANT WITH CHAIN PSR848M",
-    price: "FROM £1,020.00",
+    rawPrice: 1020,
+    hasPrefix: true,
     href: "/product/psr848m",
     badge: null,
   },
   {
     title:
       '"ADDISON" HIDDEN UNDER HALO 2.50 CARAT OVAL CUT DIAMOND YELLOW GOLD ENGAGEMENT RING UH006',
-    price: "FROM £2,800.00",
+    rawPrice: 2800,
+    hasPrefix: true,
     href: "/product/uh006",
     badge: null,
   },
   {
     title:
       '"CORVELLA" 0.35 CARAT ROUND CUT NATURAL DIAMOND HALF ETERNITY RING MDR4101',
-    price: "£770.00",
+    rawPrice: 770,
+    hasPrefix: false,
     href: "/product/mdr4101",
     badge: "NEXT DAY DELIVERY",
   },
   {
     title: "APPOINTMENT PAGE | SCHEDULE YOUR CONSULTATION",
-    price: "£0.00",
+    rawPrice: 0,
+    hasPrefix: false,
     href: "/bespoke",
     badge: null,
     isAppointment: true,
@@ -37,6 +41,8 @@ const recentlyViewedItems = [
 ];
 
 export default function RingsRecentlyViewed() {
+  const { formatPrice } = useCurrency();
+
   return (
     <section
       style={{
@@ -61,7 +67,7 @@ export default function RingsRecentlyViewed() {
           </h2>
         </div>
 
-        {/* Product Cards Grid with Carousel Right Arrow */}
+        {/* Product Cards Grid */}
         <div style={{ position: "relative" }}>
           <div
             style={{
@@ -164,7 +170,7 @@ export default function RingsRecentlyViewed() {
                           letterSpacing: "1px",
                         }}
                       >
-                        {item.price}
+                        {item.hasPrefix ? `FROM ${formatPrice(item.rawPrice)}` : formatPrice(item.rawPrice)}
                       </span>
                     </div>
                   </div>
