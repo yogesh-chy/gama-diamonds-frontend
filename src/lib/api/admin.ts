@@ -142,10 +142,12 @@ export interface AdminUser {
   orders_count?: number;
 }
 
+type ApiQueryParams = Record<string, string | number | boolean | null | undefined>;
+
 export const adminApi = {
   // --- Products ---
-  getProducts: (params?: Record<string, string | number | boolean>) =>
-    apiClient.get<{ success: boolean; data: AdminProduct[]; pagination?: any }>("/products/", { params }),
+  getProducts: (params?: ApiQueryParams) =>
+    apiClient.get<{ success: boolean; data: AdminProduct[]; pagination?: any }> ("/products/", { params }),
   
   createProduct: (payload: Partial<AdminProduct>) =>
     apiClient.post<AdminProduct>("/products/", payload),

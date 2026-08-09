@@ -1025,7 +1025,7 @@ function AccountDashboardContent() {
                         key={addr.id ?? idx}
                         style={{
                           backgroundColor: "rgba(255, 255, 255, 0.015)",
-                          border: addr.isDefault
+                          border: addr.is_default
                             ? "1px solid rgba(198, 164, 95, 0.35)"
                             : "1px solid rgba(255, 255, 255, 0.08)",
                           borderRadius: "0px",
@@ -1057,9 +1057,9 @@ function AccountDashboardContent() {
                                   color: "#ffffff",
                                 }}
                               >
-                                {addr.firstName} {addr.lastName}
+                                {addr.full_name}
                               </span>
-                              {addr.isDefault && (
+                              {addr.is_default && (
                                 <span
                                   style={{
                                     fontSize: "9px",
@@ -1086,9 +1086,9 @@ function AccountDashboardContent() {
                                 lineHeight: "1.5",
                               }}
                             >
-                              {addr.address}
-                              {addr.apartment ? `, ${addr.apartment}` : ""}, {addr.city},{" "}
-                              {addr.postcode}, {addr.country}
+                              {addr.street_address}
+                              {addr.state ? `, ${addr.state}` : ""}, {addr.city},{" "}
+                              {addr.postal_code}, {addr.country}
                             </p>
                           </div>
                         </div>

@@ -2,15 +2,19 @@ import React, { CSSProperties } from "react";
 import { Gem } from "lucide-react";
 
 interface ImagePlaceholderProps {
+  width?: string;
   height?: string;
   label?: string;
+  aspectRatio?: string;
   className?: string;
   style?: CSSProperties;
 }
 
 export default function ImagePlaceholder({
+  width = "100%",
   height = "100%",
   label = "Image Placeholder",
+  aspectRatio,
   className = "",
   style = {},
 }: ImagePlaceholderProps) {
@@ -18,8 +22,9 @@ export default function ImagePlaceholder({
     <div
       className={`img-placeholder-box ${className}`}
       style={{
-        width: "100%",
+        width: width,
         height: height,
+        aspectRatio: aspectRatio,
         backgroundColor: "#141414",
         backgroundImage:
           "radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)",
