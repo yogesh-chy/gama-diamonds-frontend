@@ -327,7 +327,7 @@ export default function CategoryListingPage({
             </button>
 
             <span style={{ fontSize: "12px", color: "#888888" }}>
-              Showing <strong style={{ color: "#ffffff" }}>{filteredProducts.length}</strong> of {products.length} Products
+              Showing <strong style={{ color: "#ffffff" }}>{filteredProducts.length}</strong> of {productList.length} Products
             </span>
           </div>
 
