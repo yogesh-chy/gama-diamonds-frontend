@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, RotateCcw, ChevronDown, SlidersHorizontal, Grid, LayoutGrid, Eye, ShoppingBag } from "lucide-react";
@@ -9,6 +9,9 @@ import Footer from "@/components/layout/Footer";
 import CertificationBar from "@/components/landing/CertificationBar";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { useCurrency } from "@/context/CurrencyContext";
+import { useAuth } from "@/context/AuthContext";
+import { productsApi } from "@/lib/api/products";
+import { cartApi } from "@/lib/api/orders";
 import { toast } from "sonner";
 
 export interface CategoryProduct {
@@ -60,10 +63,44 @@ export default function CategoryListingPage({
   description,
   breadcrumbs,
   styleOptions,
-  products,
+  products: initialProducts,
   heroImage,
 }: CategoryListingPageProps) {
   const { formatPrice } = useCurrency();
+  const { isAuthenticated } = useAuth();
+
+  const [productList, setProductList] = useState<CategoryProduct[]>(initialProducts);
+
+  // Fetch real products from backend for this category
+  useEffect(() => {
+    let cancelled = false;
+    productsApi
+      .getProducts({ category: categoryKey, status: "active" })
+      .then((res) => {
+        if (cancelled || !res.data?.data) return;
+        const apiData = res.data.data;
+        if (Array.isArray(apiData) && apiData.length > 0) {
+          const mapped: CategoryProduct[] = apiData.map((p) => ({
+            id: String(p.id),
+            title: p.name,
+            category: p.category || categoryTitle,
+            style: p.diamond_cut || p.earring_type || p.necklace_style || p.bracelet_type || "Classic",
+            metal: p.metal_type || "18ct White Gold",
+            gemstone: "White Diamond",
+            price: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
+            image: p.images && p.images.length > 0 ? p.images[0].url : undefined,
+            badge: p.is_featured ? "EXCLUSIVE" : "NEXT DAY",
+            inStock: p.total_stock > 0 || (p.totalStock ?? 0) > 0,
+            carat: String(p.diamond_spec?.carat_weight || p.diamond_spec?.caratWeight || ""),
+          }));
+          setProductList(mapped);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryKey, categoryTitle]);
 
   // Filter States
   const [selectedMetals, setSelectedMetals] = useState<string[]>([]);
@@ -106,7 +143,7 @@ export default function CategoryListingPage({
 
   // Filter Logic
   const filteredProducts = useMemo(() => {
-    let result = [...products];
+    let result = [...productList];
 
     if (selectedMetals.length > 0) {
       result = result.filter((p) => selectedMetals.includes(p.metal));
@@ -148,7 +185,7 @@ export default function CategoryListingPage({
     }
 
     return result;
-  }, [products, selectedMetals, selectedGemstones, selectedStyles, inStockOnly, priceRange, sortBy]);
+  }, [productList, selectedMetals, selectedGemstones, selectedStyles, inStockOnly, priceRange, sortBy]);
 
   const activeFiltersCount =
     selectedMetals.length +
@@ -157,8 +194,12 @@ export default function CategoryListingPage({
     (inStockOnly ? 1 : 0) +
     (priceRange !== "all" ? 1 : 0);
 
-  const handleAddToCart = (product: CategoryProduct) => {
+  const handleAddToCart = async (product: CategoryProduct) => {
     try {
+      const numericId = !isNaN(Number(product.id)) ? Number(product.id) : null;
+      if (isAuthenticated && numericId) {
+        await cartApi.addItem(numericId, "", 1);
+      }
       const existingCart = JSON.parse(localStorage.getItem("gama_cart") || "[]");
       existingCart.push({
         id: product.id,

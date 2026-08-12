@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, RotateCcw, ChevronDown } from "lucide-react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { useCurrency } from "@/context/CurrencyContext";
+import { productsApi } from "@/lib/api/products";
 
 export interface ProductItem {
   id: string;
@@ -68,7 +69,7 @@ interface CategoryListingProps {
 }
 
 export default function CategoryListing({
-  products,
+  products: initialProducts,
   categoryTitle = "Collection",
   customStyles = [],
   customMetals,
@@ -83,6 +84,38 @@ export default function CategoryListing({
   hideMetal = false,
 }: CategoryListingProps) {
   const { formatPrice } = useCurrency();
+  const [productList, setProductList] = useState<ProductItem[]>(initialProducts);
+
+  // Sync backend live products for this category
+  useEffect(() => {
+    let cancelled = false;
+    const catSlug = categoryTitle.toLowerCase().replace(/\s+rings?$/, "").replace(/\s+jewellery$/, "");
+    productsApi
+      .getProducts({ category: catSlug, status: "active" })
+      .then((res) => {
+        if (cancelled || !res.data?.data) return;
+        const apiData = res.data.data;
+        if (Array.isArray(apiData) && apiData.length > 0) {
+          const mapped: ProductItem[] = apiData.map((p) => ({
+            id: String(p.id),
+            title: p.name,
+            metal: p.metal_type || "18ct White Gold",
+            price: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
+            badge: p.is_featured ? "EXCLUSIVE" : "NEXT DAY",
+            inStock: p.total_stock > 0 || (p.totalStock ?? 0) > 0,
+            diamondType: "Natural Diamond",
+            carat: String(p.diamond_spec?.carat_weight || p.diamond_spec?.caratWeight || "1.00ct"),
+            style: p.diamond_cut || p.earring_type || p.necklace_style || p.bracelet_type || "Classic",
+          }));
+          setProductList(mapped);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryTitle]);
+
   // Filter States
   const [inStockOnly, setInStockOnly] = useState(false);
   const [selectedDiamondTypes, setSelectedDiamondTypes] = useState<string[]>([]);
@@ -154,13 +187,13 @@ export default function CategoryListing({
   // Compute available styles dynamically if not provided
   const availableStyles = useMemo(() => {
     if (customStyles.length > 0) return customStyles;
-    const extracted = Array.from(new Set(products.map((p) => p.style).filter(Boolean))) as string[];
+    const extracted = Array.from(new Set(productList.map((p) => p.style).filter(Boolean))) as string[];
     return extracted.length > 0 ? extracted : ["Drop Earrings", "Earring", "Hoop Earrings", "STYLE: DROP EARRINGS", "STYLE: DROPS", "STYLE: HALO EARRINGS", "STYLE: HOOPS", "STYLE: STUDS", "Stud Earrings"];
-  }, [customStyles, products]);
+  }, [customStyles, productList]);
 
   // Filtering Logic
   const filteredProducts = useMemo(() => {
-    let result = products.filter((p) => {
+    let result = productList.filter((p) => {
       if (inStockOnly && !p.inStock) return false;
       if (
         selectedDiamondTypes.length > 0 &&
@@ -186,7 +219,7 @@ export default function CategoryListing({
 
     return result;
   }, [
-    products,
+    productList,
     inStockOnly,
     selectedDiamondTypes,
     selectedMetals,
@@ -1068,7 +1101,7 @@ export default function CategoryListing({
                   letterSpacing: "1px",
                 }}
               >
-                Showing <strong style={{ color: "#ffffff" }}>{filteredProducts.length}</strong> of {products.length} products
+                Showing <strong style={{ color: "#ffffff" }}>{filteredProducts.length}</strong> of {productList.length} products
               </span>
 
               {/* Sort Dropdown */}

@@ -25,6 +25,8 @@ export interface AdminProduct {
   engraving_available?: string;
   gender?: string;
   occasion?: string;
+  video_url?: string | null;
+  videoUrl?: string | null;
   is_active: boolean;
   is_featured: boolean;
   styles?: number[];
@@ -157,6 +159,16 @@ export const adminApi = {
 
   deleteProduct: (id: number) =>
     apiClient.delete(`/products/${id}/`),
+
+  uploadMedia: async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return apiClient.post<{ success: boolean; url: string; media_type: "image" | "video"; filename: string }>(
+      "/products/upload/",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+  },
 
   // --- Categories & Subcategories ---
   getCategories: () =>

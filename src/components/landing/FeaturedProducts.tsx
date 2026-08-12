@@ -9,6 +9,7 @@ import "swiper/css/pagination";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { fadeInUp } from "@/lib/constants";
 import { useCurrency } from "@/context/CurrencyContext";
+import { productsApi } from "@/lib/api/products";
 import type { Product } from "@/types";
 
 export default function FeaturedProducts() {
@@ -16,11 +17,18 @@ export default function FeaturedProducts() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    fetch("/api/admin/products?featured=true&status=active&limit=8")
-      .then((res) => res.json())
-      .then((json) => {
-        if (json.success && Array.isArray(json.data)) {
-          setFeaturedProducts(json.data);
+    productsApi
+      .getProducts({ featured: true, status: "active", limit: 8 })
+      .then((res) => {
+        if (res.data?.data && Array.isArray(res.data.data)) {
+          const mapped: Product[] = res.data.data.map((p) => ({
+            id: p.id,
+            name: p.name,
+            subcategory: p.category || "Fine Jewellery",
+            price: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
+            images: p.images?.map((img) => img.url),
+          }));
+          setFeaturedProducts(mapped);
         }
       })
       .catch(() => {});

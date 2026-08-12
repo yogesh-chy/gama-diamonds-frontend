@@ -17,10 +17,15 @@ import {
   Award,
   RotateCcw,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useCurrency } from "@/context/CurrencyContext";
+import { useAuth } from "@/context/AuthContext";
+import { authApi, type Address } from "@/lib/api/auth";
+import { cartApi, paymentsApi } from "@/lib/api/orders";
+import { getApiErrorMessage } from "@/lib/api/errors";
 
 interface CartItem {
   id: number | string;
@@ -53,39 +58,90 @@ const SAMPLE_ITEMS: CartItem[] = [
   },
 ];
 
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") return resolve(false);
+    if ((window as any).Razorpay) return resolve(true);
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
 export default function CartPage() {
+  const router = useRouter();
   const { formatPrice } = useCurrency();
+  const { isAuthenticated, user } = useAuth();
+
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [giftWrap, setGiftWrap] = useState(true);
   const [ringSizer, setRingSizer] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [discountPercent, setDiscountPercent] = useState(0);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
-  // Read items from localStorage on mount
+  // Backend addresses for checkout
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+
+  // Read items from backend or localStorage on mount
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("gama_cart");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setCartItems(parsed);
+    let cancelled = false;
+
+    async function initCart() {
+      if (isAuthenticated) {
+        try {
+          const res = await cartApi.getCart();
+          if (cancelled) return;
+          if (res.data?.items && res.data.items.length > 0) {
+            const mapped: CartItem[] = res.data.items.map((item) => ({
+              id: item.id,
+              title: item.product_detail?.name || `Product #${item.product}`,
+              price: parseFloat(item.unit_price || "0"),
+              size: item.size,
+              quantity: item.quantity,
+              image: item.product_detail?.image_url || "/bespoke_pear_solitaire.png",
+            }));
+            setCartItems(mapped);
+            setLoading(false);
+            return;
+          }
+        } catch {
+          /* fallback to localStorage */
+        }
+      }
+
+      try {
+        const stored = localStorage.getItem("gama_cart");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setCartItems(parsed);
+          } else {
+            setCartItems(SAMPLE_ITEMS);
+            localStorage.setItem("gama_cart", JSON.stringify(SAMPLE_ITEMS));
+            window.dispatchEvent(new Event("cartUpdated"));
+          }
         } else {
           setCartItems(SAMPLE_ITEMS);
           localStorage.setItem("gama_cart", JSON.stringify(SAMPLE_ITEMS));
           window.dispatchEvent(new Event("cartUpdated"));
         }
-      } else {
+      } catch {
         setCartItems(SAMPLE_ITEMS);
-        localStorage.setItem("gama_cart", JSON.stringify(SAMPLE_ITEMS));
-        window.dispatchEvent(new Event("cartUpdated"));
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    } catch {
-      setCartItems(SAMPLE_ITEMS);
-    } finally {
-      setLoading(false);
     }
-  }, []);
+
+    initCart();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
 
   // Update storage & header counter
   const updateStorage = (items: CartItem[]) => {
@@ -94,10 +150,21 @@ export default function CartPage() {
     window.dispatchEvent(new Event("cartUpdated"));
   };
 
-  const handleQuantityChange = (id: number | string, delta: number) => {
+  const handleQuantityChange = async (id: number | string, delta: number) => {
+    const targetItem = cartItems.find((i) => i.id === id);
+    if (!targetItem) return;
+    const newQty = Math.max(1, (targetItem.quantity || 1) + delta);
+
+    if (isAuthenticated && typeof id === "number") {
+      try {
+        await cartApi.updateItem(id, newQty);
+      } catch {
+        /* fallback to local update */
+      }
+    }
+
     const updated = cartItems.map((item) => {
       if (item.id === id) {
-        const newQty = Math.max(1, (item.quantity || 1) + delta);
         return { ...item, quantity: newQty };
       }
       return item;
@@ -105,7 +172,15 @@ export default function CartPage() {
     updateStorage(updated);
   };
 
-  const handleRemoveItem = (id: number | string, title: string) => {
+  const handleRemoveItem = async (id: number | string, title: string) => {
+    if (isAuthenticated && typeof id === "number") {
+      try {
+        await cartApi.removeItem(id);
+      } catch {
+        /* fallback */
+      }
+    }
+
     const updated = cartItems.filter((item) => item.id !== id);
     updateStorage(updated);
     toast.success(`Removed ${title} from your shopping bag`);
@@ -127,6 +202,86 @@ export default function CartPage() {
       toast.success("20% Exclusive Partner Discount Applied!");
     } else if (code.length > 0) {
       toast.error("Invalid voucher code. Try GAMA10 for 10% off");
+    }
+  };
+
+  // Full backend checkout handler with Razorpay Integration
+  const handleProceedToCheckout = async () => {
+    if (!isAuthenticated) {
+      toast.info("Please sign in to complete your checkout.");
+      router.push("/login?next=/cart");
+      return;
+    }
+
+    setIsCheckingOut(true);
+    try {
+      // 1. Fetch user's saved addresses
+      const addrRes = await authApi.listAddresses();
+      const addrList: Address[] = Array.isArray(addrRes.data)
+        ? addrRes.data
+        : (addrRes.data as any).results || [];
+
+      if (addrList.length === 0) {
+        toast.error("Please add a shipping address in your Account settings first.");
+        router.push("/account");
+        setIsCheckingOut(false);
+        return;
+      }
+
+      setAddresses(addrList);
+      const defaultAddr = addrList.find((a) => a.is_default) || addrList[0];
+      const addressId = defaultAddr.id;
+
+      // 2. Initiate checkout on backend
+      const checkoutRes = await cartApi.checkout(addressId);
+      const { razorpay, order } = checkoutRes.data;
+
+      // 3. Load Razorpay script
+      const loaded = await loadRazorpayScript();
+      if (!loaded || !(window as any).Razorpay) {
+        toast.success(`Order #${order.id} placed! Payment gateway script could not be loaded directly.`);
+        updateStorage([]);
+        router.push("/account");
+        return;
+      }
+
+      // 4. Trigger Razorpay Checkout Modal
+      const options = {
+        key: razorpay.key_id,
+        amount: razorpay.amount,
+        currency: razorpay.currency,
+        name: "Gama Diamonds",
+        description: `Order #${order.id} Payment`,
+        order_id: razorpay.razorpay_order_id,
+        prefill: {
+          email: user?.email || "",
+          contact: user?.phone_number || "",
+        },
+        theme: {
+          color: "#c6a45f",
+        },
+        handler: async (response: any) => {
+          try {
+            await paymentsApi.verifyPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+            toast.success("Payment verified! Your order has been placed successfully.");
+            updateStorage([]);
+            router.push("/account");
+          } catch (err) {
+            toast.error(getApiErrorMessage(err, "Payment verification failed. Please contact support."));
+          }
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Checkout failed. Please ensure your cart has items and try again."));
+    } finally {
+      setIsCheckingOut(false);
     }
   };
 
@@ -783,9 +938,8 @@ export default function CartPage() {
 
                   {/* Checkout Button */}
                   <button
-                    onClick={() => {
-                      toast.success("Proceeding to Secure Checkout...");
-                    }}
+                    onClick={handleProceedToCheckout}
+                    disabled={isCheckingOut}
                     className="btn-gold"
                     style={{
                       width: "100%",
@@ -798,10 +952,12 @@ export default function CartPage() {
                       gap: "8px",
                       marginBottom: "16px",
                       borderRadius: "0px",
+                      opacity: isCheckingOut ? 0.7 : 1,
+                      cursor: isCheckingOut ? "not-allowed" : "pointer",
                     }}
                   >
                     <Lock size={14} />
-                    <span>PROCEED TO SECURE CHECKOUT</span>
+                    <span>{isCheckingOut ? "PROCESSING CHECKOUT..." : "PROCEED TO SECURE CHECKOUT"}</span>
                     <ArrowRight size={14} />
                   </button>
 

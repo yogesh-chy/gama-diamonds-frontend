@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
-
   Plus,
   Search,
   Filter,
@@ -17,6 +16,8 @@ import {
   Image as ImageIcon,
   Ruler,
   Diamond,
+  Upload,
+  Film,
 } from "lucide-react";
 import { toast } from "sonner";
 import { adminApi, AdminProduct, AdminCategory, AdminSubcategory, AdminTaxonomyItem } from "@/lib/api/admin";
@@ -38,6 +39,12 @@ export default function AdminProductsPage() {
   const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(null);
   const [activeTab, setActiveTab] = useState<"general" | "pricing" | "specs" | "diamond" | "media">("general");
   const [saving, setSaving] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [imageDragActive, setImageDragActive] = useState(false);
+  const [videoDragActive, setVideoDragActive] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   // Form State
   const [formData, setFormData] = useState<Partial<AdminProduct>>({
@@ -68,8 +75,9 @@ export default function AdminProductsPage() {
       certification_lab: "GIA",
       certificate_number: "",
     },
-    images: [{ url: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800", isPrimary: true }],
+    images: [],
     sizes: [{ size: "M (UK)", stock: 5 }],
+    video_url: "",
   });
 
   async function loadData() {
@@ -116,6 +124,49 @@ export default function AdminProductsPage() {
   }, []);
 
 
+  const handleImageUpload = async (files: FileList | File[]) => {
+    setUploadingImages(true);
+    try {
+      const fileArr = Array.from(files);
+      const validFiles = fileArr.filter((f) => f.type.startsWith("image/"));
+      if (validFiles.length === 0) {
+        toast.error("Please select valid image files (jpg, png, webp)");
+        return;
+      }
+      for (const file of validFiles) {
+        const res = await adminApi.uploadMedia(file);
+        const url = res.data.url;
+        setFormData((prev) => ({
+          ...prev,
+          images: [...(prev.images || []), { url, isPrimary: (prev.images || []).length === 0 }],
+        }));
+        toast.success(`Uploaded ${file.name}`);
+      }
+    } catch (err) {
+      toast.error("Image upload failed");
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
+  const handleVideoUpload = async (files: FileList | File[]) => {
+    setUploadingVideo(true);
+    try {
+      const file = Array.from(files).find((f) => f.type.startsWith("video/"));
+      if (!file) {
+        toast.error("Please select a valid video file (mp4, webm, mov)");
+        return;
+      }
+      const res = await adminApi.uploadMedia(file);
+      setFormData((prev) => ({ ...prev, video_url: res.data.url }));
+      toast.success(`Video uploaded: ${file.name}`);
+    } catch (err) {
+      toast.error("Video upload failed");
+    } finally {
+      setUploadingVideo(false);
+    }
+  };
+
   const openAddModal = () => {
     setEditingProduct(null);
     setFormData({
@@ -139,8 +190,9 @@ export default function AdminProductsPage() {
         clarity_grade: "VS1",
         certification_lab: "GIA",
       },
-      images: [{ url: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800", isPrimary: true }],
+      images: [],
       sizes: [{ size: "M", stock: 5 }],
+      video_url: "",
     });
     setActiveTab("general");
     setIsModalOpen(true);
@@ -160,8 +212,9 @@ export default function AdminProductsPage() {
         clarity_grade: "VS1",
         certification_lab: "GIA",
       },
-      images: product.images && product.images.length > 0 ? product.images : [{ url: "", isPrimary: true }],
+      images: product.images && product.images.length > 0 ? product.images : [],
       sizes: product.sizes && product.sizes.length > 0 ? product.sizes : [{ size: "M", stock: 5 }],
+      video_url: product.video_url || product.videoUrl || "",
     });
     setActiveTab("general");
     setIsModalOpen(true);
@@ -694,46 +747,211 @@ export default function AdminProductsPage() {
                 </div>
               )}
 
-              {/* Tab 5: Media & Sizes */}
+              {/* Tab 5: Media — File Upload */}
               {activeTab === "media" && (
-                <div className="admin-space-y-4">
+                <div className="admin-space-y-6">
+                  {/* ── Image Upload ── */}
                   <div>
-                    <label className="admin-info-label mb-2">
-                      Product Images (URL)
+                    <label className="admin-info-label mb-3" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <ImageIcon className="w-4 h-4 text-[#c6a45f]" /> Product Images
                     </label>
-                    {formData.images?.map((img, idx) => (
-                      <div key={idx} className="admin-flex admin-items-center gap-2 mb-3">
-                        <input
-                          type="url"
-                          placeholder="https://..."
-                          value={img.url}
-                          onChange={(e) => {
-                            const newImgs = [...(formData.images || [])];
-                            newImgs[idx].url = e.target.value;
-                            setFormData({ ...formData, images: newImgs });
-                          }}
-                          className="admin-input flex-1"
+
+                    {/* Thumbnail grid of already-uploaded images */}
+                    {(formData.images || []).length > 0 && (
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: "12px", marginBottom: "16px" }}>
+                        {formData.images!.map((img, idx) => (
+                          <div
+                            key={idx}
+                            style={{
+                              position: "relative",
+                              borderRadius: "8px",
+                              overflow: "hidden",
+                              border: img.isPrimary ? "2px solid #c6a45f" : "1px solid rgba(255,255,255,0.1)",
+                              aspectRatio: "1",
+                            }}
+                          >
+                            <img
+                              src={img.url}
+                              alt={`Product image ${idx + 1}`}
+                              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                              onError={(e) => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23222' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' fill='%23666' text-anchor='middle' dominant-baseline='middle' font-size='12'%3ENo preview%3C/text%3E%3C/svg%3E"; }}
+                            />
+                            {img.isPrimary && (
+                              <span style={{
+                                position: "absolute", top: 4, left: 4,
+                                background: "#c6a45f", color: "#000", fontSize: "9px", fontWeight: 700,
+                                padding: "2px 6px", borderRadius: "4px", textTransform: "uppercase", letterSpacing: "0.5px",
+                              }}>Primary</span>
+                            )}
+                            <div style={{ position: "absolute", top: 4, right: 4, display: "flex", gap: "4px" }}>
+                              {!img.isPrimary && (
+                                <button
+                                  type="button"
+                                  title="Set as primary"
+                                  onClick={() => {
+                                    const newImgs = (formData.images || []).map((im, i) => ({ ...im, isPrimary: i === idx }));
+                                    setFormData({ ...formData, images: newImgs });
+                                  }}
+                                  style={{
+                                    width: "22px", height: "22px", borderRadius: "50%", border: "none",
+                                    background: "rgba(0,0,0,0.7)", color: "#c6a45f", cursor: "pointer",
+                                    display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px",
+                                  }}
+                                >★</button>
+                              )}
+                              <button
+                                type="button"
+                                title="Remove image"
+                                onClick={() => {
+                                  const newImgs = (formData.images || []).filter((_, i) => i !== idx);
+                                  setFormData({ ...formData, images: newImgs });
+                                }}
+                                style={{
+                                  width: "22px", height: "22px", borderRadius: "50%", border: "none",
+                                  background: "rgba(220,38,38,0.85)", color: "#fff", cursor: "pointer",
+                                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px",
+                                }}
+                              >×</button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Drop zone for images */}
+                    <div
+                      onDragOver={(e) => { e.preventDefault(); setImageDragActive(true); }}
+                      onDragLeave={() => setImageDragActive(false)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setImageDragActive(false);
+                        if (e.dataTransfer.files.length > 0) handleImageUpload(e.dataTransfer.files);
+                      }}
+                      onClick={() => imageInputRef.current?.click()}
+                      style={{
+                        border: imageDragActive ? "2px solid #c6a45f" : "2px dashed rgba(255,255,255,0.15)",
+                        borderRadius: "12px",
+                        padding: "32px 16px",
+                        textAlign: "center",
+                        cursor: "pointer",
+                        background: imageDragActive ? "rgba(198,164,95,0.08)" : "rgba(255,255,255,0.02)",
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      <input
+                        ref={imageInputRef}
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        style={{ display: "none" }}
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files.length > 0) handleImageUpload(e.target.files);
+                          e.target.value = "";
+                        }}
+                      />
+                      {uploadingImages ? (
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                          <RefreshCw className="w-5 h-5 animate-spin text-[#c6a45f]" />
+                          <span style={{ color: "#c6a45f", fontSize: "13px" }}>Uploading images...</span>
+                        </div>
+                      ) : (
+                        <>
+                          <Upload className="w-8 h-8 mx-auto mb-2" style={{ color: "rgba(255,255,255,0.3)" }} />
+                          <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", marginBottom: "4px" }}>
+                            <strong style={{ color: "#c6a45f" }}>Click to browse</strong> or drag and drop images here
+                          </p>
+                          <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "11px" }}>
+                            JPG, PNG, WEBP — up to 10 MB each
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* ── Video Upload ── */}
+                  <div>
+                    <label className="admin-info-label mb-3" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <Film className="w-4 h-4 text-[#c6a45f]" /> Product Video (360° / Showcase)
+                    </label>
+
+                    {/* Preview existing video */}
+                    {formData.video_url && (
+                      <div style={{
+                        position: "relative",
+                        marginBottom: "16px",
+                        borderRadius: "10px",
+                        overflow: "hidden",
+                        border: "1px solid rgba(198,164,95,0.3)",
+                        background: "#0a0a0a",
+                      }}>
+                        <video
+                          src={formData.video_url}
+                          controls
+                          style={{ width: "100%", maxHeight: "220px", objectFit: "contain" }}
                         />
                         <button
                           type="button"
-                          onClick={() => {
-                            const newImgs = formData.images?.filter((_, i) => i !== idx);
-                            setFormData({ ...formData, images: newImgs });
+                          onClick={() => setFormData({ ...formData, video_url: "" })}
+                          style={{
+                            position: "absolute", top: 8, right: 8,
+                            width: "28px", height: "28px", borderRadius: "50%",
+                            background: "rgba(220,38,38,0.9)", border: "none", color: "#fff",
+                            cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: "16px",
                           }}
-                          className="admin-btn admin-btn-danger p-2"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
+                        >×</button>
                       </div>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, images: [...(formData.images || []), { url: "", isPrimary: false }] })}
-                      className="admin-link-gold text-xs mt-4 inline-flex admin-items-center gap-1.5"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Add Image URL</span>
-                    </button>
+                    )}
+
+                    {/* Drop zone for video */}
+                    {!formData.video_url && (
+                      <div
+                        onDragOver={(e) => { e.preventDefault(); setVideoDragActive(true); }}
+                        onDragLeave={() => setVideoDragActive(false)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setVideoDragActive(false);
+                          if (e.dataTransfer.files.length > 0) handleVideoUpload(e.dataTransfer.files);
+                        }}
+                        onClick={() => videoInputRef.current?.click()}
+                        style={{
+                          border: videoDragActive ? "2px solid #c6a45f" : "2px dashed rgba(255,255,255,0.15)",
+                          borderRadius: "12px",
+                          padding: "32px 16px",
+                          textAlign: "center",
+                          cursor: "pointer",
+                          background: videoDragActive ? "rgba(198,164,95,0.08)" : "rgba(255,255,255,0.02)",
+                          transition: "all 0.2s ease",
+                        }}
+                      >
+                        <input
+                          ref={videoInputRef}
+                          type="file"
+                          accept="video/*"
+                          style={{ display: "none" }}
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files.length > 0) handleVideoUpload(e.target.files);
+                            e.target.value = "";
+                          }}
+                        />
+                        {uploadingVideo ? (
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                            <RefreshCw className="w-5 h-5 animate-spin text-[#c6a45f]" />
+                            <span style={{ color: "#c6a45f", fontSize: "13px" }}>Uploading video...</span>
+                          </div>
+                        ) : (
+                          <>
+                            <Film className="w-8 h-8 mx-auto mb-2" style={{ color: "rgba(255,255,255,0.3)" }} />
+                            <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", marginBottom: "4px" }}>
+                              <strong style={{ color: "#c6a45f" }}>Click to browse</strong> or drag and drop a video
+                            </p>
+                            <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "11px" }}>
+                              MP4, WEBM, MOV — up to 100 MB
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

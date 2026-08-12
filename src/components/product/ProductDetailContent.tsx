@@ -25,7 +25,11 @@ import CertificationBar from "@/components/landing/CertificationBar";
 import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { useCurrency } from "@/context/CurrencyContext";
+import { useAuth } from "@/context/AuthContext";
+import { productsApi, type ProductItem } from "@/lib/api/products";
+import { cartApi } from "@/lib/api/orders";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 interface ProductDetailProps {
   productId: string;
@@ -104,23 +108,72 @@ function getDynamicProduct(id: string) {
 }
 
 export default function ProductDetailContent({ productId }: ProductDetailProps) {
-  const product = getDynamicProduct(productId);
+  const initialFallback = getDynamicProduct(productId);
   const { formatPrice } = useCurrency();
+  const { isAuthenticated } = useAuth();
+
+  const [product, setProduct] = useState(initialFallback);
+  const [numericId, setNumericId] = useState<number | null>(
+    !isNaN(Number(productId)) ? Number(productId) : null
+  );
 
   // Component States
   const [selectedSize, setSelectedSize] = useState("M");
-  const [selectedMetal, setSelectedMetal] = useState(product.metal);
+  const [selectedMetal, setSelectedMetal] = useState(initialFallback.metal);
   const [selectedDeposit, setSelectedDeposit] = useState("Full Payment");
   const [quantity, setQuantity] = useState(1);
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
   const [activeTab, setActiveTab] = useState<"spec" | "shipping" | "warranty">("spec");
   const [specOpen, setSpecOpen] = useState(true);
 
-  const handleAddToCart = () => {
+  // Fetch real backend product data if available
+  useEffect(() => {
+    let cancelled = false;
+    productsApi
+      .getProduct(productId)
+      .then((res) => {
+        if (cancelled || !res.data) return;
+        const p = res.data;
+        setNumericId(p.id);
+        const imagesList = p.images?.map((img) => img.url) || [];
+        setProduct({
+          id: String(p.id),
+          title: p.name,
+          category: p.category || "Jewellery",
+          price: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
+          sku: p.sku || `AD${p.id}3275`,
+          metal: p.metal_type || initialFallback.metal,
+          carat: String(p.diamond_spec?.carat_weight || p.diamond_spec?.caratWeight || initialFallback.carat),
+          shape: p.diamond_cut || initialFallback.shape,
+          clarity: String(p.diamond_spec?.clarity_grade || p.diamond_spec?.clarityGrade || "VS1"),
+          color: String(p.diamond_spec?.colour_grade || p.diamond_spec?.colourGrade || "F Color"),
+          certification: String(p.diamond_spec?.certification_lab || p.diamond_spec?.certificationLab || "GIA Certified"),
+          badge: p.is_featured ? "FEATURED" : "NEXT DAY DELIVERY",
+          rating: 5.0,
+          reviewCount: 1240,
+          images: imagesList.length > 0 ? imagesList : initialFallback.images,
+        });
+        if (p.metal_type) setSelectedMetal(p.metal_type);
+      })
+      .catch(() => {
+        // Fall back gracefully to initial dynamic product
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [productId]);
+
+  const handleAddToCart = async () => {
     try {
+      // 1. If authenticated and numericId exists, send to backend API
+      if (isAuthenticated && numericId) {
+        await cartApi.addItem(numericId, selectedSize, quantity);
+      }
+
+      // 2. Also persist to local cart & notify UI
       const existingCart = JSON.parse(localStorage.getItem("gama_cart") || "[]");
       existingCart.push({
-        id: product.id,
+        id: numericId || product.id,
         title: product.title,
         price: product.price,
         metal: selectedMetal,
