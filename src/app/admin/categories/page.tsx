@@ -29,7 +29,13 @@ export default function AdminCategoriesPage() {
     setLoading(true);
     try {
       const res = await adminApi.getCategories();
-      setCategories(res.data || []);
+      const responseData = res.data as unknown;
+      const nextCategories = Array.isArray(responseData)
+        ? (responseData as AdminCategory[])
+        : ((responseData as { results?: AdminCategory[]; data?: AdminCategory[] } | null)?.results ??
+           (responseData as { results?: AdminCategory[]; data?: AdminCategory[] } | null)?.data ??
+           []);
+      setCategories(Array.isArray(nextCategories) ? nextCategories : []);
     } catch (err) {
       toast.error("Failed to load categories");
     } finally {

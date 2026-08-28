@@ -291,6 +291,17 @@ img {
   margin-top: 4px;
 }
 
+@media (max-width: 640px) {
+  .logo-tagline {
+    font-size: 15px;
+    letter-spacing: 4px;
+  }
+  .logo-name {
+    font-size: 12px;
+    letter-spacing: 2.5px;
+  }
+}
+
 .header-icons {
   display: flex;
   align-items: center;
@@ -1707,12 +1718,22 @@ img {
   text-decoration: none;
   transition: all 0.3s ease;
   border-radius: 4px;
+  white-space: nowrap;
 }
 
 .admin-header-store-link:hover {
   color: #c6a45f;
   border-color: rgba(198, 164, 95, 0.4);
   background: rgba(198, 164, 95, 0.08);
+}
+
+@media (max-width: 840px) {
+  .admin-header-store-link span {
+    display: none;
+  }
+  .admin-header-store-link {
+    padding: 8px 10px;
+  }
 }
 
 @media (min-width: 640px) {
@@ -2098,7 +2119,7 @@ img {
   background: #0a0a0a;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0px;
-  overflow: hidden;
+  overflow-x: auto;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
 }
 
@@ -3421,4 +3442,227 @@ select option {
     flex-shrink: 0;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   GLOBAL RESPONSIVE UTILITIES & LAYOUT GRIDS
+───────────────────────────────────────────────────────────── */
+
+/* Product Detail Responsive Grids */
+.product-detail-main-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .product-detail-main-grid {
+    grid-template-columns: 1fr 520px;
+    gap: 48px;
+  }
+}
+
+.product-trust-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .product-trust-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+  }
+}
+
+.product-related-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 540px) {
+  .product-related-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .product-related-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+}
+
+/* Category & Listing Sidebar Layout Grids */
+.rings-category-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .rings-category-layout-grid {
+    grid-template-columns: 220px 1fr;
+    gap: 36px;
+  }
+}
+
+.rings-product-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 540px) {
+  .rings-product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .rings-product-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+}
+
+.responsive-2col-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .responsive-2col-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+}
+
+.responsive-3col-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 640px) {
+  .responsive-3col-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-3col-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+}
+
+.responsive-4col-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 540px) {
+  .responsive-4col-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-4col-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+}
+
+/* ── Account Dashboard & Login Responsiveness ────────────── */
+.account-dashboard-shell {
+  background-color: #040404;
+  color: #ffffff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-x: hidden;
+  background: radial-gradient(ellipse at 50% 25%, rgba(198, 164, 95, 0.08) 0%, rgba(18, 14, 8, 0.3) 45%, rgba(4, 4, 4, 1) 85%);
+}
+
+.account-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .account-dashboard-grid {
+    grid-template-columns: 220px 1fr;
+    gap: 56px;
+  }
+}
+
+.account-sidebar-nav {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+@media (min-width: 768px) {
+  .account-sidebar-nav {
+    flex-direction: column;
+    gap: 4px;
+    overflow-x: visible;
+    padding-bottom: 24px;
+    border-bottom: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    padding-right: 24px;
+    position: sticky;
+    top: 0;
+    height: calc(95vh - 130px);
+    flex-shrink: 0;
+  }
+}
+
+.login-top-header {
+  position: absolute;
+  top: 36px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 20;
+  padding: 0 36px;
+  min-height: 50px;
+}
+
+.login-header-toggle-wrap {
+  position: absolute;
+  left: 36px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .login-top-header {
+    top: 20px;
+    padding: 0 16px;
+  }
+  .login-header-toggle-wrap {
+    left: 16px;
+  }
+  .login-toggle-text {
+    display: none !important;
+  }
+}
+
 

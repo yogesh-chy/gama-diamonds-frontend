@@ -5,7 +5,7 @@ import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Silver Colour Jewellery | Gama Diamond – Fine White Gold & Platinum Jewellery",
+  title: "Silver Colour Jewellery | Gama Jewels – Fine White Gold & Platinum Jewellery",
   description:
     "Explore our Silver Colour jewellery collection — timeless pieces crafted in sterling silver, white gold, and platinum tones.",
 };

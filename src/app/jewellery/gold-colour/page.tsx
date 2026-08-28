@@ -5,7 +5,7 @@ import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Gold Colour Jewellery | Gama Diamond – Fine Yellow Gold Jewellery",
+  title: "Gold Colour Jewellery | Gama Jewels – Fine Yellow Gold Jewellery",
   description:
     "Discover our exquisite Gold Colour jewellery collection — earrings, necklaces, bracelets, and rings crafted in warm yellow, white and rose gold tones.",
 };

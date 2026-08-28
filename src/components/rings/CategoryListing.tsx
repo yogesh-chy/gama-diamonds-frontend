@@ -252,14 +252,7 @@ export default function CategoryListing({
     >
       <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
         {/* ── 2-Column Layout: Left Filter Sidebar & Right Product Grid ── */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "220px 1fr",
-            gap: "36px",
-            alignItems: "start",
-          }}
-        >
+        <div className="rings-category-layout-grid">
           {/* ── LEFT SIDEBAR FILTERS ── */}
           <aside
             style={{
@@ -1195,13 +1188,7 @@ export default function CategoryListing({
                 </button>
               </div>
             ) : (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
-                  gap: "20px",
-                }}
-              >
+              <div className="rings-product-grid">
                 {filteredProducts.map((product) => (
                   <Link
                     key={product.id}

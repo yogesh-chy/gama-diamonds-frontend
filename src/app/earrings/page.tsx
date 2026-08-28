@@ -5,7 +5,7 @@ import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Earrings | Gama Diamond – Fine Jewellery",
+  title: "Earrings | Gama Jewels – Fine Jewellery",
   description:
     "Explore our handcrafted diamond & gemstone earrings. Crafted by master goldsmiths in Hatton Garden, London.",
 };

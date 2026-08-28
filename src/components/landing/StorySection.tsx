@@ -55,7 +55,7 @@ export default function StorySection() {
             >
               At{" "}
               <span style={{ color: "#c6a45f", fontWeight: "600" }}>
-                Gama Diamond
+                Gama Jewels
               </span>
               , we craft extraordinary engagement rings and fine jewellery
               tailored to your exact romantic vision. Located in London&apos;s
@@ -108,7 +108,7 @@ export default function StorySection() {
           >
             <img
               src="/heritage.png"
-              alt="Master Artisan Workshop - Gama Diamonds"
+              alt="Master Artisan Workshop - Gama Jewels"
               style={{
                 width: "100%",
                 height: "100%",

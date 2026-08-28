@@ -5,7 +5,7 @@ import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Women's Plain Wedding Rings | Gama Diamond – Fine Jewellery",
+  title: "Women's Plain Wedding Rings | Gama Jewels – Fine Jewellery",
   description:
     "Explore our collection of women's plain wedding rings handcrafted by master goldsmiths in Hatton Garden, London.",
 };

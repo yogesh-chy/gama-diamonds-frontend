@@ -316,24 +316,12 @@ function AccountDashboardContent() {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: "#040404",
-        color: "#ffffff",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        position: "relative",
-        overflow: "hidden",
-        background:
-          "radial-gradient(ellipse at 50% 25%, rgba(198, 164, 95, 0.08) 0%, rgba(18, 14, 8, 0.3) 45%, rgba(4, 4, 4, 1) 85%)",
-      }}
-    >
+    <div className="account-dashboard-shell">
       {/* ── Top Header Logo ── */}
       <header
         style={{
           width: "100%",
-          padding: "24px 36px",
+          padding: "20px 24px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
@@ -343,12 +331,12 @@ function AccountDashboardContent() {
         }}
       >
         {/* Spacer for alignment balance */}
-        <div style={{ width: "80px" }} />
+        <div style={{ width: "40px" }} />
 
-        {/* Exact Centered Logo */}
-        <Link href="/" className="logo-link" style={{ position: "static", transform: "none" }}>
+        {/* Exact Standard Centered Logo */}
+        <Link href="/" className="logo-link">
           <span className="logo-tagline">✦ GAMA ✦</span>
-          <span className="logo-name">DIAMOND</span>
+          <span className="logo-name">JEWELS</span>
           <div className="logo-underline" />
         </Link>
 
@@ -390,34 +378,12 @@ function AccountDashboardContent() {
           maxWidth: "1160px",
           width: "100%",
           margin: "0 auto",
-          padding: "48px 24px 0",
-          overflow: "hidden",
+          padding: "32px 20px 60px",
         }}
       >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "220px 1fr",
-            gap: "56px",
-            height: "100%",
-          }}
-        >
-          {/* ── Left Sidebar Navigation ── */}
-          <nav
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "4px",
-              borderRight: "1px solid rgba(255, 255, 255, 0.06)",
-              paddingRight: "24px",
-              alignSelf: "stretch",
-              position: "sticky",
-              top: "0",
-              height: "calc(95vh - 130px)",
-              flexShrink: 0,
-              paddingBottom: "24px",
-            }}
-          >
+        <div className="account-dashboard-grid">
+          {/* ── Left Sidebar / Horizontal Top Navigation ── */}
+          <nav className="account-sidebar-nav">
             <button
               onClick={() => setActiveTab("orders")}
               style={{
@@ -1167,7 +1133,7 @@ function AccountDashboardContent() {
                       marginBottom: "3px",
                     }}
                   >
-                    ✦ GAMA DIAMOND ✦
+                    ✦ GAMA JEWELS ✦
                   </span>
                   <h2
                     style={{
@@ -1812,7 +1778,7 @@ function AccountDashboardContent() {
                       marginBottom: "3px",
                     }}
                   >
-                    ✦ GAMA DIAMOND ✦
+                    ✦ GAMA JEWELS ✦
                   </span>
                   <h2
                     style={{

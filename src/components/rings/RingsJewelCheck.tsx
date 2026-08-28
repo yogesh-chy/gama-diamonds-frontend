@@ -82,7 +82,7 @@ export default function RingsJewelCheck() {
                 }}
               >
                 We advise having your jewellery inspected annually to ensure the
-                security of all gemstones and diamonds. At Gama Diamond, our Jewel
+                security of all gemstones and diamonds. At Gama Jewels, our Jewel
                 Check service offers complimentary prong inspections once a year
                 with every purchase.
               </p>

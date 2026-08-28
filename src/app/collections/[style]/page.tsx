@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: PageProps) {
   const title = STYLE_META_TITLES[style.toLowerCase()] || `${formatted} Engagement Rings`;
 
   return {
-    title: `${title} | Gama Diamond`,
+    title: `${title} | Gama Jewels`,
     description: `Explore our handcrafted ${title.toLowerCase()}. Handcrafted by master goldsmiths in Hatton Garden, London.`,
   };
 }

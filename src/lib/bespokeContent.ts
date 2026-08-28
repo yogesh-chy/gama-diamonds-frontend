@@ -35,7 +35,7 @@ export const bespokeFeatures: BespokeFeature[] = [
 export const bespokeIntro = {
   title: "Your Vision, Our Craft",
   description:
-    "Every bespoke piece begins with a conversation. From the first sketch to the final polish, our Gama Diamond's goldsmiths guide you through a seamless journey — creating jewellery that is as unique as your story.",
+    "Every bespoke piece begins with a conversation. From the first sketch to the final polish, our Gama Jewels' goldsmiths guide you through a seamless journey — creating jewellery that is as unique as your story.",
 };
 
 export const bespokeProcessRows: BespokeProcessRow[] = [

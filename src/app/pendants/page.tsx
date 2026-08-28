@@ -1,11 +1,11 @@
-﻿import Header from "@/components/layout/Header";
+import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CategoryListing, { ProductItem } from "@/components/rings/CategoryListing";
 import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Pendants | Gama Diamond – Fine Diamond Pendants",
+  title: "Pendants | Gama Jewels – Fine Diamond Pendants",
   description:
     "Discover our collection of handcrafted diamond pendants including Cross Pendants, Heart Pendants, and Solitaire Pendants in 18K gold.",
 };

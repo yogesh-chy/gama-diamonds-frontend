@@ -124,6 +124,7 @@ export const POPULAR_CURRENCIES: PopularCurrency[] = [
   { code: 'GBP', symbol: '£', flag: '🇬🇧', name: 'GBP – British Pound' },
   { code: 'EUR', symbol: '€', flag: '🇪🇺', name: 'EUR – Euro' },
   { code: 'INR', symbol: '₹', flag: '🇮🇳', name: 'INR – Indian Rupee' },
+  { code: 'NPR', symbol: 'रू', flag: '🇳🇵', name: 'NPR – Nepalese Rupee' },
   { code: 'USD', symbol: '$', flag: '🇺🇸', name: 'USD – US Dollar' },
   { code: 'CHF', symbol: 'Fr', flag: '🇨🇭', name: 'CHF – Swiss Franc' },
   { code: 'SEK', symbol: 'kr', flag: '🇸🇪', name: 'SEK – Swedish Krona' },

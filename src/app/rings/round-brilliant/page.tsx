@@ -5,7 +5,7 @@ import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Round Brilliant Engagement Rings | Gama Diamond",
+  title: "Round Brilliant Engagement Rings | Gama Jewels",
   description:
     "Explore our handcrafted round brilliant diamond engagement rings. Crafted by master goldsmiths in Hatton Garden, London.",
 };

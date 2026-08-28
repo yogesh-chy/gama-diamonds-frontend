@@ -5,7 +5,7 @@ import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Necklaces & Pendants | Gama Diamond – Fine Jewellery",
+  title: "Necklaces & Pendants | Gama Jewels – Fine Jewellery",
   description:
     "Explore our handcrafted diamond & gemstone necklaces and pendants. Crafted by master goldsmiths in Hatton Garden, London.",
 };

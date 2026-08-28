@@ -1,11 +1,11 @@
-﻿import Header from "@/components/layout/Header";
+import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CategoryListing, { ProductItem } from "@/components/rings/CategoryListing";
 import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Solitaire Studs | Gama Diamond – Fine Diamond Earrings",
+  title: "Solitaire Studs | Gama Jewels – Fine Diamond Earrings",
   description:
     "Discover our collection of timeless solitaire diamond stud earrings in white gold, yellow gold, rose gold, and platinum.",
 };

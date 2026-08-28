@@ -30,9 +30,13 @@ export interface AdminProduct {
   is_active: boolean;
   is_featured: boolean;
   styles?: number[];
+  stylesDetail?: Array<{ id: number; name: string; slug: string }>;
   collections?: number[];
+  collectionsDetail?: Array<{ id: number; name: string; slug: string }>;
   diamond_type?: number | null;
+  diamondTypeDetail?: { id: number; name: string; slug: string } | null;
   brand?: number | null;
+  brandDetail?: { id: number; name: string; slug: string } | null;
   diamond_spec?: {
     carat_weight?: string | number;
     side_carat_weight?: string | number | null;
@@ -146,6 +150,19 @@ export interface AdminUser {
 
 type ApiQueryParams = Record<string, string | number | boolean | null | undefined>;
 
+function normalizeListResponse<T>(response: { data?: unknown }): T[] {
+  const payload = response?.data;
+
+  if (Array.isArray(payload)) return payload as T[];
+  if (payload && typeof payload === "object") {
+    const record = payload as Record<string, unknown>;
+    if (Array.isArray(record.results)) return record.results as T[];
+    if (Array.isArray(record.data)) return record.data as T[];
+  }
+
+  return [];
+}
+
 export const adminApi = {
   // --- Products ---
   getProducts: (params?: ApiQueryParams) =>
@@ -171,8 +188,10 @@ export const adminApi = {
   },
 
   // --- Categories & Subcategories ---
-  getCategories: () =>
-    apiClient.get<AdminCategory[]>("/products/categories/"),
+  getCategories: async () => {
+    const res = await apiClient.get("/products/categories/");
+    return { ...res, data: normalizeListResponse<AdminCategory>(res) };
+  },
 
   createCategory: (payload: { name: string; slug?: string; description?: string }) =>
     apiClient.post<AdminCategory>("/products/categories/", payload),
@@ -183,8 +202,10 @@ export const adminApi = {
   deleteCategory: (id: number) =>
     apiClient.delete(`/products/categories/${id}/`),
 
-  getSubcategories: () =>
-    apiClient.get<AdminSubcategory[]>("/products/subcategories/"),
+  getSubcategories: async () => {
+    const res = await apiClient.get("/products/subcategories/");
+    return { ...res, data: normalizeListResponse<AdminSubcategory>(res) };
+  },
 
   createSubcategory: (payload: { category: number; name: string; slug?: string }) =>
     apiClient.post<AdminSubcategory>("/products/subcategories/", payload),
@@ -196,19 +217,31 @@ export const adminApi = {
     apiClient.delete(`/products/subcategories/${id}/`),
 
   // --- Taxonomies (Styles, Diamond Types, Brands, Collections) ---
-  getStyles: () => apiClient.get<AdminTaxonomyItem[]>("/products/styles/"),
+  getStyles: async () => {
+    const res = await apiClient.get("/products/styles/");
+    return { ...res, data: normalizeListResponse<AdminTaxonomyItem>(res) };
+  },
   createStyle: (payload: { name: string; slug?: string }) => apiClient.post<AdminTaxonomyItem>("/products/styles/", payload),
   deleteStyle: (id: number) => apiClient.delete(`/products/styles/${id}/`),
 
-  getDiamondTypes: () => apiClient.get<AdminTaxonomyItem[]>("/products/diamond-types/"),
+  getDiamondTypes: async () => {
+    const res = await apiClient.get("/products/diamond-types/");
+    return { ...res, data: normalizeListResponse<AdminTaxonomyItem>(res) };
+  },
   createDiamondType: (payload: { name: string; slug?: string }) => apiClient.post<AdminTaxonomyItem>("/products/diamond-types/", payload),
   deleteDiamondType: (id: number) => apiClient.delete(`/products/diamond-types/${id}/`),
 
-  getBrands: () => apiClient.get<AdminTaxonomyItem[]>("/products/brands/"),
+  getBrands: async () => {
+    const res = await apiClient.get("/products/brands/");
+    return { ...res, data: normalizeListResponse<AdminTaxonomyItem>(res) };
+  },
   createBrand: (payload: { name: string; slug?: string }) => apiClient.post<AdminTaxonomyItem>("/products/brands/", payload),
   deleteBrand: (id: number) => apiClient.delete(`/products/brands/${id}/`),
 
-  getCollections: () => apiClient.get<AdminTaxonomyItem[]>("/products/collections/"),
+  getCollections: async () => {
+    const res = await apiClient.get("/products/collections/");
+    return { ...res, data: normalizeListResponse<AdminTaxonomyItem>(res) };
+  },
   createCollection: (payload: { name: string; slug?: string; description?: string }) => apiClient.post<AdminTaxonomyItem>("/products/collections/", payload),
   deleteCollection: (id: number) => apiClient.delete(`/products/collections/${id}/`),
 

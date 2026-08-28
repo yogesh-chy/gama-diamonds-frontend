@@ -152,14 +152,7 @@ export default function RingsCategoryListing({ shapeSlug = "round-brilliant" }: 
     >
       <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
         {/* ── 2-Column Layout: Left Filter Sidebar & Right Product Grid ── */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "200px 1fr",
-            gap: "32px",
-            alignItems: "start",
-          }}
-        >
+        <div className="rings-category-layout-grid">
           {/* ── LEFT SIDEBAR FILTERS (COLLAPSIBLE DROPDOWNS & AUTO OFF) ── */}
           <aside
             style={{
@@ -652,13 +645,7 @@ export default function RingsCategoryListing({ shapeSlug = "round-brilliant" }: 
             </div>
 
             {/* ── 4-COLUMN PRODUCT GRID (EXACTLY 8 PRODUCT CARDS WITH NO IMAGES ONLY PLACEHOLDERS) ── */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gap: "20px",
-              }}
-            >
+            <div className="rings-product-grid">
               {filteredProducts.map((product) => (
                 <Link
                   key={product.id}

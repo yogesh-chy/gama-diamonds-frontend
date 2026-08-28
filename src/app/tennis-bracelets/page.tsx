@@ -1,11 +1,11 @@
-﻿import Header from "@/components/layout/Header";
+import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CategoryListing, { ProductItem } from "@/components/rings/CategoryListing";
 import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Tennis Bracelets | Gama Diamond – Fine Diamond Bracelets",
+  title: "Tennis Bracelets | Gama Jewels – Fine Diamond Bracelets",
   description:
     "Explore our luxurious collection of diamond tennis bracelets in 9K, 18K white, yellow, rose gold, and platinum.",
 };

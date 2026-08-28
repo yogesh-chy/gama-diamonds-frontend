@@ -5,7 +5,7 @@ import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Rose Gold Jewellery | Gama Diamond – Fine Rose Gold Jewellery",
+  title: "Rose Gold Jewellery | Gama Jewels – Fine Rose Gold Jewellery",
   description:
     "Shop our romantic Rose Gold jewellery collection — blush-toned earrings, pendants, bracelets, and rings crafted in 9K and 18K rose gold.",
 };

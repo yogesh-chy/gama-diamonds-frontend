@@ -188,7 +188,7 @@ export const googleReviews: Review[] = [
   {
     author: "Marcus C.",
     date: "2 weeks ago",
-    text: "We chose our wedding bands from Gama Diamond and couldn't be happier. Timeless, elegant, and crafted to perfection.",
+    text: "We chose our wedding bands from Gama Jewels and couldn't be happier. Timeless, elegant, and crafted to perfection.",
     rating: 5,
   },
   {

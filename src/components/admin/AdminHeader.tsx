@@ -47,7 +47,7 @@ export function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
       {/* Center Area: Exact Landing Page Logo (Points to /admin) */}
       <Link href="/admin" className="logo-link">
         <span className="logo-tagline">✦ GAMA ✦</span>
-        <span className="logo-name">DIAMOND</span>
+        <span className="logo-name">JEWELS</span>
         <div className="logo-underline" />
       </Link>
 

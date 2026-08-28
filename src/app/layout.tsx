@@ -17,9 +17,9 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Gama Diamond | Fine Jewellery – gamadiamond.net",
+  title: "Gama Jewels | Fine Jewellery – gamajewels.net",
   description:
-    "Discover exquisite engagement rings, wedding bands, earrings, necklaces & bracelets. Handcrafted fine jewellery — shop at gamadiamond.net.",
+    "Discover exquisite engagement rings, wedding bands, earrings, necklaces & bracelets. Handcrafted fine jewellery — shop at gamajewels.net.",
 };
 
 export default function RootLayout({

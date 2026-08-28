@@ -60,7 +60,7 @@ export default function RingsTestimonial() {
               The moment I saw the ring, I knew it was perfect. The
               craftsmanship was extraordinary — every facet of the diamond
               catches the light beautifully. My fiancée was in tears of joy.
-              Thank you, Gama Diamond, for making our engagement truly
+              Thank you, Gama Jewels, for making our engagement truly
               unforgettable.
             </p>
 

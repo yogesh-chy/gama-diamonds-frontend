@@ -26,7 +26,13 @@ export default function AdminTaxonomiesPage() {
       else if (activeTab === "brands") res = await adminApi.getBrands();
       else res = await adminApi.getCollections();
 
-      setItems(res.data || []);
+      const responseData = res.data as unknown;
+      const nextItems = Array.isArray(responseData)
+        ? (responseData as AdminTaxonomyItem[])
+        : ((responseData as { results?: AdminTaxonomyItem[]; data?: AdminTaxonomyItem[] } | null)?.results ??
+           (responseData as { results?: AdminTaxonomyItem[]; data?: AdminTaxonomyItem[] } | null)?.data ??
+           []);
+      setItems(Array.isArray(nextItems) ? nextItems : []);
     } catch (err) {
       toast.error("Failed to load items");
     } finally {

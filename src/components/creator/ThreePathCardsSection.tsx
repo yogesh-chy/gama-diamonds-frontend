@@ -64,7 +64,7 @@ export default function ThreePathCardsSection({ onOpenSizeGuide }: ThreePathCard
             How Would You Like To Begin?
           </h2>
           <p className="text-xs sm:text-sm font-poppins text-gray-600 leading-relaxed font-light">
-            Select your preferred entry point into the Gama Diamonds creation suite. Whether starting from a loose gemstone or custom sketch, we guide you every step of the way.
+            Select your preferred entry point into the Gama Jewels creation suite. Whether starting from a loose gemstone or custom sketch, we guide you every step of the way.
           </p>
         </div>
 

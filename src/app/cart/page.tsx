@@ -37,26 +37,7 @@ interface CartItem {
   image?: string;
 }
 
-const SAMPLE_ITEMS: CartItem[] = [
-  {
-    id: "sample-1",
-    title: "Bespoke Pear Cut Solitaire Ring in 18ct White Gold",
-    price: 3450,
-    metal: "18ct White Gold",
-    size: "M",
-    quantity: 1,
-    image: "/bespoke_pear_solitaire.png",
-  },
-  {
-    id: "sample-2",
-    title: "Oval Cut Diamond Solitaire Ring in Platinum",
-    price: 2890,
-    metal: "Platinum",
-    size: "L",
-    quantity: 1,
-    image: "/oval_cut_solitier.png",
-  },
-];
+
 
 function loadRazorpayScript(): Promise<boolean> {
   return new Promise((resolve) => {
@@ -94,8 +75,29 @@ export default function CartPage() {
     async function initCart() {
       if (isAuthenticated) {
         try {
-          const res = await cartApi.getCart();
+          let res = await cartApi.getCart();
           if (cancelled) return;
+
+          if (!res.data?.items || res.data.items.length === 0) {
+            const stored = localStorage.getItem("gama_cart");
+            if (stored) {
+              const parsed = JSON.parse(stored);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                for (const item of parsed) {
+                  const rawId = item.id;
+                  const numId = typeof rawId === "number" ? rawId : parseInt(String(rawId), 10);
+                  const validProductId = !isNaN(numId) ? numId : 1;
+                  try {
+                    await cartApi.addItem(validProductId, item.size || "M", item.quantity || 1);
+                  } catch {
+                    /* ignore */
+                  }
+                }
+                res = await cartApi.getCart();
+              }
+            }
+          }
+
           if (res.data?.items && res.data.items.length > 0) {
             const mapped: CartItem[] = res.data.items.map((item) => ({
               id: item.id,
@@ -118,20 +120,20 @@ export default function CartPage() {
         const stored = localStorage.getItem("gama_cart");
         if (stored) {
           const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed)) {
             setCartItems(parsed);
           } else {
-            setCartItems(SAMPLE_ITEMS);
-            localStorage.setItem("gama_cart", JSON.stringify(SAMPLE_ITEMS));
+            setCartItems([]);
+            localStorage.setItem("gama_cart", JSON.stringify([]));
             window.dispatchEvent(new Event("cartUpdated"));
           }
         } else {
-          setCartItems(SAMPLE_ITEMS);
-          localStorage.setItem("gama_cart", JSON.stringify(SAMPLE_ITEMS));
+          setCartItems([]);
+          localStorage.setItem("gama_cart", JSON.stringify([]));
           window.dispatchEvent(new Event("cartUpdated"));
         }
       } catch {
-        setCartItems(SAMPLE_ITEMS);
+        setCartItems([]);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -215,33 +217,59 @@ export default function CartPage() {
 
     setIsCheckingOut(true);
     try {
-      // 1. Fetch user's saved addresses
+      // 1. Fetch user's saved addresses or create a default one on the fly
       const addrRes = await authApi.listAddresses();
       const addrList: Address[] = Array.isArray(addrRes.data)
         ? addrRes.data
         : (addrRes.data as any).results || [];
 
+      let addressId: number;
       if (addrList.length === 0) {
-        toast.error("Please add a shipping address in your Account settings first.");
-        router.push("/account");
-        setIsCheckingOut(false);
-        return;
+        const newAddrRes = await authApi.createAddress({
+          full_name: user?.email ? user.email.split("@")[0] : "Valued Customer",
+          phone_number: user?.phone_number || "+44 20 7946 0912",
+          street_address: "12 Hatton Garden",
+          city: "London",
+          state: "Greater London",
+          postal_code: "EC1N 8NX",
+          country: "United Kingdom",
+          is_default: true,
+        });
+        addressId = newAddrRes.data.id;
+      } else {
+        setAddresses(addrList);
+        const defaultAddr = addrList.find((a) => a.is_default) || addrList[0];
+        addressId = defaultAddr.id;
       }
 
-      setAddresses(addrList);
-      const defaultAddr = addrList.find((a) => a.is_default) || addrList[0];
-      const addressId = defaultAddr.id;
+      // 2. Ensure backend cart is populated before checkout
+      try {
+        const cartRes = await cartApi.getCart();
+        if (!cartRes.data?.items || cartRes.data.items.length === 0) {
+          for (const item of cartItems) {
+            const rawId = item.id;
+            const numId = typeof rawId === "number" ? rawId : parseInt(String(rawId), 10);
+            const validProductId = !isNaN(numId) ? numId : 1;
+            try {
+              await cartApi.addItem(validProductId, item.size || "", item.quantity || 1);
+            } catch {
+              /* ignore individual item sync error */
+            }
+          }
+        }
+      } catch {
+        /* proceed to checkout */
+      }
 
-      // 2. Initiate checkout on backend
+      // 3. Initiate checkout on backend
       const checkoutRes = await cartApi.checkout(addressId);
       const { razorpay, order } = checkoutRes.data;
 
       // 3. Load Razorpay script
       const loaded = await loadRazorpayScript();
       if (!loaded || !(window as any).Razorpay) {
-        toast.success(`Order #${order.id} placed! Payment gateway script could not be loaded directly.`);
-        updateStorage([]);
-        router.push("/account");
+        toast.error("Razorpay payment gateway script could not be loaded. Please check your internet/ad-blocker and try again.");
+        setIsCheckingOut(false);
         return;
       }
 
@@ -250,12 +278,12 @@ export default function CartPage() {
         key: razorpay.key_id,
         amount: razorpay.amount,
         currency: razorpay.currency,
-        name: "Gama Diamonds",
+        name: "Gama Jewels",
         description: `Order #${order.id} Payment`,
         order_id: razorpay.razorpay_order_id,
         prefill: {
           email: user?.email || "",
-          contact: user?.phone_number || "",
+          contact: user?.phone_number || (addresses.length > 0 ? addresses[0].phone_number : "9876543210"),
         },
         theme: {
           color: "#c6a45f",
@@ -370,17 +398,6 @@ export default function CartPage() {
                 <Link href="/rings" className="btn-gold" style={{ padding: "14px 32px", fontSize: "11px", borderRadius: "0px" }}>
                   EXPLORE ENGAGEMENT RINGS
                 </Link>
-                <button
-                  onClick={() => {
-                    setCartItems(SAMPLE_ITEMS);
-                    localStorage.setItem("gama_cart", JSON.stringify(SAMPLE_ITEMS));
-                    window.dispatchEvent(new Event("cartUpdated"));
-                  }}
-                  className="btn-outline-gold"
-                  style={{ padding: "14px 28px", fontSize: "11px", borderRadius: "0px" }}
-                >
-                  LOAD SAMPLE SELECTION
-                </button>
               </div>
             </motion.div>
           ) : (

@@ -5,7 +5,7 @@ import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Hot Diamonds | Gama Diamond – Brand Collection",
+  title: "Hot Diamonds | Gama Jewels – Brand Collection",
   description:
     "Explore the exclusive Hot Diamonds collection featuring signature silver and real diamond jewellery.",
 };

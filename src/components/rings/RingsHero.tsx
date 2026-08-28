@@ -48,7 +48,7 @@ export default function RingsHero() {
                 letterSpacing: "3px",
               }}
             >
-              GAMA DIAMONDS, LONDON
+              GAMA JEWELS, LONDON
             </div>
 
             {/* Main Title */}

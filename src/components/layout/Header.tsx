@@ -165,8 +165,16 @@ export default function Header() {
       adminApi.getProducts({ search: query, limit: 5, status: "active" })
         .then((res) => {
           if (cancelled) return;
-          if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
-            const mapped: SearchSuggestionProduct[] = res.data.map((p: AdminProduct) => ({
+
+          const payload = res?.data as unknown;
+          const productList = Array.isArray(payload)
+            ? (payload as AdminProduct[])
+            : ((payload as { results?: AdminProduct[]; data?: AdminProduct[] } | null)?.results ??
+               (payload as { results?: AdminProduct[]; data?: AdminProduct[] } | null)?.data ??
+               []);
+
+          if (Array.isArray(productList) && productList.length > 0) {
+            const mapped: SearchSuggestionProduct[] = productList.map((p: AdminProduct) => ({
               id: p.id,
               name: p.name,
               category: p.category || "Jewellery",
@@ -265,7 +273,7 @@ export default function Header() {
   };
 
   const annItems = [
-    `✦  Free Delivery on Orders Over ${isLoaded ? freeDeliveryThreshold : "₹40,000"}`,
+    `✦  Free Delivery on Orders Over ${freeDeliveryThreshold}`,
     "✦  1 Year Warranty on All Pieces",
     "✦  0% APR Finance Available",
     "✦  30 Day Exchange Policy",
@@ -301,10 +309,7 @@ export default function Header() {
       <header className={`header-wrap${scrolled ? " scrolled" : ""}`}>
         <div className="header-container">
           <div className="header-inner">
-            {/* Left – Currency Selector Dropdown */}
-            <CurrencySelector />
-
-            {/* Mobile hamburger */}
+            {/* Mobile hamburger menu button on far left */}
             <button
               className="mobile-toggle-btn"
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -313,10 +318,13 @@ export default function Header() {
               {mobileOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
 
+            {/* Left – Currency Selector Dropdown */}
+            <CurrencySelector />
+
             {/* Center – Logo */}
             <Link href="/" className="logo-link">
               <span className="logo-tagline">✦ GAMA ✦</span>
-              <span className="logo-name">DIAMOND</span>
+              <span className="logo-name">JEWELS</span>
               <div className="logo-underline"></div>
             </Link>
 
@@ -335,7 +343,7 @@ export default function Header() {
                   {searchOpen && (
                     <motion.div
                       initial={{ width: 0, opacity: 0, scaleX: 0.9 }}
-                      animate={{ width: "320px", opacity: 1, scaleX: 1 }}
+                      animate={{ width: "min(360px, calc(100vw - 32px))", opacity: 1, scaleX: 1 }}
                       exit={{ width: 0, opacity: 0, scaleX: 0.9 }}
                       transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
                       style={{
@@ -414,7 +422,7 @@ export default function Header() {
                             position: "absolute",
                             top: "42px",
                             right: 0,
-                            width: "320px",
+                            width: "min(360px, calc(100vw - 32px))",
                             background: "rgba(12, 12, 12, 0.98)",
                             border: "1px solid rgba(198, 164, 95, 0.4)",
                             boxShadow: "0 12px 32px rgba(0, 0, 0, 0.9)",
@@ -752,7 +760,7 @@ export default function Header() {
                 <X size={20} />
               </button>
 
-              <div className="mobile-logo">✦ GAMA DIAMOND ✦</div>
+              <div className="mobile-logo">✦ GAMA JEWELS ✦</div>
 
               <div className="mobile-nav">
                 {visibleNav.map((item, idx) => {

@@ -1,11 +1,11 @@
-﻿import Header from "@/components/layout/Header";
+import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CategoryListing, { ProductItem } from "@/components/rings/CategoryListing";
 import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Heart Pendants | Gama Diamond – Fine Diamond Pendants",
+  title: "Heart Pendants | Gama Jewels – Fine Diamond Pendants",
   description:
     "Explore our romantic collection of diamond heart pendants in 18ct white gold, yellow gold, and rose gold.",
 };

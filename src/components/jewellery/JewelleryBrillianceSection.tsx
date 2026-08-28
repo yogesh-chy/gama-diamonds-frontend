@@ -34,7 +34,7 @@ export default function JewelleryBrillianceSection() {
           >
             DISCOVER FINE BRILLIANCE AT
             <br />
-            GAMA DIAMOND LONDON
+            GAMA JEWELS LONDON
           </h2>
 
           <p

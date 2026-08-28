@@ -236,14 +236,7 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
     >
       <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
         {/* ── 2-Column Layout: Left Filter Sidebar & Right Product Grid ── */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "200px 1fr",
-            gap: "32px",
-            alignItems: "start",
-          }}
-        >
+        <div className="rings-category-layout-grid">
           {/* ── LEFT SIDEBAR FILTERS (NARROW 200px, SMALL FONTS & AUTO OFF DROPDOWNS) ── */}
           <aside
             style={{
@@ -990,13 +983,7 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
             </div>
 
             {/* 8 Product Grid Cards */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-                gap: "24px",
-              }}
-            >
+            <div className="rings-product-grid">
               {filteredProducts.map((product) => (
                 <Link
                   key={product.id}

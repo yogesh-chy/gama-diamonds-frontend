@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: PageProps) {
     .join(" ");
 
   return {
-    title: `${formatted} Engagement Rings | Gama Diamond`,
+    title: `${formatted} Engagement Rings | Gama Jewels`,
     description: `Explore our handcrafted ${formatted} engagement rings. Handcrafted by master goldsmiths in Hatton Garden, London.`,
   };
 }

@@ -154,7 +154,7 @@ export default function Footer() {
             <div className="footer-brand-col" style={{ gridColumn: "span 1" }}>
               <Link href="/" className="footer-logo-link">
                 <div className="footer-logo-tagline">✦ GAMA ✦</div>
-                <div className="footer-logo-name">DIAMOND</div>
+                <div className="footer-logo-name">JEWELS</div>
                 <div className="footer-logo-sub">BESPOKE FINE JEWELLERY</div>
               </Link>
               <p className="footer-desc" style={{ fontSize: "12px", lineHeight: "1.7", marginBottom: "16px" }}>

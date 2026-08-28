@@ -50,7 +50,7 @@ export default function HeroSection() {
         <motion.img
           key={heroBgIndex}
           src={heroBackgroundImages[heroBgIndex]}
-          alt={`Gama Diamond Banner ${heroBgIndex + 1}`}
+          alt={`Gama Jewels Banner ${heroBgIndex + 1}`}
           initial={{ opacity: 1 }}
           animate={{ opacity: 2 }}
           transition={{ duration: 1.8, ease: [0.4, 0, 0.2, 1] }}

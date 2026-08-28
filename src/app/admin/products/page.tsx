@@ -27,6 +27,10 @@ export default function AdminProductsPage() {
 
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [subcategories, setSubcategories] = useState<AdminSubcategory[]>([]);
+  const [stylesList, setStylesList] = useState<AdminTaxonomyItem[]>([]);
+  const [diamondTypesList, setDiamondTypesList] = useState<AdminTaxonomyItem[]>([]);
+  const [brandsList, setBrandsList] = useState<AdminTaxonomyItem[]>([]);
+  const [collectionsList, setCollectionsList] = useState<AdminTaxonomyItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Filters
@@ -37,7 +41,7 @@ export default function AdminProductsPage() {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(null);
-  const [activeTab, setActiveTab] = useState<"general" | "pricing" | "specs" | "diamond" | "media">("general");
+  const [activeTab, setActiveTab] = useState<"details" | "media">("details");
   const [saving, setSaving] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
@@ -77,13 +81,17 @@ export default function AdminProductsPage() {
     },
     images: [],
     sizes: [{ size: "M (UK)", stock: 5 }],
+    styles: [],
+    collections: [],
+    diamond_type: null,
+    brand: null,
     video_url: "",
   });
 
   async function loadData() {
     setLoading(true);
     try {
-      const [prodRes, catRes, subRes] = await Promise.allSettled([
+      const [prodRes, catRes, subRes, stylesRes, dtRes, brandsRes, collectionsRes] = await Promise.allSettled([
         adminApi.getProducts({
           category: categoryFilter || undefined,
           status: statusFilter || undefined,
@@ -92,16 +100,39 @@ export default function AdminProductsPage() {
         }),
         adminApi.getCategories(),
         adminApi.getSubcategories(),
+        adminApi.getStyles(),
+        adminApi.getDiamondTypes(),
+        adminApi.getBrands(),
+        adminApi.getCollections(),
       ]);
 
       if (prodRes.status === "fulfilled") {
-        setProducts(prodRes.value.data.data || []);
+        const d = prodRes.value.data;
+        setProducts(Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : (d as any)?.results || []);
       }
       if (catRes.status === "fulfilled") {
-        setCategories(catRes.value.data || []);
+        const d = catRes.value.data;
+        setCategories(Array.isArray(d) ? d : (d as any)?.results || []);
       }
       if (subRes.status === "fulfilled") {
-        setSubcategories(subRes.value.data || []);
+        const d = subRes.value.data;
+        setSubcategories(Array.isArray(d) ? d : (d as any)?.results || []);
+      }
+      if (stylesRes.status === "fulfilled") {
+        const d = stylesRes.value.data;
+        setStylesList(Array.isArray(d) ? d : (d as any)?.results || []);
+      }
+      if (dtRes.status === "fulfilled") {
+        const d = dtRes.value.data;
+        setDiamondTypesList(Array.isArray(d) ? d : (d as any)?.results || []);
+      }
+      if (brandsRes.status === "fulfilled") {
+        const d = brandsRes.value.data;
+        setBrandsList(Array.isArray(d) ? d : (d as any)?.results || []);
+      }
+      if (collectionsRes.status === "fulfilled") {
+        const d = collectionsRes.value.data;
+        setCollectionsList(Array.isArray(d) ? d : (d as any)?.results || []);
       }
     } catch (err) {
       toast.error("Failed to load products");
@@ -192,14 +223,35 @@ export default function AdminProductsPage() {
       },
       images: [],
       sizes: [{ size: "M", stock: 5 }],
+      styles: [],
+      collections: [],
+      diamond_type: null,
+      brand: null,
       video_url: "",
     });
-    setActiveTab("general");
+    setActiveTab("details");
     setIsModalOpen(true);
   };
 
   const openEditModal = (product: AdminProduct) => {
     setEditingProduct(product);
+
+    const styleIds = product.styles
+      ? (product.styles as any).map((s: any) => (typeof s === "object" ? s.id : s))
+      : (product.stylesDetail ? product.stylesDetail.map((s) => s.id) : []);
+
+    const collectionIds = product.collections
+      ? (product.collections as any).map((c: any) => (typeof c === "object" ? c.id : c))
+      : (product.collectionsDetail ? product.collectionsDetail.map((c) => c.id) : []);
+
+    const dtId = typeof product.diamond_type === "object" && product.diamond_type
+      ? (product.diamond_type as any).id
+      : (product.diamond_type || (product.diamondTypeDetail ? product.diamondTypeDetail.id : null));
+
+    const brandId = typeof product.brand === "object" && product.brand
+      ? (product.brand as any).id
+      : (product.brand || (product.brandDetail ? product.brandDetail.id : null));
+
     setFormData({
       ...product,
       base_price: product.base_price || product.basePrice || 0,
@@ -214,9 +266,13 @@ export default function AdminProductsPage() {
       },
       images: product.images && product.images.length > 0 ? product.images : [],
       sizes: product.sizes && product.sizes.length > 0 ? product.sizes : [{ size: "M", stock: 5 }],
+      styles: styleIds,
+      collections: collectionIds,
+      diamond_type: dtId,
+      brand: brandId,
       video_url: product.video_url || product.videoUrl || "",
     });
-    setActiveTab("general");
+    setActiveTab("details");
     setIsModalOpen(true);
   };
 
@@ -307,6 +363,13 @@ export default function AdminProductsPage() {
             <option value="necklaces">Necklaces</option>
             <option value="bracelets">Bracelets</option>
             <option value="earrings">Earrings</option>
+            {(Array.isArray(categories) ? categories : [])
+              .filter((c) => !["rings", "necklaces", "bracelets", "earrings"].includes(c.slug))
+              .map((c) => (
+                <option key={c.id} value={c.slug}>
+                  {c.name}
+                </option>
+              ))}
           </select>
 
           <select
@@ -438,42 +501,27 @@ export default function AdminProductsPage() {
             {/* Modal Tabs */}
             <div className="admin-tabs">
               <button
-                onClick={() => setActiveTab("general")}
-                className={`admin-tab ${activeTab === "general" ? "active" : ""}`}
+                type="button"
+                onClick={() => setActiveTab("details")}
+                className={`admin-tab ${activeTab === "details" ? "active" : ""}`}
               >
-                Basic Details
+                1. Details & Specifications
               </button>
               <button
-                onClick={() => setActiveTab("pricing")}
-                className={`admin-tab ${activeTab === "pricing" ? "active" : ""}`}
-              >
-                Pricing & Stock
-              </button>
-              <button
-                onClick={() => setActiveTab("specs")}
-                className={`admin-tab ${activeTab === "specs" ? "active" : ""}`}
-              >
-                Metal & Style
-              </button>
-              <button
-                onClick={() => setActiveTab("diamond")}
-                className={`admin-tab ${activeTab === "diamond" ? "active" : ""}`}
-              >
-                4Cs Diamond Specs
-              </button>
-              <button
+                type="button"
                 onClick={() => setActiveTab("media")}
                 className={`admin-tab ${activeTab === "media" ? "active" : ""}`}
               >
-                Images & Sizes
+                2. Images & Video Gallery
               </button>
             </div>
 
             {/* Form */}
             <form onSubmit={handleSaveProduct} className="admin-space-y-4">
-              {/* Tab 1: General */}
-              {activeTab === "general" && (
+              {/* Tab 1: Details & Specs */}
+              {activeTab === "details" && (
                 <div className="admin-space-y-4">
+                  {/* Basic Details */}
                   <div>
                     <label className="admin-label">Product Title</label>
                     <input
@@ -486,18 +534,7 @@ export default function AdminProductsPage() {
                     />
                   </div>
 
-                  <div className="admin-grid-2">
-                    <div>
-                      <label className="admin-label">SKU (Auto-generated if empty)</label>
-                      <input
-                        type="text"
-                        value={formData.sku || ""}
-                        onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                        placeholder="e.g. GAMA-RNG-9812A"
-                        className="admin-input"
-                      />
-                    </div>
-
+                  <div className="admin-grid-3">
                     <div>
                       <label className="admin-label">Main Category</label>
                       <select
@@ -509,27 +546,43 @@ export default function AdminProductsPage() {
                         <option value="necklaces">Necklaces</option>
                         <option value="bracelets">Bracelets</option>
                         <option value="earrings">Earrings</option>
+                        {(Array.isArray(categories) ? categories : [])
+                          .filter((c) => !["rings", "necklaces", "bracelets", "earrings"].includes(c.slug))
+                          .map((c) => (
+                            <option key={c.id} value={c.slug}>
+                              {c.name}
+                            </option>
+                          ))}
                       </select>
+                    </div>
+
+                    <div>
+                      <label className="admin-label">Target Gender</label>
+                      <select
+                        value={formData.gender || "women"}
+                        onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                        className="admin-input"
+                      >
+                        <option value="women">Women</option>
+                        <option value="men">Men</option>
+                        <option value="unisex">Unisex</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="admin-label">SKU (Auto-generated if empty)</label>
+                      <input
+                        type="text"
+                        value={formData.sku || ""}
+                        onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                        placeholder="e.g. GAMA-RNG-9812A"
+                        className="admin-input"
+                      />
                     </div>
                   </div>
 
-                  <div>
-                    <label className="admin-label">Description</label>
-                    <textarea
-                      rows={4}
-                      value={formData.description || ""}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Enter detailed fine jewellery craftsmanship description..."
-                      className="admin-textarea"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 2: Pricing */}
-              {activeTab === "pricing" && (
-                <div className="admin-space-y-4">
-                  <div className="admin-grid-2">
+                  {/* Pricing & Stock */}
+                  <div className="admin-grid-3">
                     <div>
                       <label className="admin-label">Base Price (INR ₹)</label>
                       <input
@@ -554,9 +607,7 @@ export default function AdminProductsPage() {
                         className="admin-input"
                       />
                     </div>
-                  </div>
 
-                  <div className="admin-grid-2">
                     <div>
                       <label className="admin-label">Total Stock Count</label>
                       <input
@@ -566,45 +617,45 @@ export default function AdminProductsPage() {
                         className="admin-input"
                       />
                     </div>
-
-                    <div className="admin-flex admin-items-center admin-gap-6 pt-5">
-                      <label className="admin-flex admin-items-center admin-gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.is_active ?? true}
-                          onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                          className="accent-[#c6a45f]"
-                        />
-                        <span className="admin-text-white admin-font-medium admin-text-xs">Active in Store</span>
-                      </label>
-
-                      <label className="admin-flex admin-items-center admin-gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.is_featured ?? false}
-                          onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
-                          className="accent-[#c6a45f]"
-                        />
-                        <span className="admin-text-white admin-font-medium admin-text-xs">Featured Item</span>
-                      </label>
-                    </div>
                   </div>
-                </div>
-              )}
 
-              {/* Tab 3: Metal & Facets */}
-              {activeTab === "specs" && (
-                <div className="admin-space-y-4">
+                  <div className="admin-flex admin-items-center admin-gap-6 pt-1">
+                    <label className="admin-flex admin-items-center admin-gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.is_active ?? true}
+                        onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                        className="accent-[#c6a45f]"
+                      />
+                      <span className="admin-text-white admin-font-medium admin-text-xs">Active in Store</span>
+                    </label>
+
+                    <label className="admin-flex admin-items-center admin-gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.is_featured ?? false}
+                        onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
+                        className="accent-[#c6a45f]"
+                      />
+                      <span className="admin-text-white admin-font-medium admin-text-xs">Featured Product</span>
+                    </label>
+                  </div>
+
+                  {/* Metal & Diamond Specs Header */}
+                  <div className="pt-2 border-t border-white/10">
+                    <p className="admin-info-label mb-2">Precious Metal & Diamond Specs</p>
+                  </div>
+
                   <div className="admin-grid-2">
                     <div>
-                      <label className="admin-label">Metal Type</label>
+                      <label className="admin-label">Precious Metal Type</label>
                       <select
                         value={formData.metal_type || "yellow-gold"}
                         onChange={(e) => setFormData({ ...formData, metal_type: e.target.value })}
                         className="admin-input"
                       >
-                        <option value="yellow-gold">Yellow Gold</option>
                         <option value="white-gold">White Gold</option>
+                        <option value="yellow-gold">Yellow Gold</option>
                         <option value="rose-gold">Rose Gold</option>
                         <option value="platinum">Platinum</option>
                         <option value="silver">Silver</option>
@@ -613,64 +664,29 @@ export default function AdminProductsPage() {
                     </div>
 
                     <div>
-                      <label className="admin-label">Metal Karat</label>
-                      <select
-                        value={formData.metal_karat || "18K"}
-                        onChange={(e) => setFormData({ ...formData, metal_karat: e.target.value })}
-                        className="admin-input"
-                      >
-                        <option value="9K">9ct</option>
-                        <option value="14K">14ct</option>
-                        <option value="18K">18ct</option>
-                        <option value="22K">22ct</option>
-                        <option value="950Pt">950 Platinum</option>
-                        <option value="925Ag">925 Silver</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="admin-grid-2">
-                    <div>
                       <label className="admin-label">Diamond Shape / Cut</label>
                       <select
-                        value={formData.diamond_cut || "round"}
+                        value={formData.diamond_cut || "Round Cut"}
                         onChange={(e) => setFormData({ ...formData, diamond_cut: e.target.value })}
                         className="admin-input"
                       >
-                        <option value="round">Round Brilliant</option>
-                        <option value="princess">Princess</option>
-                        <option value="oval">Oval</option>
-                        <option value="pear">Pear</option>
-                        <option value="cushion">Cushion</option>
-                        <option value="emerald-cut">Emerald</option>
-                        <option value="radiant">Radiant Cut</option>
-                        <option value="marquise">Marquise</option>
-                        <option value="asscher">Asscher</option>
-                        <option value="heart">Heart</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="admin-label">Band Fit</label>
-                      <select
-                        value={formData.band_fit || "comfort"}
-                        onChange={(e) => setFormData({ ...formData, band_fit: e.target.value })}
-                        className="admin-input"
-                      >
-                        <option value="comfort">Comfort Fit</option>
-                        <option value="standard">Standard / Traditional Fit</option>
+                        <option value="Round Cut">Round Cut</option>
+                        <option value="Princess">Princess</option>
+                        <option value="Oval">Oval</option>
+                        <option value="Pear">Pear</option>
+                        <option value="Cushion">Cushion</option>
+                        <option value="Emerald Cut">Emerald Cut</option>
+                        <option value="Radiant Cut">Radiant Cut</option>
+                        <option value="Marquise">Marquise</option>
+                        <option value="Heart">Heart</option>
                       </select>
                     </div>
                   </div>
-                </div>
-              )}
 
-              {/* Tab 4: 4Cs Diamond Specs */}
-              {activeTab === "diamond" && (
-                <div className="admin-space-y-4">
+                  {/* 4Cs Diamond Specs */}
                   <div className="admin-grid-2">
                     <div>
-                      <label className="admin-label">Carat Weight (ct)</label>
+                      <label className="admin-label">Carat Weight (e.g. 0.50ct, 1.00ct)</label>
                       <input
                         type="text"
                         value={formData.diamond_spec?.carat_weight || "1.00"}
@@ -680,6 +696,7 @@ export default function AdminProductsPage() {
                             diamond_spec: { ...formData.diamond_spec, carat_weight: e.target.value },
                           })
                         }
+                        placeholder="e.g. 1.00"
                         className="admin-input"
                       />
                     </div>
@@ -696,28 +713,28 @@ export default function AdminProductsPage() {
                         }
                         className="admin-input"
                       >
-                        <option value="excellent">Excellent</option>
+                        <option value="excellent">Excellent Cut</option>
                         <option value="very_good">Very Good</option>
                         <option value="good">Good</option>
-                        <option value="fair">Fair</option>
                       </select>
                     </div>
                   </div>
 
-                  <div className="admin-grid-2">
+                  <div className="admin-grid-3">
                     <div>
-                      <label className="admin-label">Colour Grade (D-Z)</label>
+                      <label className="admin-label">Colour Grade</label>
                       <input
                         type="text"
-                        maxLength={2}
-                        value={formData.diamond_spec?.colour_grade || "G"}
+                        maxLength={10}
+                        value={formData.diamond_spec?.colour_grade || "F Color"}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            diamond_spec: { ...formData.diamond_spec, colour_grade: e.target.value.toUpperCase() },
+                            diamond_spec: { ...formData.diamond_spec, colour_grade: e.target.value },
                           })
                         }
-                        className="admin-input uppercase"
+                        placeholder="e.g. F Color"
+                        className="admin-input"
                       />
                     </div>
 
@@ -743,6 +760,36 @@ export default function AdminProductsPage() {
                         <option value="SI2">SI2</option>
                       </select>
                     </div>
+
+                    <div>
+                      <label className="admin-label">Certification Lab</label>
+                      <select
+                        value={formData.diamond_spec?.certification_lab || "GIA"}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            diamond_spec: { ...formData.diamond_spec, certification_lab: e.target.value },
+                          })
+                        }
+                        className="admin-input"
+                      >
+                        <option value="GIA">GIA Certified</option>
+                        <option value="IGI">IGI Certified</option>
+                        <option value="none">Uncertified</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <label className="admin-label">Description & Craftsmanship Details</label>
+                    <textarea
+                      rows={3}
+                      value={formData.description || ""}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      placeholder="Enter fine jewellery craftsmanship description..."
+                      className="admin-textarea"
+                    />
                   </div>
                 </div>
               )}

@@ -1,11 +1,11 @@
-﻿import Header from "@/components/layout/Header";
+import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CategoryListing, { ProductItem } from "@/components/rings/CategoryListing";
 import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Cross Pendants | Gama Diamond – Fine Diamond Cross Pendants",
+  title: "Cross Pendants | Gama Jewels – Fine Diamond Cross Pendants",
   description:
     "Discover our collection of handcrafted diamond cross pendants in 18K white gold and 18K yellow gold across multiple carat sizes.",
 };

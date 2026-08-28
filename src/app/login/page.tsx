@@ -26,6 +26,7 @@ function LoginPageInner() {
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next") || "/account";
   const {
+    user,
     requestOtp,
     verifyOtp,
     adminLogin,
@@ -82,27 +83,26 @@ function LoginPageInner() {
     return validateEmail(adminEmail);
   }, [adminEmail, adminEmailTouched, validateEmail]);
 
-  // Already signed in? Skip the form entirely.
+  // Already signed in? Skip the form:
+  // Admin / Staff users go to /admin; normal customers go to /account (or nextPath if not /admin)
   useEffect(() => {
     if (!isSessionLoading && isAuthenticated) {
-      router.replace(nextPath);
+      if (mode === "admin" || user?.is_staff) {
+        router.replace("/admin");
+      } else {
+        const dest = nextPath.startsWith("/admin") ? "/account" : nextPath;
+        router.replace(dest);
+      }
     }
-  }, [isSessionLoading, isAuthenticated, nextPath, router]);
-
-  // Resend cooldown ticker
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const timer = setInterval(() => setCooldown((c) => Math.max(0, c - 1)), 1000);
-    return () => clearInterval(timer);
-  }, [cooldown]);
+  }, [isSessionLoading, isAuthenticated, user, nextPath, router, mode]);
 
   // Auto-advance to the dashboard a beat after showing the success state.
   useEffect(() => {
     if (step !== "success") return;
-    const dest = mode === "admin" ? "/admin" : nextPath;
+    const dest = mode === "admin" || user?.is_staff ? "/admin" : (nextPath.startsWith("/admin") ? "/account" : nextPath);
     const timer = setTimeout(() => router.push(dest), 1800);
     return () => clearTimeout(timer);
-  }, [step, nextPath, router, mode]);
+  }, [step, nextPath, router, mode, user]);
 
   const sendOtp = useCallback(
     async (targetEmail: string) => {
@@ -316,81 +316,62 @@ function LoginPageInner() {
           "radial-gradient(circle at 50% 35%, rgba(198, 164, 95, 0.09) 0%, rgba(18, 14, 8, 0.3) 45%, rgba(4, 4, 4, 1) 80%)",
       }}
     >
-      {/* ── Top Left Admin Mode Toggle Button ── */}
-      <div
-        style={{
-          position: "absolute",
-          top: "28px",
-          left: "28px",
-          zIndex: 20,
-        }}
-      >
-        <button
-          onClick={() => {
-            setMode(mode === "customer" ? "admin" : "customer");
-            setStep("email");
-          }}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "10px 16px",
-            background: mode === "admin" ? "rgba(198, 164, 95, 0.15)" : "rgba(18, 18, 18, 0.7)",
-            border: mode === "admin" ? "1px solid #c6a45f" : "1px solid rgba(198, 164, 95, 0.3)",
-            borderRadius: "0px",
-            color: mode === "admin" ? "#c6a45f" : "#ffffff",
-            fontFamily: "'Poppins', sans-serif",
-            fontSize: "10.5px",
-            fontWeight: "600",
-            letterSpacing: "1.5px",
-            textTransform: "uppercase",
-            cursor: "pointer",
-            backdropFilter: "blur(8px)",
-            transition: "all 0.3s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = "#c6a45f";
-            e.currentTarget.style.color = "#c6a45f";
-          }}
-          onMouseLeave={(e) => {
-            if (mode !== "admin") {
-              e.currentTarget.style.borderColor = "rgba(198, 164, 95, 0.3)";
-              e.currentTarget.style.color = "#ffffff";
-            }
-          }}
-        >
-          {mode === "customer" ? (
-            <>
-              <ShieldCheck size={14} style={{ color: "#c6a45f" }} />
-              <span>Admin Login</span>
-            </>
-          ) : (
-            <>
-              <User size={14} style={{ color: "#c6a45f" }} />
-              <span>Customer Sign In</span>
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* Top Header Logo */}
-      <header
-        style={{
-          position: "absolute",
-          top: "36px",
-          left: 0,
-          right: 0,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 10,
-        }}
-      >
-        <Link href="/" className="logo-link" style={{ position: "static", transform: "none" }}>
+      {/* ── Top Header Bar with Non-overlapping Centered Logo & Mode Toggle ── */}
+      <header className="login-top-header">
+        <Link href="/" className="logo-link">
           <span className="logo-tagline">✦ GAMA ✦</span>
-          <span className="logo-name">DIAMOND</span>
+          <span className="logo-name">JEWELS</span>
           <div className="logo-underline" />
         </Link>
+
+        <div className="login-header-toggle-wrap">
+          <button
+            onClick={() => {
+              setMode(mode === "customer" ? "admin" : "customer");
+              setStep("email");
+            }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "8px 14px",
+              background: mode === "admin" ? "rgba(198, 164, 95, 0.15)" : "rgba(18, 18, 18, 0.7)",
+              border: mode === "admin" ? "1px solid #c6a45f" : "1px solid rgba(198, 164, 95, 0.3)",
+              borderRadius: "0px",
+              color: mode === "admin" ? "#c6a45f" : "#ffffff",
+              fontFamily: "'Poppins', sans-serif",
+              fontSize: "10.5px",
+              fontWeight: "600",
+              letterSpacing: "1.5px",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              backdropFilter: "blur(8px)",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "#c6a45f";
+              e.currentTarget.style.color = "#c6a45f";
+            }}
+            onMouseLeave={(e) => {
+              if (mode !== "admin") {
+                e.currentTarget.style.borderColor = "rgba(198, 164, 95, 0.3)";
+                e.currentTarget.style.color = "#ffffff";
+              }
+            }}
+          >
+            {mode === "customer" ? (
+              <>
+                <ShieldCheck size={14} style={{ color: "#c6a45f" }} />
+                <span className="login-toggle-text">Admin Login</span>
+              </>
+            ) : (
+              <>
+                <User size={14} style={{ color: "#c6a45f" }} />
+                <span className="login-toggle-text">Customer Sign In</span>
+              </>
+            )}
+          </button>
+        </div>
       </header>
 
       {/* Seamless Floating Form Container */}
@@ -401,7 +382,7 @@ function LoginPageInner() {
           textAlign: "center",
           position: "relative",
           zIndex: 1,
-          marginTop: "40px",
+          marginTop: "60px",
         }}
       >
         <AnimatePresence mode="wait">
@@ -799,7 +780,7 @@ function LoginPageInner() {
                       setAdminEmail(e.target.value);
                       if (adminEmailError) setAdminEmailError(null);
                     }}
-                    placeholder="admin@gamadiamonds.com"
+                    placeholder="admin@gamajewels.com"
                     style={inputStyle(!!(adminLiveError || adminEmailError))}
                     onFocus={(e) => handleInputFocus(e, !!(adminLiveError || adminEmailError))}
                     onBlur={(e) => {
@@ -968,7 +949,7 @@ function LoginPageInner() {
                 Signed in as <span style={{ color: "#c6a45f" }}>{successEmail}</span>
               </p>
               <Link
-                href={mode === "admin" ? "/admin" : nextPath}
+                href={mode === "admin" || user?.is_staff ? "/admin" : (nextPath.startsWith("/admin") ? "/account" : nextPath)}
                 style={{
                   height: "46px",
                   padding: "0 28px",
@@ -985,7 +966,7 @@ function LoginPageInner() {
                   justifyContent: "center",
                 }}
               >
-                {mode === "admin" ? "GO TO ADMIN DASHBOARD" : "GO TO DASHBOARD"}
+                {mode === "admin" || user?.is_staff ? "GO TO ADMIN DASHBOARD" : "GO TO USER DASHBOARD"}
               </Link>
             </motion.div>
           )}
