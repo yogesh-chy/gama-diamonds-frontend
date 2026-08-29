@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Check, RotateCcw, ChevronDown } from "lucide-react";
+import { Check, RotateCcw, ChevronDown, Package } from "lucide-react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { useCurrency } from "@/context/CurrencyContext";
+import { productsApi } from "@/lib/api/products";
 
 interface Product {
   id: string;
@@ -16,6 +17,7 @@ interface Product {
   price: number;
   badge?: string;
   inStock: boolean;
+  image?: string;
 }
 
 const SHAPE_NAMES: Record<string, string> = {
@@ -47,93 +49,61 @@ export default function RingsOtherCutsListing({ shapeSlug }: RingsOtherCutsListi
   const { formatPrice } = useCurrency();
   const shapeName = useMemo(() => formatShapeTitle(shapeSlug), [shapeSlug]);
 
-  // 8 Dynamic products with Image Placeholders only
-  const products: Product[] = useMemo(
-    () => [
-      {
-        id: `${shapeSlug}-01`,
-        title: `${shapeName} Solitaire Diamond Engagement Ring in 18ct White Gold`,
-        diamondType: "Lab Grown Diamond",
-        style: "Solitaire",
-        price: 990,
-        badge: "NEXT DAY",
-        inStock: true,
-      },
-      {
-        id: `${shapeSlug}-02`,
-        title: `${shapeName} Trilogy Three Stone Diamond Ring in 18ct Yellow Gold`,
-        diamondType: "Natural Diamond",
-        style: "Trilogy Three Stone",
-        price: 2450,
-        badge: "BESTSELLER",
-        inStock: true,
-      },
-      {
-        id: `${shapeSlug}-03`,
-        title: `${shapeName} Under Halo Diamond Engagement Ring in Platinum`,
-        diamondType: "Lab Grown Diamond",
-        style: "Under Halo",
-        price: 3200,
-        badge: "POPULAR",
-        inStock: true,
-      },
-      {
-        id: `${shapeSlug}-04`,
-        title: `${shapeName} Diamond Shoulders Vintage Ring in 18ct Rose Gold`,
-        diamondType: "Natural Diamond",
-        style: "Diamond Shoulders",
-        price: 2150,
-        badge: "NEW",
-        inStock: true,
-      },
-      {
-        id: `${shapeSlug}-05`,
-        title: `${shapeName} Solitaire Lab Grown Diamond Ring in 9ct White Gold`,
-        diamondType: "Lab Grown Diamond",
-        style: "Solitaire",
-        price: 1250,
-        badge: "NEXT DAY",
-        inStock: true,
-      },
-      {
-        id: `${shapeSlug}-06`,
-        title: `${shapeName} Emerald Green Accent Ring in 18ct Yellow Gold`,
-        diamondType: "Natural Diamond",
-        style: "Solitaire",
-        color: "Emerald Green",
-        price: 4980,
-        inStock: true,
-      },
-      {
-        id: `${shapeSlug}-07`,
-        title: `${shapeName} Amethyst Gemstone & Diamond Ring in Platinum`,
-        diamondType: "Lab Grown Diamond",
-        style: "Under Halo",
-        color: "Amethyst",
-        price: 3890,
-        badge: "EXCLUSIVE",
-        inStock: true,
-      },
-      {
-        id: `${shapeSlug}-08`,
-        title: `${shapeName} Trilogy Three Stone Diamond Ring in 18ct White Gold`,
-        diamondType: "Natural Diamond",
-        style: "Trilogy Three Stone",
-        price: 17150,
-        badge: "BESTSELLER",
-        inStock: true,
-      },
-    ],
-    [shapeSlug, shapeName]
-  );
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchShapeProducts() {
+      setLoading(true);
+      try {
+        const res = await productsApi.getProducts({ diamond_cut: shapeSlug, status: "active" });
+        let list = res.data?.data || [];
+        if (list.length === 0) {
+          const fallback = await productsApi.getProducts({ status: "active", limit: 12 });
+          list = fallback.data?.data || [];
+        }
+        const mapped: Product[] = list.map((item: any) => {
+          const rawPrice =
+            typeof item.price === "object" && item.price?.min
+              ? (typeof item.price.min === "number" ? item.price.min : parseFloat(String(item.price.min)))
+              : (typeof item.base_price === "number" ? item.base_price : parseFloat(String(item.base_price || 0)));
+          const validPrice = isNaN(rawPrice) || rawPrice === 0
+            ? (item.variants?.[0]?.price ? parseFloat(String(item.variants[0].price)) : 0)
+            : rawPrice;
+
+          const metalText = item.metal_type
+            ? item.metal_type.replace("-", " ")
+            : (item.variants?.[0]?.metal_type ? item.variants[0].metal_type.replace("-", " ") : "");
+
+          return {
+            id: String(item.id || item.slug),
+            title: item.name,
+            diamondType: item.diamond_spec?.diamond_origin === "natural" ? "Natural Diamond" : "Lab Grown Diamond",
+            style: item.subcategory || item.category || "Engagement Ring",
+            metal: metalText,
+            price: validPrice,
+            badge: item.is_featured ? "FEATURED" : undefined,
+            inStock: (item.total_stock || 0) > 0 || (item.variants?.some((v: any) => v.stock > 0)),
+            image: item.thumbnail || item.images?.find((img: any) => img.isPrimary || img.is_primary)?.url || item.images?.[0]?.url || item.variants?.[0]?.images?.[0]?.url || item.image,
+          };
+        });
+        setProducts(mapped);
+      } catch (err) {
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchShapeProducts();
+  }, [shapeSlug]);
 
   // Filter selections
   const [inStockOnly, setInStockOnly] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [minPrice, setMinPrice] = useState<number>(990);
-  const [maxPrice, setMaxPrice] = useState<number>(17150);
+  const [minPrice, setMinPrice] = useState<number>(0);
+  const [maxPrice, setMaxPrice] = useState<number>(50000);
   const [sortBy, setSortBy] = useState("featured");
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
@@ -175,8 +145,8 @@ export default function RingsOtherCutsListing({ shapeSlug }: RingsOtherCutsListi
     setSelectedTypes([]);
     setSelectedStyles([]);
     setSelectedColors([]);
-    setMinPrice(990);
-    setMaxPrice(17150);
+    setMinPrice(0);
+    setMaxPrice(50000);
     setSortBy("featured");
   };
 
@@ -880,7 +850,7 @@ export default function RingsOtherCutsListing({ shapeSlug }: RingsOtherCutsListi
                   letterSpacing: "1px",
                 }}
               >
-                Showing <strong style={{ color: "#ffffff" }}>{filteredProducts.length}</strong> of 8 products
+                Showing <strong style={{ color: "#ffffff" }}>{filteredProducts.length}</strong> of {products.length} {products.length === 1 ? "product" : "products"}
               </span>
 
               {/* Sort Dropdown */}
@@ -985,9 +955,22 @@ export default function RingsOtherCutsListing({ shapeSlug }: RingsOtherCutsListi
                       </span>
                     )}
 
-                    {/* Product Image Placeholder Box */}
-                    <div style={{ width: "100%", height: "240px", marginBottom: "16px" }}>
-                      <ImagePlaceholder height="100%" label="IMAGE PLACEHOLDER" />
+                    {/* Product Image Box */}
+                    <div style={{ width: "100%", height: "240px", marginBottom: "16px", overflow: "hidden", position: "relative" }}>
+                      {product.image ? (
+                        <img
+                          src={product.image}
+                          alt={product.title}
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        />
+                      ) : (
+                        <ImagePlaceholder height="100%" label="IMAGE PLACEHOLDER" />
+                      )}
+                    </div>
+
+                    {/* Product Subtitle / Spec */}
+                    <div style={{ fontSize: "10px", color: "#c6a45f", letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: "4px" }}>
+                      {product.diamondType}{product.metal ? ` • ${product.metal}` : ""}
                     </div>
 
                     {/* Product Title */}

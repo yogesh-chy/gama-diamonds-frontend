@@ -130,7 +130,7 @@ export default function HeroSection() {
           }}
         >
           Explore custom engagement rings, certified natural and lab-grown
-          diamonds, handcrafted by master goldsmiths in the heart of London.
+          diamonds, handcrafted by master goldsmiths in the heart of Mumbai.
         </motion.p>
 
         {/* CTA Buttons */}

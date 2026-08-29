@@ -58,9 +58,9 @@ export default function StorySection() {
                 Gama Jewels
               </span>
               , we craft extraordinary engagement rings and fine jewellery
-              tailored to your exact romantic vision. Located in London&apos;s
-              famous diamond district of{" "}
-              <span style={{ color: "#c6a45f" }}>Hatton Garden</span>, our
+              tailored to your exact romantic vision. Located in Mumbai&apos;s
+              vibrant jewellery hub of{" "}
+              <span style={{ color: "#c6a45f" }}>Marol, Andheri</span>, our
               master goldsmiths combine traditional hand-setting techniques
               with state-of-the-art 3D CAD precision.
             </p>

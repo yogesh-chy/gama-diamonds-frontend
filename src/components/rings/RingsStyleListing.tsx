@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, RotateCcw, ChevronDown } from "lucide-react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { useCurrency } from "@/context/CurrencyContext";
+import { productsApi } from "@/lib/api/products";
 
 interface Product {
   id: string;
@@ -18,6 +19,7 @@ interface Product {
   price: number;
   badge?: string;
   inStock: boolean;
+  image?: string;
 }
 
 const STYLE_NAMES: Record<string, string> = {
@@ -55,110 +57,63 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
   const { formatPrice } = useCurrency();
   const { name: styleName, title: pageTitle } = useMemo(() => formatStyleTitle(styleSlug), [styleSlug]);
 
-  // 8 Dynamic sample products matching this style layout
-  const products: Product[] = useMemo(
-    () => [
-      {
-        id: `${styleSlug}-01`,
-        title: `Round Brilliant ${styleName} Diamond Engagement Ring in 18ct White Gold`,
-        diamondType: "Lab Grown Diamond",
-        style: styleName,
-        shape: "Round Brilliant",
-        metal: "18ct White Gold",
-        price: 1850,
-        badge: "NEXT DAY",
-        inStock: true,
-      },
-      {
-        id: `${styleSlug}-02`,
-        title: `Oval Cut ${styleName} Diamond Ring in 18ct Yellow Gold`,
-        diamondType: "Natural Diamond",
-        style: styleName,
-        shape: "Oval Cut",
-        metal: "18ct Yellow Gold",
-        price: 2450,
-        badge: "BESTSELLER",
-        inStock: true,
-      },
-      {
-        id: `${styleSlug}-03`,
-        title: `Cushion Cut ${styleName} Engagement Ring in Platinum`,
-        diamondType: "Lab Grown Diamond",
-        style: styleName,
-        shape: "Cushion Cut",
-        metal: "Platinum",
-        price: 3200,
-        badge: "POPULAR",
-        inStock: true,
-      },
-      {
-        id: `${styleSlug}-04`,
-        title: `Pear Cut ${styleName} Vintage Ring in 18ct Rose Gold`,
-        diamondType: "Natural Diamond",
-        style: styleName,
-        shape: "Pear Cut",
-        metal: "18ct Rose Gold",
-        price: 2150,
-        badge: "NEW",
-        inStock: true,
-      },
-      {
-        id: `${styleSlug}-05`,
-        title: `Emerald Cut ${styleName} Lab Grown Diamond Ring in 9ct White Gold`,
-        diamondType: "Lab Grown Diamond",
-        style: styleName,
-        shape: "Emerald Cut",
-        metal: "9ct White Gold",
-        price: 1450,
-        badge: "NEXT DAY",
-        inStock: true,
-      },
-      {
-        id: `${styleSlug}-06`,
-        title: `Princess Cut ${styleName} Emerald Green Accent Ring in 18ct Yellow Gold`,
-        diamondType: "Natural Diamond",
-        style: styleName,
-        shape: "Princess Cut",
-        metal: "18ct Yellow Gold",
-        color: "Emerald Green",
-        price: 4980,
-        inStock: true,
-      },
-      {
-        id: `${styleSlug}-07`,
-        title: `Radiant Cut ${styleName} Amethyst Gemstone & Diamond Ring in Platinum`,
-        diamondType: "Lab Grown Diamond",
-        style: styleName,
-        shape: "Radiant Cut",
-        metal: "Platinum",
-        color: "Amethyst",
-        price: 3890,
-        badge: "EXCLUSIVE",
-        inStock: true,
-      },
-      {
-        id: `${styleSlug}-08`,
-        title: `Marquise Cut ${styleName} Diamond Ring in 18ct White Gold`,
-        diamondType: "Natural Diamond",
-        style: styleName,
-        shape: "Marquise Cut",
-        metal: "18ct White Gold",
-        price: 15400,
-        badge: "BESTSELLER",
-        inStock: true,
-      },
-    ],
-    [styleSlug, styleName]
-  );
+  const [productList, setProductList] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    async function loadStyleData() {
+      try {
+        const res = await productsApi.getProducts({ style: styleSlug, status: "active" });
+        let apiData = res.data?.data || [];
+        if (apiData.length === 0) {
+          const fallback = await productsApi.getProducts({ status: "active", limit: 12 });
+          apiData = fallback.data?.data || [];
+        }
+        if (cancelled) return;
+        if (Array.isArray(apiData)) {
+          const mapped: Product[] = apiData.map((p) => {
+            const rawPrice = typeof p.price === "object" && p.price?.min ? (typeof p.price.min === "number" ? p.price.min : parseFloat(String(p.price.min))) : (typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)));
+            const minPrice = isNaN(rawPrice) || rawPrice === 0 ? (p.variants?.[0]?.price ? parseFloat(String(p.variants[0].price)) : 0) : rawPrice;
+            return {
+              id: String(p.id),
+              title: p.name,
+              diamondType: p.diamond_spec?.diamond_origin === "natural" ? "Natural Diamond" : "Lab Grown Diamond",
+              style: styleName,
+              shape: p.diamond_cut || "Round Brilliant",
+              metal: p.metal_type || "Fine Precious Metal",
+              price: minPrice,
+              badge: p.is_featured ? "FEATURED" : undefined,
+              inStock: (p.total_stock || 0) > 0,
+              image: p.thumbnail || p.images?.find((img: any) => img.isPrimary || img.is_primary)?.url || p.images?.[0]?.url || p.variants?.[0]?.images?.[0]?.url || p.image,
+            };
+          });
+          setProductList(mapped);
+        } else {
+          setProductList([]);
+        }
+      } catch (err) {
+        if (!cancelled) setProductList([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    loadStyleData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [styleSlug, styleName]);
 
   // Filter selections
   const [inStockOnly, setInStockOnly] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedShapes, setSelectedShapes] = useState<string[]>([]);
-  const [selectedStyles, setSelectedStyles] = useState<string[]>([styleName]);
+  const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [minPrice, setMinPrice] = useState<number>(990);
-  const [maxPrice, setMaxPrice] = useState<number>(20000);
+  const [minPrice, setMinPrice] = useState<number>(0);
+  const [maxPrice, setMaxPrice] = useState<number>(50000);
   const [sortBy, setSortBy] = useState("featured");
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
@@ -207,13 +162,13 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
     setSelectedShapes([]);
     setSelectedStyles([]);
     setSelectedColors([]);
-    setMinPrice(990);
-    setMaxPrice(20000);
+    setMinPrice(0);
+    setMaxPrice(50000);
     setSortBy("featured");
   };
 
   const filteredProducts = useMemo(() => {
-    return products.filter((p) => {
+    return productList.filter((p) => {
       if (inStockOnly && !p.inStock) return false;
       if (selectedTypes.length > 0 && !selectedTypes.includes(p.diamondType)) return false;
       if (selectedShapes.length > 0 && !selectedShapes.includes(p.shape)) return false;
@@ -222,7 +177,7 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
       if (p.price < minPrice || p.price > maxPrice) return false;
       return true;
     });
-  }, [products, inStockOnly, selectedTypes, selectedShapes, selectedStyles, selectedColors, minPrice, maxPrice]);
+  }, [productList, inStockOnly, selectedTypes, selectedShapes, selectedStyles, selectedColors, minPrice, maxPrice]);
 
   return (
     <section
@@ -821,7 +776,7 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
                   }}
                 >
                   Price
-                  {(minPrice > 990 || maxPrice < 20000) && (
+                  {(minPrice > 0 || maxPrice < 50000) && (
                     <span
                       style={{
                         width: "5px",
@@ -891,8 +846,8 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
 
                   <input
                     type="range"
-                    min={990}
-                    max={20000}
+                    min={0}
+                    max={50000}
                     step={100}
                     value={maxPrice}
                     onChange={(e) => setMaxPrice(Number(e.target.value))}
@@ -944,7 +899,7 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
                   color: "#cccccc",
                 }}
               >
-                Showing <strong style={{ color: "#ffffff" }}>{filteredProducts.length}</strong> of {products.length} products
+                Showing <strong style={{ color: "#ffffff" }}>{filteredProducts.length}</strong> of {productList.length} {productList.length === 1 ? "product" : "products"}
               </span>
 
               {/* Sort Dropdown */}
@@ -1025,15 +980,23 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
                       </span>
                     )}
 
-                    {/* Diamond Ring Image Preview Placeholder */}
-                    <div style={{ position: "relative", width: "100%", paddingTop: "100%" }}>
+                    {/* Diamond Ring Image Preview */}
+                    <div style={{ position: "relative", width: "100%", paddingTop: "100%", overflow: "hidden" }}>
                       <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}>
-                        <ImagePlaceholder
-                          width="100%"
-                          height="100%"
-                          label={product.title}
-                          aspectRatio="1/1"
-                        />
+                        {product.image ? (
+                          <img
+                            src={product.image}
+                            alt={product.title}
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                        ) : (
+                          <ImagePlaceholder
+                            width="100%"
+                            height="100%"
+                            label={product.title}
+                            aspectRatio="1/1"
+                          />
+                        )}
                       </div>
                     </div>
 

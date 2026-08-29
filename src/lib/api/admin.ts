@@ -7,6 +7,7 @@ export interface AdminProduct {
   sku: string;
   description: string;
   category: string;
+  subcategory?: string | null;
   base_price: string | number;
   discount_price: string | number | null;
   basePrice?: number;
@@ -25,10 +26,19 @@ export interface AdminProduct {
   engraving_available?: string;
   gender?: string;
   occasion?: string;
+  seo_title?: string;
+  seoTitle?: string;
+  seo_description?: string;
+  seoDescription?: string;
+  seo_keywords?: string;
+  seoKeywords?: string;
+  tax_percentage?: string | number;
+  low_stock_threshold?: number;
   video_url?: string | null;
   videoUrl?: string | null;
   is_active: boolean;
   is_featured: boolean;
+  thumbnail?: string | null;
   styles?: number[];
   stylesDetail?: Array<{ id: number; name: string; slug: string }>;
   collections?: number[];
@@ -38,8 +48,12 @@ export interface AdminProduct {
   brand?: number | null;
   brandDetail?: { id: number; name: string; slug: string } | null;
   diamond_spec?: {
+    diamond_origin?: string;
     carat_weight?: string | number;
+    center_carat_weight?: string | number | null;
     side_carat_weight?: string | number | null;
+    total_carat_weight?: string | number | null;
+    diamond_value?: string | number | null;
     cut_grade?: string | null;
     colour_grade?: string | null;
     clarity_grade?: string | null;
@@ -47,6 +61,21 @@ export interface AdminProduct {
     certificate_number?: string;
   } | null;
   images?: Array<{ id?: number; url: string; publicId?: string; isPrimary?: boolean }>;
+  variants?: Array<{
+    id?: number;
+    sku?: string;
+    metal_type?: string;
+    metal_karat?: string;
+    metal_weight_grams?: string | number | null;
+    size?: string;
+    price?: string | number | null;
+    compare_at_price?: string | number | null;
+    stock?: number;
+    is_active?: boolean;
+    is_default?: boolean;
+    isDefault?: boolean;
+    images?: Array<{ id?: number; url: string; isPrimary?: boolean }>;
+  }>;
   sizes?: Array<{ id?: number; size: string; stock: number }>;
   created_at: string;
   updated_at: string;
@@ -166,7 +195,7 @@ function normalizeListResponse<T>(response: { data?: unknown }): T[] {
 export const adminApi = {
   // --- Products ---
   getProducts: (params?: ApiQueryParams) =>
-    apiClient.get<{ success: boolean; data: AdminProduct[]; pagination?: any }> ("/products/", { params }),
+    apiClient.get<{ success: boolean; data: AdminProduct[]; pagination?: unknown }> ("/products/", { params }),
   
   createProduct: (payload: Partial<AdminProduct>) =>
     apiClient.post<AdminProduct>("/products/", payload),

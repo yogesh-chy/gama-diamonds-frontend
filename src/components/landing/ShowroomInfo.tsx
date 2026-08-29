@@ -40,11 +40,11 @@ export default function ShowroomInfo() {
               lineHeight: "1.8",
             }}
           >
-            Located at *******, London EC1N 8NX. We welcome private
+            Located at SHOP NO.08, TOP COOL SERVICES, MAROL, ANDHERI(E.) MUMBAI 400059, Maharashtra (Code: 27). We welcome private
             appointments and walk-in consultations. Call our dedicated diamond
             specialists on{" "}
-            <span style={{ color: "#c6a45f" }}>+44 ********</span> or send
-            a custom query online.
+            <span style={{ color: "#c6a45f" }}>+91 9869800084</span> or email{" "}
+            <span style={{ color: "#c6a45f" }}>gama.diamond10@gmail.com</span>.
           </p>
         </motion.div>
       </div>

@@ -46,7 +46,7 @@ export default function StoreSection() {
             variants={fadeInUp}
           >
             <div className="section-label" style={{ marginBottom: "12px" }}>
-              VISIT US IN LONDON
+              VISIT OUR SHOWROOM
             </div>
             <h2
               style={{
@@ -56,7 +56,7 @@ export default function StoreSection() {
                 marginBottom: "16px",
               }}
             >
-              Gama Boutique & Consultation Studio
+              Gama Jewels Boutique Studio
             </h2>
             <p
               style={{
@@ -67,7 +67,7 @@ export default function StoreSection() {
                 marginBottom: "24px",
               }}
             >
-              Our London showroom offers a relaxed and private environment to
+              Our Mumbai showroom offers a relaxed and private environment to
               inspect certified loose diamonds, try on engagement ring styles,
               and discuss bespoke CAD commissions directly with goldsmiths.
             </p>
@@ -83,14 +83,14 @@ export default function StoreSection() {
               <div
                 style={{
                   display: "flex",
-                  alignItems: "center",
+                  alignItems: "flex-start",
                   gap: "12px",
                   color: "#d0d0d0",
                   fontSize: "13px",
                 }}
               >
-                <MapPin size={18} style={{ color: "#c6a45f" }} />
-                <span>******, London</span>
+                <MapPin size={18} style={{ color: "#c6a45f", flexShrink: 0, marginTop: "3px" }} />
+                <span>SHOP NO.08, TOP COOL SERVICES, MAROL, ANDHERI(E.) MUMBAI 400059, Maharashtra (State Code: 27)</span>
               </div>
               <div
                 style={{
@@ -102,7 +102,7 @@ export default function StoreSection() {
                 }}
               >
                 <Phone size={18} style={{ color: "#c6a45f" }} />
-                <span>+44 ******* / +44 ******* </span>
+                <span>+91 9869800084 | gama.diamond10@gmail.com</span>
               </div>
               <div
                 style={{
@@ -114,7 +114,7 @@ export default function StoreSection() {
                 }}
               >
                 <Clock size={18} style={{ color: "#c6a45f" }} />
-                <span>Mon - Sat: 10:00 AM - 6:00 PM</span>
+                <span>GSTIN: 27ASQPD0518A1Z8 | PAN: ASQPD0518A</span>
               </div>
             </div>
 

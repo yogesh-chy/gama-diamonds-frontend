@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: PageProps) {
 
   return {
     title: `${title} | Gama Jewels`,
-    description: `Explore our handcrafted ${title.toLowerCase()}. Handcrafted by master goldsmiths in Hatton Garden, London.`,
+    description: `Explore our handcrafted ${title.toLowerCase()}. Handcrafted by master goldsmiths in Mumbai.`,
   };
 }
 

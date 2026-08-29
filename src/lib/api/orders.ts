@@ -45,10 +45,22 @@ export interface CartItemProductSummary {
   is_active: boolean;
 }
 
+export interface CartItemVariantSummary {
+  id: number;
+  sku: string;
+  metal_type?: string;
+  metal_karat?: string;
+  size?: string;
+  price: string;
+  stock: number;
+}
+
 export interface CartItem {
   id: number;
   product: number;
   product_detail?: CartItemProductSummary;
+  variant?: number | null;
+  variant_detail?: CartItemVariantSummary | null;
   size: string;
   quantity: number;
   unit_price: string;
@@ -91,8 +103,8 @@ export const cartApi = {
   getCart: () => apiClient.get<Cart>("/orders/cart/"),
 
   /** POST /api/orders/cart/items/ — Add item to cart */
-  addItem: (productId: number, size = "", quantity = 1) =>
-    apiClient.post<Cart>("/orders/cart/items/", { product_id: productId, size, quantity }),
+  addItem: (productId?: number, size = "", quantity = 1, variantId?: number) =>
+    apiClient.post<Cart>("/orders/cart/items/", { product_id: productId, variant_id: variantId, size, quantity }),
 
   /** PATCH /api/orders/cart/items/{id}/ — Update item quantity */
   updateItem: (itemId: number, quantity: number) =>

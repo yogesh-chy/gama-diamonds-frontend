@@ -34,16 +34,8 @@ const PRODUCT_TYPES_NAV = [
   { keywords: ["bespoke", "custom", "design"], label: "Bespoke Custom Jewellery", href: "/bespoke" },
 ];
 
-const SAMPLE_SEARCH_CATALOG: SearchSuggestionProduct[] = [
-  { id: "1", name: "Novaryn Yellow Cushion Cut Diamond Ring", category: "Trilogy Ring", price: 3045, href: "/product/1" },
-  { id: "2", name: "Pear Shape Solitaire Stud Earrings", category: "Diamond Earrings", price: 370, href: "/product/2" },
-  { id: "3", name: "Round Cut Four Claw Loop Pendant", category: "Diamond Pendant", price: 1020, href: "/product/3" },
-  { id: "4", name: "Victoria 2.03ct Marquise Diamond Ring", category: "Engagement Ring", price: 2400, href: "/product/4" },
-  { id: "5", name: "Emerald Cut Platinum Eternity Band", category: "Eternity Band", price: 1850, href: "/product/5" },
-  { id: "wed-01", name: "Women's Classic Micro-Pave Diamond Wedding Band", category: "Wedding Band", price: 1250, href: "/wedding/womens-plain" },
-  { id: "wed-05", name: "Men's Heavy Court Satin Finish Wedding Band", category: "Men's Wedding Ring", price: 980, href: "/wedding/mens-plain" },
-  { id: "sample-1", name: "Bespoke Pear Cut Solitaire Ring in 18ct White Gold", category: "Bespoke Ring", price: 3450, href: "/product/sample-1" },
-];
+const SAMPLE_SEARCH_CATALOG: SearchSuggestionProduct[] = [];
+
 
 function CurrencySelector() {
   const { currency, symbol, flag, setCurrency, isLoaded } = useCurrency();
@@ -118,8 +110,8 @@ export default function Header() {
   const router = useRouter();
 
   const { freeDeliveryThreshold, isLoaded, formatPrice } = useCurrency();
-  const { isAuthenticated } = useAuth();
-  const accountHref = isAuthenticated ? "/account" : "/login";
+  const { user, isAuthenticated } = useAuth();
+  const accountHref = isAuthenticated ? (user?.is_staff ? "/admin" : "/account") : "/login";
 
   useEffect(() => {
     if (searchOpen) {

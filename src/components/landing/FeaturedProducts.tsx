@@ -20,55 +20,41 @@ export default function FeaturedProducts() {
     productsApi
       .getProducts({ featured: true, status: "active", limit: 8 })
       .then((res) => {
-        if (res.data?.data && Array.isArray(res.data.data)) {
-          const mapped: Product[] = res.data.data.map((p) => ({
-            id: p.id,
-            name: p.name,
-            subcategory: p.category || "Fine Jewellery",
-            price: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
-            images: p.images?.map((img) => img.url),
-          }));
+        if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
+          const mapped: Product[] = res.data.data.map((p: any) => {
+            const imgUrl = p.thumbnail || p.images?.find((i: any) => i.isPrimary || i.is_primary)?.url || p.images?.[0]?.url || p.variants?.[0]?.images?.[0]?.url;
+            return {
+              id: p.id,
+              name: p.name,
+              subcategory: p.category || "Fine Jewellery",
+              price: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
+              images: imgUrl ? [imgUrl] : [],
+            };
+          });
           setFeaturedProducts(mapped);
+        } else {
+          // Fallback to general product listing if no items explicitly marked as featured
+          productsApi.getProducts({ limit: 8 }).then((allRes) => {
+            if (allRes.data?.data && Array.isArray(allRes.data.data)) {
+              const mapped: Product[] = allRes.data.data.map((p: any) => {
+                const imgUrl = p.thumbnail || p.images?.find((i: any) => i.isPrimary || i.is_primary)?.url || p.images?.[0]?.url || p.variants?.[0]?.images?.[0]?.url;
+                return {
+                  id: p.id,
+                  name: p.name,
+                  subcategory: p.category || "Fine Jewellery",
+                  price: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
+                  images: imgUrl ? [imgUrl] : [],
+                };
+              });
+              setFeaturedProducts(mapped);
+            }
+          });
         }
       })
       .catch(() => {});
   }, []);
 
-  const fallbackProducts: Product[] = [
-    {
-      id: 1,
-      name: "Novaryn Yellow Cushion Cut Diamond Ring",
-      subcategory: "Trilogy Ring",
-      price: 3045,
-    },
-    {
-      id: 2,
-      name: "Pear Shape Solitaire Stud Earrings",
-      subcategory: "Diamond Earrings",
-      price: 370,
-    },
-    {
-      id: 3,
-      name: "Round Cut Four Claw Loop Pendant",
-      subcategory: "Diamond Pendant",
-      price: 1020,
-    },
-    {
-      id: 4,
-      name: "Victoria 2.03ct Marquise Diamond Ring",
-      subcategory: "Engagement Ring",
-      price: 2400,
-    },
-    {
-      id: 5,
-      name: "Emerald Cut Platinum Eternity Band",
-      subcategory: "Eternity Band",
-      price: 1850,
-    },
-  ];
-
-  const productsToDisplay =
-    featuredProducts.length > 0 ? featuredProducts : fallbackProducts;
+  const productsToDisplay = featuredProducts;
 
   return (
     <section style={{ padding: "80px 0", background: "#000000" }}>
@@ -127,11 +113,21 @@ export default function FeaturedProducts() {
                     paddingBottom: "16px",
                   }}
                 >
-                  <ImagePlaceholder
-                    height="280px"
-                    label={product.name}
-                    style={{ borderRadius: "0px" }}
-                  />
+                  {product.images && product.images.length > 0 && product.images[0] ? (
+                    <div style={{ width: "100%", height: "280px", overflow: "hidden", position: "relative" }}>
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    </div>
+                  ) : (
+                    <ImagePlaceholder
+                      height="280px"
+                      label={product.name}
+                      style={{ borderRadius: "0px" }}
+                    />
+                  )}
                   <div
                     style={{ padding: "16px 16px 0", textAlign: "center" }}
                   >

@@ -1,47 +1,98 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { useCurrency } from "@/context/CurrencyContext";
+import { productsApi } from "@/lib/api/products";
 
-const recentlyViewedItems = [
-  {
-    title:
-      "ROUND CUT SOLITAIRE DIAMOND IN FOUR CLAW SETTING LOOP PENDANT WITH CHAIN PSR848M",
-    rawPrice: 1020,
-    hasPrefix: true,
-    href: "/product/psr848m",
-    badge: null,
-  },
-  {
-    title:
-      '"ADDISON" HIDDEN UNDER HALO 2.50 CARAT OVAL CUT DIAMOND YELLOW GOLD ENGAGEMENT RING UH006',
-    rawPrice: 2800,
-    hasPrefix: true,
-    href: "/product/uh006",
-    badge: null,
-  },
-  {
-    title:
-      '"CORVELLA" 0.35 CARAT ROUND CUT NATURAL DIAMOND HALF ETERNITY RING MDR4101',
-    rawPrice: 770,
-    hasPrefix: false,
-    href: "/product/mdr4101",
-    badge: "NEXT DAY DELIVERY",
-  },
-  {
-    title: "APPOINTMENT PAGE | SCHEDULE YOUR CONSULTATION",
-    rawPrice: 0,
-    hasPrefix: false,
-    href: "/bespoke",
-    badge: null,
-    isAppointment: true,
-  },
-];
+interface RecentlyViewedItem {
+  title: string;
+  rawPrice: number;
+  hasPrefix: boolean;
+  href: string;
+  badge: string | null;
+  isAppointment?: boolean;
+  image?: string;
+}
 
-export default function RingsRecentlyViewed() {
+interface RingsRecentlyViewedProps {
+  category?: string;
+  shape?: string;
+  style?: string;
+}
+
+export default function RingsRecentlyViewed({ category, shape, style }: RingsRecentlyViewedProps = {}) {
   const { formatPrice } = useCurrency();
+  const [recentlyViewedItems, setRecentlyViewedItems] = useState<RecentlyViewedItem[]>([]);
+
+  useEffect(() => {
+    async function fetchRecentProducts() {
+      try {
+        let storedItems: RecentlyViewedItem[] = [];
+        try {
+          const raw = localStorage.getItem("gama_recently_viewed");
+          if (raw) {
+            storedItems = JSON.parse(raw);
+          }
+        } catch (e) {}
+
+        const params: any = { limit: 6 };
+        if (category) params.category = category;
+        if (shape) params.diamond_cut = shape;
+        if (style) params.style = style;
+
+        const res = await productsApi.getProducts(params);
+        const list = res.data?.data || [];
+        const mappedApi: RecentlyViewedItem[] = list.map((item: any) => ({
+          title: item.name || "Product",
+          rawPrice: typeof item.base_price === "number" ? item.base_price : parseFloat(item.base_price || "0") || 0,
+          hasPrefix: true,
+          href: `/product/${item.id || item.slug}`,
+          badge: item.is_featured ? "FEATURED" : null,
+          image: item.thumbnail || item.images?.find((img: any) => img.isPrimary || img.is_primary)?.url || item.images?.[0]?.url || item.variants?.[0]?.images?.[0]?.url || item.image,
+        }));
+
+        // Merge stored local items + API items up to 3 products
+        const combined: RecentlyViewedItem[] = [];
+        for (const item of storedItems) {
+          if (combined.length >= 3) break;
+          combined.push(item);
+        }
+        for (const apiItem of mappedApi) {
+          if (combined.length >= 3) break;
+          if (!combined.some((x) => x.href === apiItem.href)) {
+            combined.push(apiItem);
+          }
+        }
+
+        // Add appointment card at end
+        combined.push({
+          title: "APPOINTMENT PAGE | SCHEDULE YOUR CONSULTATION",
+          rawPrice: 0,
+          hasPrefix: false,
+          href: "/bespoke",
+          badge: null,
+          isAppointment: true,
+        });
+
+        setRecentlyViewedItems(combined.slice(0, 4));
+      } catch (err) {
+        setRecentlyViewedItems([
+          {
+            title: "APPOINTMENT PAGE | SCHEDULE YOUR CONSULTATION",
+            rawPrice: 0,
+            hasPrefix: false,
+            href: "/bespoke",
+            badge: null,
+            isAppointment: true,
+          },
+        ]);
+      }
+    }
+    fetchRecentProducts();
+  }, [category, shape, style]);
 
   return (
     <section
@@ -121,16 +172,26 @@ export default function RingsRecentlyViewed() {
                       </div>
                     )}
 
-                    {/* Image Placeholder */}
-                    <ImagePlaceholder
-                      height="240px"
-                      label={
-                        item.isAppointment
-                          ? "BOOK APPOINTMENT BANNER"
-                          : `Product ${idx + 1} Image`
-                      }
-                      style={{ borderRadius: "0px", border: "none" }}
-                    />
+                    {/* Product Image */}
+                    {item.image ? (
+                      <div style={{ width: "100%", height: "240px", overflow: "hidden", position: "relative" }}>
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        />
+                      </div>
+                    ) : (
+                      <ImagePlaceholder
+                        height="240px"
+                        label={
+                          item.isAppointment
+                            ? "BOOK APPOINTMENT BANNER"
+                            : `Product ${idx + 1} Image`
+                        }
+                        style={{ borderRadius: "0px", border: "none" }}
+                      />
+                    )}
 
                     {/* Product Details Text */}
                     <div

@@ -198,7 +198,14 @@ export default function CategoryListingPage({
     try {
       const numericId = !isNaN(Number(product.id)) ? Number(product.id) : null;
       if (isAuthenticated && numericId) {
-        await cartApi.addItem(numericId, "", 1);
+        let variantId: number | undefined;
+        try {
+          const resolved = await productsApi.resolveVariant(String(numericId), {});
+          variantId = resolved.data.variant_id || resolved.data.id;
+        } catch {
+          // Products without variants use the product-level cart path.
+        }
+        await cartApi.addItem(numericId, "", 1, variantId);
       }
       const existingCart = JSON.parse(localStorage.getItem("gama_cart") || "[]");
       existingCart.push({
@@ -850,10 +857,10 @@ export default function CategoryListingPage({
         <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
           <span className="section-label">✦ Master Goldsmiths</span>
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "28px", color: "#ffffff", margin: "8px 0 16px", textTransform: "uppercase" }}>
-            Hatton Garden Craftsmanship & Ethics
+            Master Craftsmanship & Ethics
           </h2>
           <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: "13px", color: "#a0a0a0", maxWidth: "800px", margin: "0 auto 32px", lineHeight: "1.8" }}>
-            Every piece in our {categoryTitle.toLowerCase()} collection is meticulously designed and set by master craftspeople in London&apos;s iconic jewellery quarter. We select only ethically sourced natural diamonds and certified lab-grown diamonds of exceptional cut and clarity.
+            Every piece in our {categoryTitle.toLowerCase()} collection is meticulously designed and set by master craftspeople in Mumbai. We select only ethically sourced natural diamonds and certified lab-grown diamonds of exceptional cut and clarity.
           </p>
           <div className="section-divider" />
         </div>

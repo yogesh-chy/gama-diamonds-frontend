@@ -166,7 +166,8 @@ export default function Footer() {
                 <div className="footer-contact-item" style={{ alignItems: "flex-start" }}>
                   <MapPin size={15} className="footer-contact-icon" style={{ marginTop: "3px" }} />
                   <span style={{ fontSize: "11.5px", color: "#cccccc", lineHeight: "1.5" }}>
-                    SHOP NO.08, TOP COOL SERVICES, MAROL, ANDHERI(E.) MUMBAI 400059, Maharashtra (State Code: 27)
+                    SHOP NO.08, TOP COOL SERVICES, MAROL, ANDHERI(E.) MUMBAI 400059<br />
+                    State Name: Maharashtra, Code: 27
                   </span>
                 </div>
                 <div className="footer-contact-item">
@@ -185,7 +186,7 @@ export default function Footer() {
                   <FileText size={15} className="footer-contact-icon" style={{ marginTop: "2px" }} />
                   <span style={{ fontSize: "11px", color: "#999999", lineHeight: "1.5" }}>
                     GSTIN/UIN: <strong style={{ color: "#ffffff" }}>27ASQPD0518A1Z8</strong> <br />
-                    PAN/IT NO: <strong style={{ color: "#ffffff" }}>ASQPD0518A</strong>
+                    PAN/IT NO : <strong style={{ color: "#ffffff" }}>ASQPD0518A</strong>
                   </span>
                 </div>
               </div>

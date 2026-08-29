@@ -165,6 +165,23 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
           images: imagesList.length > 0 ? imagesList : initialFallback.images,
         });
         if (p.metal_type) setSelectedMetal(p.metal_type);
+
+        // Track in Recently Viewed
+        try {
+          const primaryImg = imagesList[0] || initialFallback.images[0];
+          const itemToStore = {
+            title: p.name,
+            rawPrice: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
+            hasPrefix: true,
+            href: `/product/${p.id || p.slug || productId}`,
+            badge: p.is_featured ? "FEATURED" : null,
+            image: primaryImg,
+          };
+          const existing = JSON.parse(localStorage.getItem("gama_recently_viewed") || "[]");
+          const filtered = Array.isArray(existing) ? existing.filter((item: any) => item.href !== itemToStore.href) : [];
+          filtered.unshift(itemToStore);
+          localStorage.setItem("gama_recently_viewed", JSON.stringify(filtered.slice(0, 10)));
+        } catch (e) {}
       })
       .catch(() => {
         // Fall back gracefully to initial dynamic product
@@ -183,7 +200,19 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     try {
       // 1. If authenticated and numericId exists, send to backend API
       if (isAuthenticated && numericId) {
-        await cartApi.addItem(numericId, selectedSize, quantity);
+        let variantId: number | undefined;
+        try {
+          const resolved = await productsApi.resolveVariant(productId, {
+            metal_type: selectedMetal,
+            size: selectedSize,
+          });
+          if (resolved.data && (resolved.data.variant_id || resolved.data.id)) {
+            variantId = resolved.data.variant_id || resolved.data.id;
+          }
+        } catch {
+          // ignore resolution fallback
+        }
+        await cartApi.addItem(numericId, selectedSize, quantity, variantId);
       }
 
       // 2. Also persist to local cart & notify UI
@@ -284,32 +313,27 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     }),
   };
 
-  const relatedProducts = [
-    {
-      id: "rel-1",
-      title: 'ROUND CUT SOLITAIRE ENGAGEMENT RING IN 18CT WHITE GOLD',
-      price: 1650,
-      badge: "NEXT DAY",
-    },
-    {
-      id: "rel-2",
-      title: 'OVAL CUT HALO DIAMOND RING IN 18CT YELLOW GOLD',
-      price: 2450,
-      badge: "BESTSELLER",
-    },
-    {
-      id: "rel-3",
-      title: 'CUSHION CUT TRILOGY THREE STONE RING IN PLATINUM',
-      price: 3200,
-      badge: "POPULAR",
-    },
-    {
-      id: "rel-4",
-      title: 'PEAR CUT VINTAGE DIAMOND RING IN 18CT ROSE GOLD',
-      price: 2150,
-      badge: "NEW",
-    },
-  ];
+  const [relatedProducts, setRelatedProducts] = useState<{id: string; title: string; price: number; badge?: string; image?: string}[]>([]);
+
+  useEffectReact(() => {
+    productsApi
+      .getProducts({ category: product.category?.toLowerCase().replace(" ", "-"), limit: 4 })
+      .then((res) => {
+        const list = res.data?.data || [];
+        const mapped = list
+          .filter((p: any) => String(p.id) !== String(product.id))
+          .slice(0, 4)
+          .map((p: any) => ({
+            id: String(p.id || p.slug),
+            title: p.name,
+            price: typeof p.base_price === "number" ? p.base_price : parseFloat(p.base_price || "0") || 0,
+            badge: p.is_featured ? "FEATURED" : undefined,
+            image: p.images?.[0]?.url,
+          }));
+        setRelatedProducts(mapped);
+      })
+      .catch(() => {});
+  }, [product.id, product.category]);
 
   return (
     <div className="page-bg" style={{ backgroundColor: "#000000", color: "#ffffff", minHeight: "100vh" }}>
@@ -1277,7 +1301,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                   <div><strong>Clarity:</strong> {product.clarity}</div>
                   <div><strong>Color:</strong> {product.color}</div>
                   <div><strong>Certificate:</strong> {product.certification}</div>
-                  <div><strong>Origin:</strong> Gama Jewels, London</div>
+                  <div><strong>Origin:</strong> Gama Jewels, Mumbai</div>
                 </div>
               )}
             </div>
@@ -1518,7 +1542,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
       </section>
 
       {/* Recently Viewed Carousel */}
-      <RingsRecentlyViewed />
+      <RingsRecentlyViewed category={product.category} shape={product.shape} />
 
       {/* Certification Bar */}
       <CertificationBar />

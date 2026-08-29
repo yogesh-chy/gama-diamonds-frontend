@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, RotateCcw, ChevronDown } from "lucide-react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { useCurrency } from "@/context/CurrencyContext";
+import { productsApi } from "@/lib/api/products";
 
 interface Product {
   id: string;
@@ -14,6 +15,7 @@ interface Product {
   price: number;
   badge?: string;
   inStock: boolean;
+  image?: string;
 }
 
 const METALS_LIST = [
@@ -26,82 +28,58 @@ const METALS_LIST = [
   "Platinum",
 ];
 
-const PRODUCTS_8: Product[] = [
-  {
-    id: "rb-01",
-    title: "Round Brilliant Solitaire Diamond Engagement Ring in 18ct White Gold",
-    metal: "18ct White Gold",
-    price: 1850,
-    badge: "NEXT DAY",
-    inStock: true,
-  },
-  {
-    id: "rb-02",
-    title: "Round Brilliant Diamond Three Stone Ring in 18ct Yellow Gold",
-    metal: "18ct Yellow Gold",
-    price: 2450,
-    badge: "BESTSELLER",
-    inStock: true,
-  },
-  {
-    id: "rb-03",
-    title: "Round Brilliant Diamond Halo Engagement Ring in Platinum",
-    metal: "Platinum",
-    price: 3200,
-    badge: "POPULAR",
-    inStock: true,
-  },
-  {
-    id: "rb-04",
-    title: "Round Brilliant Vintage Diamond Twist Ring in 18ct Rose Gold",
-    metal: "18ct Rose Gold",
-    price: 2150,
-    badge: "NEW",
-    inStock: true,
-  },
-  {
-    id: "rb-05",
-    title: "Round Brilliant Cluster Solitaire Engagement Ring in 9ct White Gold",
-    metal: "9ct White Gold",
-    price: 1250,
-    badge: "NEXT DAY",
-    inStock: true,
-  },
-  {
-    id: "rb-06",
-    title: "Round Brilliant Solitaire Diamond Ring in 18ct Yellow Gold",
-    metal: "18ct Yellow Gold",
-    price: 1980,
-    inStock: true,
-  },
-  {
-    id: "rb-07",
-    title: "Round Brilliant Diamond & Sapphire Accent Ring in Platinum",
-    metal: "Platinum",
-    price: 2890,
-    badge: "EXCLUSIVE",
-    inStock: true,
-  },
-  {
-    id: "rb-08",
-    title: "Round Brilliant Diamond Shoulder Engagement Ring in 18ct White Gold",
-    metal: "18ct White Gold",
-    price: 2650,
-    badge: "BESTSELLER",
-    inStock: true,
-  },
-];
-
 interface RingsCategoryListingProps {
   shapeSlug?: string;
 }
 
 export default function RingsCategoryListing({ shapeSlug = "round-brilliant" }: RingsCategoryListingProps) {
   const { formatPrice } = useCurrency();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchCategoryProducts() {
+      setLoading(true);
+      try {
+        const res = await productsApi.getProducts({ diamond_cut: shapeSlug, status: "active" });
+        let list = res.data?.data || [];
+        if (list.length === 0) {
+          const fallback = await productsApi.getProducts({ status: "active", limit: 12 });
+          list = fallback.data?.data || [];
+        }
+        const mapped: Product[] = list.map((item: any) => {
+          const rawPrice =
+            typeof item.price === "object" && item.price?.min
+              ? (typeof item.price.min === "number" ? item.price.min : parseFloat(String(item.price.min)))
+              : (typeof item.base_price === "number" ? item.base_price : parseFloat(String(item.base_price || 0)));
+          const validPrice = isNaN(rawPrice) || rawPrice === 0
+            ? (item.variants?.[0]?.price ? parseFloat(String(item.variants[0].price)) : 0)
+            : rawPrice;
+
+          return {
+            id: String(item.id || item.slug),
+            title: item.name,
+            metal: item.metal_type?.replace("-", " ") || "Fine Precious Metal",
+            price: validPrice,
+            badge: item.is_featured ? "FEATURED" : undefined,
+            inStock: (item.total_stock || 0) > 0 || (item.variants?.some((v: any) => v.stock > 0)),
+            image: item.thumbnail || item.images?.find((img: any) => img.isPrimary || img.is_primary)?.url || item.images?.[0]?.url || item.variants?.[0]?.images?.[0]?.url || item.image,
+          };
+        });
+        setProducts(mapped);
+      } catch (err) {
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCategoryProducts();
+  }, [shapeSlug]);
+
   const [selectedMetals, setSelectedMetals] = useState<string[]>([]);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [outOfStockOnly, setOutOfStockOnly] = useState(false);
-  const [minPrice, setMinPrice] = useState<number>(990);
+  const [minPrice, setMinPrice] = useState<number>(0);
   const [maxPrice, setMaxPrice] = useState<number>(40000);
   const [sortBy, setSortBy] = useState("featured");
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ price: true });
@@ -125,20 +103,20 @@ export default function RingsCategoryListing({ shapeSlug = "round-brilliant" }: 
     setSelectedMetals([]);
     setInStockOnly(false);
     setOutOfStockOnly(false);
-    setMinPrice(990);
+    setMinPrice(0);
     setMaxPrice(40000);
     setSortBy("featured");
   };
 
   const filteredProducts = useMemo(() => {
-    return PRODUCTS_8.filter((p) => {
+    return products.filter((p) => {
       if (selectedMetals.length > 0 && !selectedMetals.includes(p.metal)) return false;
       if (inStockOnly && !p.inStock) return false;
       if (outOfStockOnly && p.inStock) return false;
       if (p.price < minPrice || p.price > maxPrice) return false;
       return true;
     });
-  }, [selectedMetals, inStockOnly, outOfStockOnly, minPrice, maxPrice]);
+  }, [products, selectedMetals, inStockOnly, outOfStockOnly, minPrice, maxPrice]);
 
   return (
     <section
@@ -583,7 +561,7 @@ export default function RingsCategoryListing({ shapeSlug = "round-brilliant" }: 
                   letterSpacing: "1px",
                 }}
               >
-                Showing <strong style={{ color: "#ffffff" }}>{filteredProducts.length}</strong> of 8 products
+                Showing <strong style={{ color: "#ffffff" }}>{filteredProducts.length}</strong> of {products.length} {products.length === 1 ? "product" : "products"}
               </span>
 
               {/* Sort Dropdown */}
@@ -688,9 +666,22 @@ export default function RingsCategoryListing({ shapeSlug = "round-brilliant" }: 
                       </span>
                     )}
 
-                    {/* Product Image Placeholder Box */}
-                    <div style={{ width: "100%", height: "240px", marginBottom: "16px" }}>
-                      <ImagePlaceholder height="100%" label="IMAGE PLACEHOLDER" />
+                    {/* Product Image Box */}
+                    <div style={{ width: "100%", height: "240px", marginBottom: "16px", overflow: "hidden", position: "relative" }}>
+                      {product.image ? (
+                        <img
+                          src={product.image}
+                          alt={product.title}
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        />
+                      ) : (
+                        <ImagePlaceholder height="100%" label="IMAGE PLACEHOLDER" />
+                      )}
+                    </div>
+
+                    {/* Metal Subtitle */}
+                    <div style={{ fontSize: "10px", color: "#c6a45f", letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: "4px" }}>
+                      {product.metal}
                     </div>
 
                     {/* Product Title */}

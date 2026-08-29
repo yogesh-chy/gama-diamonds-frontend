@@ -63,7 +63,7 @@ export const bespokeProcessRows: BespokeProcessRow[] = [
   {
     title: "Production",
     description:
-      "Master goldsmiths bring your design to life in our London workshop using traditional hand-setting techniques combined with precision micro-pavé and channel-setting methods. Each piece is cast, hand-finished, and polished through multiple stages — including rhodium plating for white gold pieces — to achieve a flawless surface. Ethically sourced natural diamonds and premium lab-grown stones are individually hand-selected and set under magnification, ensuring optimal brilliance and secure placement.",
+      "Master goldsmiths bring your design to life in our Mumbai workshop using traditional hand-setting techniques combined with precision micro-pavé and channel-setting methods. Each piece is cast, hand-finished, and polished through multiple stages — including rhodium plating for white gold pieces — to achieve a flawless surface. Ethically sourced natural diamonds and premium lab-grown stones are individually hand-selected and set under magnification, ensuring optimal brilliance and secure placement.",
     imageLabel: "Production",
     imageSrc: "/bespoke/bespoke_step3.png",
   },

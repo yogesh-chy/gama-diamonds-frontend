@@ -39,7 +39,7 @@ export default function JewelleryShowroomSection() {
             >
               <img
                 src="/heritage.png"
-                alt="Gama Fine Jewellery Hatton Garden London Showroom"
+                alt="Gama Fine Jewellery Mumbai Showroom"
                 style={{
                   width: "100%",
                   height: "100%",
@@ -99,8 +99,8 @@ export default function JewelleryShowroomSection() {
                 maxWidth: "500px",
               }}
             >
-              Visit our flagship showroom located in the heart of London&apos;s historical
-              jewellery quarter, Hatton Garden. Experience our bespoke consultation and
+              Visit our flagship showroom located in the heart of Mumbai&apos;s
+              Marol, Andheri. Experience our bespoke consultation and
               view our fine collection in person.
             </p>
 
@@ -130,7 +130,7 @@ export default function JewelleryShowroomSection() {
               </Link>
 
               <a
-                href="https://maps.google.com/?q=Hatton+Garden+London"
+                href="https://maps.google.com/?q=Marol+Andheri+East+Mumbai"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{

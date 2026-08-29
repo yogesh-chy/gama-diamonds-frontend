@@ -34,7 +34,7 @@ export default function JewelleryBrillianceSection() {
           >
             DISCOVER FINE BRILLIANCE AT
             <br />
-            GAMA JEWELS LONDON
+            GAMA JEWELS MUMBAI
           </h2>
 
           <p
@@ -49,8 +49,8 @@ export default function JewelleryBrillianceSection() {
               marginInline: "auto",
             }}
           >
-            Visit our Hatton Garden showroom or explore our online collection to discover
-            exquisite diamond jewellery handcrafted to perfection by London master jewellers.
+            Visit our Mumbai showroom or explore our online collection to discover
+            exquisite diamond jewellery handcrafted to perfection by master jewellers.
           </p>
 
           <Link

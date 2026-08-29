@@ -7,7 +7,7 @@ import CertificationBar from "@/components/landing/CertificationBar";
 export const metadata = {
   title: "Bracelets & Bangles | Gama Jewels – Fine Jewellery",
   description:
-    "Explore our handcrafted diamond & gemstone bracelets and bangles. Crafted by master goldsmiths in Hatton Garden, London.",
+    "Explore our handcrafted diamond & gemstone bracelets and bangles. Crafted by master goldsmiths in Mumbai.",
 };
 
 const BRACELET_METALS = [

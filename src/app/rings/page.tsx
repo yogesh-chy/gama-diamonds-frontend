@@ -12,7 +12,7 @@ import CertificationBar from "@/components/landing/CertificationBar";
 export const metadata = {
   title: "Engagement Rings | Gama Jewels – Handcrafted Fine Jewellery",
   description:
-    "Discover our exquisite collection of engagement rings. From solitaire to halo, every ring is handcrafted by master goldsmiths in Hatton Garden, London.",
+    "Discover our exquisite collection of engagement rings. From solitaire to halo, every ring is handcrafted by master goldsmiths in Mumbai.",
 };
 
 export default function EngagementRingsPage() {

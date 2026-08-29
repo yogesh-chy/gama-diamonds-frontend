@@ -7,7 +7,7 @@ import CertificationBar from "@/components/landing/CertificationBar";
 export const metadata = {
   title: "Earrings | Gama Jewels – Fine Jewellery",
   description:
-    "Explore our handcrafted diamond & gemstone earrings. Crafted by master goldsmiths in Hatton Garden, London.",
+    "Explore our handcrafted diamond & gemstone earrings. Crafted by master goldsmiths in Mumbai.",
 };
 
 const EARRINGS_PRODUCTS: ProductItem[] = [

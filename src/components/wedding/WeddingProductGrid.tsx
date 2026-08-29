@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCurrency } from "@/context/CurrencyContext";
+import { productsApi } from "@/lib/api/products";
 
 export interface WeddingProduct {
   id: string;
@@ -15,172 +16,6 @@ export interface WeddingProduct {
   badge?: "BESTSELLER" | "POPULAR" | "NEW" | "CUSTOMISABLE" | "EXCLUSIVE";
   href: string;
 }
-
-const INITIAL_WEDDING_PRODUCTS: WeddingProduct[] = [
-  // ETERNITY RINGS (WOMEN) - 8 PRODUCTS (4x2 GRID)
-  {
-    id: "wed-01",
-    title: "Women's Classic Micro-Pave Diamond Wedding Band",
-    category: "women",
-    metal: "18K Yellow Gold",
-    price: 1250,
-    image: "/women_wedding_ring.png",
-    badge: "BESTSELLER",
-    href: "/wedding/womens-plain",
-  },
-  {
-    id: "wed-02",
-    title: "Women's Full Eternity Diamond Band in 18ct White Gold",
-    category: "women",
-    metal: "18ct White Gold",
-    price: 2150,
-    image: "/women_wedding_ring.png",
-    badge: "POPULAR",
-    href: "/wedding/eternity",
-  },
-  {
-    id: "wed-03",
-    title: "Women's Delicate Claw-Set Diamond Wedding Ring",
-    category: "women",
-    metal: "Platinum 950",
-    price: 1480,
-    image: "/women_wedding_ring.png",
-    badge: "NEW",
-    href: "/wedding/womens-plain",
-  },
-  {
-    id: "wed-04",
-    title: "Women's Scalloped Pave Diamond Band",
-    category: "women",
-    metal: "18ct Rose Gold",
-    price: 1890,
-    image: "/women_wedding_ring.png",
-    badge: "CUSTOMISABLE",
-    href: "/wedding/womens-plain",
-  },
-  {
-    id: "wed-09",
-    title: "Women's Round Diamond Seven Stone Wedding Band",
-    category: "women",
-    metal: "18ct Yellow Gold",
-    price: 1650,
-    image: "/women_wedding_ring.png",
-    badge: "BESTSELLER",
-    href: "/wedding/womens-plain",
-  },
-  {
-    id: "wed-10",
-    title: "Women's Princess Cut Channel Set Eternity Band",
-    category: "women",
-    metal: "Platinum 950",
-    price: 2400,
-    image: "/women_wedding_ring.png",
-    badge: "EXCLUSIVE",
-    href: "/wedding/eternity",
-  },
-  {
-    id: "wed-11",
-    title: "Women's Emerald Cut Half Eternity Diamond Ring",
-    category: "women",
-    metal: "18ct White Gold",
-    price: 2890,
-    image: "/women_wedding_ring.png",
-    badge: "POPULAR",
-    href: "/wedding/eternity",
-  },
-  {
-    id: "wed-12",
-    title: "Women's Oval Diamond Claw Set Eternity Band",
-    category: "women",
-    metal: "18ct Yellow Gold",
-    price: 3200,
-    image: "/women_wedding_ring.png",
-    badge: "NEW",
-    href: "/wedding/eternity",
-  },
-
-  // MEN'S WEDDING RINGS - 8 PRODUCTS (4x2 GRID)
-  {
-    id: "wed-05",
-    title: "Men's Heavy Court Satin Finish Wedding Band",
-    category: "men",
-    metal: "Platinum 950",
-    price: 980,
-    image: "/men_wedding_ring.png",
-    badge: "BESTSELLER",
-    href: "/wedding/mens-plain",
-  },
-  {
-    id: "wed-06",
-    title: "Men's Chamfered Edge Polished Wedding Ring",
-    category: "men",
-    metal: "18K Yellow Gold",
-    price: 890,
-    image: "/men_wedding_ring.png",
-    badge: "POPULAR",
-    href: "/wedding/mens-plain",
-  },
-  {
-    id: "wed-07",
-    title: "Men's Brushed & Polished Dual Tone Wedding Ring",
-    category: "men",
-    metal: "18ct White & Yellow Gold",
-    price: 1150,
-    image: "/men_wedding_ring.png",
-    badge: "CUSTOMISABLE",
-    href: "/wedding/mens-diamond",
-  },
-  {
-    id: "wed-08",
-    title: "Men's Classic Traditional Court Wedding Band",
-    category: "men",
-    metal: "9K Yellow Gold",
-    price: 620,
-    image: "/men_wedding_ring.png",
-    badge: "EXCLUSIVE",
-    href: "/wedding/mens-plain",
-  },
-  {
-    id: "wed-13",
-    title: "Men's Flat Court Matte Finish Band in Platinum 950",
-    category: "men",
-    metal: "Platinum 950",
-    price: 1250,
-    image: "/men_wedding_ring.png",
-    badge: "BESTSELLER",
-    href: "/wedding/mens-plain",
-  },
-  {
-    id: "wed-14",
-    title: "Men's Soft Court Wedding Band in 18K White Gold",
-    category: "men",
-    metal: "18K White Gold",
-    price: 980,
-    image: "/men_wedding_ring.png",
-    badge: "POPULAR",
-    href: "/wedding/mens-plain",
-  },
-  {
-    id: "wed-15",
-    title: "Men's Beaded Edge Polished Wedding Ring",
-    category: "men",
-    metal: "18K Yellow Gold",
-    price: 1050,
-    image: "/men_wedding_ring.png",
-    badge: "NEW",
-    href: "/wedding/mens-pattern",
-  },
-  {
-    id: "wed-16",
-    title: "Men's Heavy Flat Court Ring in 18ct Rose Gold",
-    category: "men",
-    metal: "18ct Rose Gold",
-    price: 1420,
-    image: "/men_wedding_ring.png",
-    badge: "EXCLUSIVE",
-    href: "/wedding/mens-plain",
-  },
-];
 
 interface WeddingProductGridProps {
   selectedCategory?: "all" | "women" | "men";
@@ -195,6 +30,34 @@ export default function WeddingProductGrid({
     selectedCategory
   );
   const { formatPrice } = useCurrency();
+  const [products, setProducts] = useState<WeddingProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchWeddingBands() {
+      setLoading(true);
+      try {
+        const res = await productsApi.getProducts({ category: "wedding-bands" });
+        const list = res.data?.data || [];
+        const mapped: WeddingProduct[] = list.map((item: any) => ({
+          id: String(item.id || item.slug),
+          title: item.name,
+          category: item.gender === "men" ? "men" : "women",
+          metal: item.metal_type?.replace("-", " ") || "18K Gold",
+          price: typeof item.base_price === "number" ? item.base_price : parseFloat(item.base_price || "0") || 0,
+          image: item.images?.[0]?.url || "/women_wedding_ring.png",
+          badge: item.is_featured ? "BESTSELLER" : undefined,
+          href: `/product/${item.id || item.slug}`,
+        }));
+        setProducts(mapped);
+      } catch (err) {
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchWeddingBands();
+  }, []);
 
   const activeCategory = onCategoryChange ? selectedCategory : internalCategory;
 
@@ -208,8 +71,10 @@ export default function WeddingProductGrid({
 
   const filteredProducts =
     activeCategory === "men"
-      ? INITIAL_WEDDING_PRODUCTS.filter((p) => p.category === "men")
-      : INITIAL_WEDDING_PRODUCTS.filter((p) => p.category === "women");
+      ? products.filter((p) => p.category === "men")
+      : activeCategory === "women"
+      ? products.filter((p) => p.category === "women")
+      : products;
 
   return (
     <section

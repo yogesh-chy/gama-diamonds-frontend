@@ -12,7 +12,7 @@ import CertificationBar from "@/components/landing/CertificationBar";
 export const metadata = {
   title: "Bespoke Engagement Rings | Gama Jewels – Custom Fine Jewellery",
   description:
-    "Create your dream engagement ring with Gama Jewels. Bespoke designs crafted by master goldsmiths in Hatton Garden, London — from concept to certification.",
+    "Create your dream engagement ring with Gama Jewels. Bespoke designs crafted by master goldsmiths in Mumbai — from concept to certification.",
 };
 
 export default function BespokePage() {

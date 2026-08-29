@@ -75,7 +75,7 @@ export default function CategoryListing({
   customMetals,
   customColors,
   customCarats,
-  defaultMinPrice = 39,
+  defaultMinPrice = 0,
   defaultMaxPrice = 47800.9,
   hideDiamondType = false,
   hideCarat = false,
@@ -96,7 +96,7 @@ export default function CategoryListing({
         if (cancelled || !res.data?.data) return;
         const apiData = res.data.data;
         if (Array.isArray(apiData) && apiData.length > 0) {
-          const mapped: ProductItem[] = apiData.map((p) => ({
+          const mapped: ProductItem[] = apiData.map((p: any) => ({
             id: String(p.id),
             title: p.name,
             metal: p.metal_type || "18ct White Gold",
@@ -106,6 +106,7 @@ export default function CategoryListing({
             diamondType: "Natural Diamond",
             carat: String(p.diamond_spec?.carat_weight || p.diamond_spec?.caratWeight || "1.00ct"),
             style: p.diamond_cut || p.earring_type || p.necklace_style || p.bracelet_type || "Classic",
+            image: p.thumbnail || p.images?.find((img: any) => img.isPrimary || img.is_primary)?.url || p.images?.[0]?.url || p.variants?.[0]?.images?.[0]?.url || p.image,
           }));
           setProductList(mapped);
         }
@@ -1231,9 +1232,17 @@ export default function CategoryListing({
                         </span>
                       )}
 
-                      {/* Product Image Placeholder Box */}
-                      <div style={{ width: "100%", height: "240px", marginBottom: "16px" }}>
-                        <ImagePlaceholder height="100%" label="IMAGE PLACEHOLDER" />
+                      {/* Product Image Box */}
+                      <div style={{ width: "100%", height: "240px", marginBottom: "16px", overflow: "hidden", position: "relative" }}>
+                        {product.image ? (
+                          <img
+                            src={product.image}
+                            alt={product.title}
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                        ) : (
+                          <ImagePlaceholder height="100%" label="IMAGE PLACEHOLDER" />
+                        )}
                       </div>
 
                       {/* Product Title */}

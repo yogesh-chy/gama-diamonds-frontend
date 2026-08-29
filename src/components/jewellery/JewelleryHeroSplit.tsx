@@ -70,7 +70,7 @@ export default function JewelleryHeroSplit() {
             >
               Discover our handcrafted fine diamond jewellery collection. From elegant
               pendants and classic tennis bracelets to solitaire diamond studs and
-              statement hoops, crafted in London with precision and care.
+              statement hoops, crafted in Mumbai with precision and care.
             </p>
 
             <Link
