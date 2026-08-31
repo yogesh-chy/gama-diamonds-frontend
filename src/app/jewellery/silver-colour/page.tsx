@@ -1,14 +1,26 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import CategoryListing, { ProductItem } from "@/components/rings/CategoryListing";
-import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
-import CertificationBar from "@/components/landing/CertificationBar";
+import SilverColourClient from "./SilverColourClient";
 
 export const metadata = {
   title: "Silver Colour Jewellery | Gama Jewels – Fine White Gold & Platinum Jewellery",
   description:
     "Explore our Silver Colour jewellery collection — timeless pieces crafted in sterling silver, white gold, and platinum tones.",
 };
+
+export default function SilverColourPage() {
+  return (
+    <div className="page-bg" style={{ backgroundColor: "#000000", color: "#ffffff" }}>
+      <Header />
+      <SilverColourClient />
+      <Footer />
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   ARCHIVED MOCK DATA (NO LONGER USED)
+   ───────────────────────────────────────── */
 
 const SILVER_METALS = [
   "9K White Gold",
@@ -31,7 +43,7 @@ const SILVER_CARATS = [
   "1.20ct",
 ];
 
-const SILVER_COLOUR_PRODUCTS: ProductItem[] = [
+const SILVER_COLOUR_PRODUCTS = [
   {
     id: "sc-01",
     title: "Round Brilliant Diamond Tennis Necklace in Platinum",
@@ -165,26 +177,3 @@ const SILVER_COLOUR_PRODUCTS: ProductItem[] = [
     style: "Line Bracelet",
   },
 ];
-
-export default function SilverColourPage() {
-  return (
-    <div className="page-bg" style={{ backgroundColor: "#000000", color: "#ffffff" }}>
-      <Header />
-      <CategoryListing
-        products={SILVER_COLOUR_PRODUCTS}
-        categoryTitle="Silver Colour Jewellery"
-        customMetals={SILVER_METALS}
-        customCarats={SILVER_CARATS}
-        defaultMinPrice={290}
-        defaultMaxPrice={8700}
-        hideDiamondType={false}
-        hideCarat={false}
-        hideColor={true}
-        hideStyle={true}
-      />
-      <RingsRecentlyViewed />
-      <CertificationBar />
-      <Footer />
-    </div>
-  );
-}

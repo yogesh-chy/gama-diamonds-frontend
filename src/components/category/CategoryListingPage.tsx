@@ -141,24 +141,64 @@ export default function CategoryListingPage({
     setSortBy("featured");
   };
 
+  const normalizeText = (value?: string | null) => {
+    if (!value) return "";
+    const aliasMap: Record<string, string> = {
+      "18k white gold": "18ct white gold",
+      "18 ct white gold": "18ct white gold",
+      "18k yellow gold": "18ct yellow gold",
+      "18 ct yellow gold": "18ct yellow gold",
+      "18k rose gold": "18ct rose gold",
+      "18 ct rose gold": "18ct rose gold",
+      "950 platinum": "platinum",
+      "platinum 950": "platinum",
+      "studs": "stud earrings",
+      "stud": "stud earrings",
+      "hoops": "hoop earrings",
+      "hoop": "hoop earrings",
+      "drops": "drop earrings",
+      "drop": "drop earrings",
+      "trilogy": "three stone",
+      "three stone": "three stone",
+      "three-stone": "three stone",
+      "diamond shoulder": "diamond shoulder",
+      "diamond shoulders": "diamond shoulder",
+    };
+
+    const compact = String(value).toLowerCase().replace(/&/g, " and ");
+    const cleaned = compact.replace(/[^a-z0-9]+/g, " ").trim();
+    return (aliasMap[cleaned] || cleaned).replace(/\s+/g, " ");
+  };
+
+  const matchesAnyNormalized = (value: string | undefined, selected: string[]) => {
+    if (selected.length === 0) return true;
+    const normalizedValue = normalizeText(value);
+    if (!normalizedValue) return false;
+
+    return selected.some((item) => {
+      const normalizedItem = normalizeText(item);
+      return (
+        normalizedItem === normalizedValue ||
+        normalizedValue.includes(normalizedItem) ||
+        normalizedItem.includes(normalizedValue)
+      );
+    });
+  };
+
   // Filter Logic
   const filteredProducts = useMemo(() => {
     let result = [...productList];
 
     if (selectedMetals.length > 0) {
-      result = result.filter((p) => selectedMetals.includes(p.metal));
+      result = result.filter((p) => matchesAnyNormalized(p.metal, selectedMetals));
     }
 
     if (selectedGemstones.length > 0) {
-      result = result.filter((p) =>
-        selectedGemstones.some((g) => p.gemstone.toLowerCase().includes(g.toLowerCase()))
-      );
+      result = result.filter((p) => matchesAnyNormalized(p.gemstone, selectedGemstones));
     }
 
     if (selectedStyles.length > 0) {
-      result = result.filter((p) =>
-        selectedStyles.some((s) => p.style.toLowerCase() === s.toLowerCase())
-      );
+      result = result.filter((p) => matchesAnyNormalized(p.style, selectedStyles));
     }
 
     if (inStockOnly) {

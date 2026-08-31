@@ -15,6 +15,7 @@ export interface ProductItem {
   price: number;
   badge?: string;
   inStock: boolean;
+  image?: string;
   diamondType?: "Lab Grown Diamond" | "Natural Diamond";
   carat?: string;
   style?: string;
@@ -86,32 +87,169 @@ export default function CategoryListing({
   const { formatPrice } = useCurrency();
   const [productList, setProductList] = useState<ProductItem[]>(initialProducts);
 
-  // Sync backend live products for this category
+  const safeNumber = (value: unknown): number => {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value === "string") {
+      const cleaned = Number(value.replace(/[^0-9.-]/g, ""));
+      return Number.isFinite(cleaned) ? cleaned : 0;
+    }
+    if (value && typeof value === "object") {
+      const maybe = value as { min?: number | string; max?: number | string; price?: number | string; value?: number | string };
+      const direct = maybe.min ?? maybe.max ?? maybe.price ?? maybe.value;
+      if (direct !== undefined && direct !== null) return safeNumber(direct);
+    }
+    return 0;
+  };
+
+  // Sync backend live products for this category (NO MOCKUPS)
   useEffect(() => {
     let cancelled = false;
-    const catSlug = categoryTitle.toLowerCase().replace(/\s+rings?$/, "").replace(/\s+jewellery$/, "");
-    productsApi
-      .getProducts({ category: catSlug, status: "active" })
-      .then((res) => {
-        if (cancelled || !res.data?.data) return;
-        const apiData = res.data.data;
-        if (Array.isArray(apiData) && apiData.length > 0) {
-          const mapped: ProductItem[] = apiData.map((p: any) => ({
-            id: String(p.id),
-            title: p.name,
-            metal: p.metal_type || "18ct White Gold",
-            price: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
-            badge: p.is_featured ? "EXCLUSIVE" : "NEXT DAY",
-            inStock: p.total_stock > 0 || (p.totalStock ?? 0) > 0,
-            diamondType: "Natural Diamond",
-            carat: String(p.diamond_spec?.carat_weight || p.diamond_spec?.caratWeight || "1.00ct"),
-            style: p.diamond_cut || p.earring_type || p.necklace_style || p.bracelet_type || "Classic",
-            image: p.thumbnail || p.images?.find((img: any) => img.isPrimary || img.is_primary)?.url || p.images?.[0]?.url || p.variants?.[0]?.images?.[0]?.url || p.image,
-          }));
-          setProductList(mapped);
+    const titleLower = categoryTitle.toLowerCase().trim();
+    const derivedSlug = titleLower.replace(/\s+rings?$/, "").replace(/\s+jewellery$/, "");
+
+    const SLUG_CANDIDATES_MAP: Record<string, string[]> = {
+      "eternity rings": ["eternity-bands", "eternity", "eternity-rings", "eternity-ring"],
+      "eternity ring": ["eternity-bands", "eternity", "eternity-rings", "eternity-ring"],
+      "eternity": ["eternity-bands", "eternity", "eternity-rings", "eternity-ring"],
+      "engagement rings": ["engagement-rings", "engagement", "rings"],
+      "engagement ring": ["engagement-rings", "engagement", "rings"],
+      "wedding bands": ["wedding-bands", "wedding", "wedding-rings"],
+      "wedding rings": ["wedding-bands", "wedding", "wedding-rings"],
+      "men's wedding rings": ["wedding-bands"],
+      "men's plain wedding rings": ["wedding-bands"],
+      "men's plain": ["wedding-bands"],
+      "women's wedding rings": ["wedding-bands"],
+      "women's plain wedding rings": ["wedding-bands"],
+      "women's plain": ["wedding-bands"],
+      "bracelets & bangles": ["bracelets", "bangles", "bracelet", "bangle", "tennis-bracelets"],
+      "tennis bracelets": ["tennis-bracelets", "bracelets", "bracelet"],
+      "pendants": ["pendants", "pendant", "cross-pendants", "heart-pendants", "necklaces"],
+      "cross pendants": ["cross-pendants", "pendants", "pendant", "necklaces"],
+      "heart pendants": ["heart-pendants", "pendants", "pendant", "necklaces"],
+      "necklace": ["necklaces", "necklace", "pendants", "pendant"],
+      "necklaces & pendants": ["necklaces", "necklace", "pendants", "pendant"],
+      "earrings": ["earrings", "earring", "hoop-earrings", "solitaire-studs"],
+      "hoop earrings": ["hoop-earrings", "earrings", "earring"],
+      "solitaire studs": ["solitaire-studs", "earrings", "earring"],
+      "hot diamonds": ["hot-diamonds", "other", "jewellery"],
+      "gold colour jewellery": ["jewellery", "other"],
+      "rose gold jewellery": ["jewellery", "other"],
+      "silver colour jewellery": ["jewellery", "other"],
+    };
+
+    const candidates = SLUG_CANDIDATES_MAP[titleLower] || [derivedSlug];
+
+    async function loadCategoryProducts() {
+      try {
+        let apiData: any[] = [];
+
+        // Try candidate category slugs
+        for (const candidate of candidates) {
+          const res = await productsApi.getProducts({ category: candidate, status: "active", limit: 100 });
+          const items = res.data?.data || [];
+          if (Array.isArray(items) && items.length > 0) {
+            apiData = items;
+            break;
+          }
         }
-      })
-      .catch(() => {});
+
+        // Fallback: If still empty, fetch recent active products and filter by candidate category match
+        if (apiData.length === 0) {
+          const allRes = await productsApi.getProducts({ status: "active", limit: 100 });
+          const allItems = allRes.data?.data || [];
+          if (Array.isArray(allItems) && allItems.length > 0) {
+            const matched = allItems.filter((p: any) => {
+              const pCat = String(p.category || "").toLowerCase();
+              const pName = String(p.name || "").toLowerCase();
+              const pGender = String(p.gender || "").toLowerCase();
+              const titleWords = titleLower.split(/\s+/);
+
+              const categoryMatch = candidates.some((cand) => pCat.includes(cand) || cand.includes(pCat));
+              const titleGenderMatch =
+                (titleLower.includes("men") && pGender === "men") ||
+                (titleLower.includes("women") && pGender === "women");
+              const plainWeddingMatch =
+                (titleLower.includes("wedding") || titleLower.includes("band")) &&
+                (pName.includes("wedding") || pName.includes("band")) &&
+                (titleLower.includes("plain") ? pName.includes("plain") || pName.includes("court") : true);
+
+              return categoryMatch || titleGenderMatch || plainWeddingMatch;
+            });
+            if (matched.length > 0) {
+              apiData = matched;
+            }
+          }
+        }
+
+        if (cancelled) return;
+
+        if (Array.isArray(apiData) && apiData.length > 0) {
+          const mapped: ProductItem[] = apiData.map((p: any) => {
+            const firstVar = p.variants?.[0];
+            let formattedMetal = "18K Gold";
+            if (firstVar?.metal_karat && firstVar?.metal_type) {
+              const typeClean = firstVar.metal_type.replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
+              formattedMetal = `${firstVar.metal_karat} ${typeClean}`;
+            } else if (p.metal_type) {
+              const mClean = p.metal_type.replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
+              formattedMetal = p.metal_karat ? `${p.metal_karat} ${mClean}` : `18K ${mClean}`;
+            }
+
+            const rawCarat = p.diamond_spec?.total_carat_weight || p.diamond_spec?.carat_weight || p.diamond_spec?.caratWeight || "1.00";
+            const formattedCarat = String(rawCarat).includes("ct") ? String(rawCarat) : `${rawCarat}ct`;
+
+            const rawOrigin = p.diamond_spec?.diamond_origin || "lab_grown";
+            const formattedOrigin = rawOrigin === "natural" ? "Natural Diamond" : "Lab Grown Diamond";
+
+            let rawStyle = p.earring_style || p.earring_type || p.diamond_cut || p.necklace_style || p.bracelet_type || "Classic";
+            const styleLower = String(rawStyle).toLowerCase();
+            if (styleLower.includes("hoop")) rawStyle = "Hoop Earrings";
+            else if (styleLower.includes("stud")) rawStyle = "Stud Earrings";
+            else if (styleLower.includes("drop")) rawStyle = "Drop Earrings";
+
+            const mainImage =
+              p.thumbnail ||
+              p.images?.find((img: any) => img.isPrimary || img.is_primary)?.url ||
+              p.images?.[0]?.url ||
+              p.variants?.[0]?.images?.[0]?.url ||
+              p.image ||
+              "/shopbycategory/earings.png";
+
+            const mappedPrice =
+              safeNumber(p.base_price) ||
+              safeNumber(p.discount_price) ||
+              safeNumber(p.pricing?.basePrice) ||
+              safeNumber(p.pricing?.discountPrice) ||
+              safeNumber(p.variants?.[0]?.price) ||
+              safeNumber(p.price) ||
+              0;
+
+            return {
+              id: String(p.id),
+              title: p.name,
+              metal: formattedMetal,
+              price: mappedPrice,
+              badge: p.is_featured ? "EXCLUSIVE" : "NEXT DAY",
+              inStock: p.total_stock > 0 || (p.totalStock ?? 0) > 0,
+              diamondType: formattedOrigin as "Lab Grown Diamond" | "Natural Diamond",
+              carat: formattedCarat,
+              style: rawStyle,
+              image: mainImage,
+            };
+          });
+
+          setProductList(mapped);
+        } else {
+          // No live products found - display empty list (NO MOCKUPS!)
+          setProductList([]);
+        }
+      } catch (err) {
+        if (!cancelled) setProductList([]);
+      }
+    }
+
+    loadCategoryProducts();
+
     return () => {
       cancelled = true;
     };
@@ -185,6 +323,58 @@ export default function CategoryListing({
     setSortBy("featured");
   };
 
+  const normalizeText = (value?: string | null) => {
+    if (!value) return "";
+    const aliasMap: Record<string, string> = {
+      "18k white gold": "18ct white gold",
+      "18 ct white gold": "18ct white gold",
+      "18k yellow gold": "18ct yellow gold",
+      "18 ct yellow gold": "18ct yellow gold",
+      "18k rose gold": "18ct rose gold",
+      "18 ct rose gold": "18ct rose gold",
+      "14k white gold": "14k white gold",
+      "9k white gold": "9k white gold",
+      "9k yellow gold": "9k yellow gold",
+      "9k rose gold": "9k rose gold",
+      "950 platinum": "platinum",
+      "platinum 950": "platinum",
+      "studs": "stud earrings",
+      "stud": "stud earrings",
+      "hoops": "hoop earrings",
+      "hoop": "hoop earrings",
+      "drops": "drop earrings",
+      "drop": "drop earrings",
+      "earrings": "earrings",
+      "solitaire": "solitaire",
+      "halo": "halo",
+      "under halo": "under halo",
+      "three stone": "three stone",
+      "trilogy": "three stone",
+      "diamond shoulder": "diamond shoulder",
+      "diamond shoulders": "diamond shoulder",
+    };
+
+    const step1 = String(value).toLowerCase().replace(/&/g, " and ");
+    const step2 = step1.replace(/[^a-z0-9]+/g, " ").trim();
+    const direct = aliasMap[step2] || step2;
+    return direct.replace(/\s+/g, " ");
+  };
+
+  const matchesAnyNormalized = (value: string | undefined, selected: string[]) => {
+    if (selected.length === 0) return true;
+    const normalizedValue = normalizeText(value);
+    if (!normalizedValue) return false;
+
+    return selected.some((item) => {
+      const normalizedItem = normalizeText(item);
+      return (
+        normalizedItem === normalizedValue ||
+        normalizedValue.includes(normalizedItem) ||
+        normalizedItem.includes(normalizedValue)
+      );
+    });
+  };
+
   // Compute available styles dynamically if not provided
   const availableStyles = useMemo(() => {
     if (customStyles.length > 0) return customStyles;
@@ -198,15 +388,15 @@ export default function CategoryListing({
       if (inStockOnly && !p.inStock) return false;
       if (
         selectedDiamondTypes.length > 0 &&
-        (!p.diamondType || !selectedDiamondTypes.includes(p.diamondType))
+        (!p.diamondType || !matchesAnyNormalized(p.diamondType, selectedDiamondTypes))
       )
         return false;
-      if (selectedMetals.length > 0 && !selectedMetals.includes(p.metal)) return false;
-      if (selectedCarats.length > 0 && (!p.carat || !selectedCarats.includes(p.carat)))
+      if (selectedMetals.length > 0 && !matchesAnyNormalized(p.metal, selectedMetals)) return false;
+      if (selectedCarats.length > 0 && !matchesAnyNormalized(p.carat, selectedCarats))
         return false;
-      if (selectedStyles.length > 0 && (!p.style || !selectedStyles.includes(p.style)))
+      if (selectedStyles.length > 0 && !matchesAnyNormalized(p.style, selectedStyles))
         return false;
-      if (selectedColors.length > 0 && (!p.color || !selectedColors.includes(p.color)))
+      if (selectedColors.length > 0 && !matchesAnyNormalized(p.color, selectedColors))
         return false;
       if (p.price < minPrice || p.price > maxPrice) return false;
       return true;
@@ -1197,85 +1387,41 @@ export default function CategoryListing({
                     style={{ textDecoration: "none" }}
                   >
                     <motion.div
-                      whileHover={{ y: -4 }}
                       transition={{ duration: 0.2 }}
+                      className="product-card"
                       style={{
-                        backgroundColor: "rgba(255, 255, 255, 0.015)",
+                        backgroundColor: "#090909",
                         border: "1px solid rgba(255, 255, 255, 0.08)",
-                        padding: "16px",
                         display: "flex",
                         flexDirection: "column",
                         position: "relative",
-                        transition: "border-color 0.3s ease",
+                        transition: "border-color 0.3s ease, transform 0.2s ease",
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(198, 164, 95, 0.4)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.08)")}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = "rgba(198, 164, 95, 0.4)";
+                        e.currentTarget.style.transform = "translateY(-3px)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.08)";
+                        e.currentTarget.style.transform = "translateY(0)";
+                      }}
                     >
-                      {/* Badge */}
                       {product.badge && (
-                        <span
-                          style={{
-                            position: "absolute",
-                            top: "24px",
-                            left: "24px",
-                            zIndex: 2,
-                            fontSize: "9px",
-                            fontWeight: "700",
-                            letterSpacing: "1.5px",
-                            textTransform: "uppercase",
-                            backgroundColor: "#c6a45f",
-                            color: "#000000",
-                            padding: "3px 8px",
-                          }}
-                        >
-                          {product.badge}
-                        </span>
+                        <span className="product-badge">{product.badge}</span>
                       )}
 
-                      {/* Product Image Box */}
-                      <div style={{ width: "100%", height: "240px", marginBottom: "16px", overflow: "hidden", position: "relative" }}>
+                      <div className="product-image-block">
                         {product.image ? (
-                          <img
-                            src={product.image}
-                            alt={product.title}
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                          />
+                          <img src={product.image} alt={product.title} />
                         ) : (
                           <ImagePlaceholder height="100%" label="IMAGE PLACEHOLDER" />
                         )}
                       </div>
 
-                      {/* Product Title */}
-                      <h3
-                        style={{
-                          fontFamily: "'Poppins', sans-serif",
-                          fontSize: "12px",
-                          fontWeight: "500",
-                          color: "#dddddd",
-                          lineHeight: "1.5",
-                          marginBottom: "10px",
-                          height: "36px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                        }}
-                      >
-                        {product.title}
-                      </h3>
-
-                      {/* Product Price */}
-                      <div
-                        style={{
-                          fontFamily: "'Playfair Display', serif",
-                          fontSize: "15px",
-                          fontWeight: "600",
-                          color: "#c6a45f",
-                          marginTop: "auto",
-                        }}
-                      >
-                        {formatPrice(product.price)}
+                      <div className="product-card-body">
+                        <div className="product-card-subtitle">{product.diamondType || product.metal}</div>
+                        <h3 className="product-card-title">{product.title}</h3>
+                        <div className="product-card-price">{formatPrice(product.price || 0)}</div>
                       </div>
                     </motion.div>
                   </Link>

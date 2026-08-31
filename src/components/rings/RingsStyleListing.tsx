@@ -19,7 +19,7 @@ interface Product {
   price: number;
   badge?: string;
   inStock: boolean;
-  image?: string;
+  image?: string | null;
 }
 
 const STYLE_NAMES: Record<string, string> = {
@@ -167,13 +167,50 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
     setSortBy("featured");
   };
 
+  const normalizeText = (value?: string | null) => {
+    if (!value) return "";
+    const aliasMap: Record<string, string> = {
+      "lab grown diamond": "lab grown diamond",
+      "natural diamond": "natural diamond",
+      "solitaire": "solitaire",
+      "halo": "halo",
+      "under halo": "under halo",
+      "three stone": "three stone",
+      "trilogy": "three stone",
+      "diamond shoulder": "diamond shoulder",
+      "diamond shoulders": "diamond shoulder",
+      "round brilliant": "round brilliant",
+      "oval": "oval",
+      "princess": "princess",
+      "emerald": "emerald",
+    };
+
+    const cleaned = String(value).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    return (aliasMap[cleaned] || cleaned).replace(/\s+/g, " ");
+  };
+
+  const matchesAnyNormalized = (value: string | undefined, selected: string[]) => {
+    if (selected.length === 0) return true;
+    const normalizedValue = normalizeText(value);
+    if (!normalizedValue) return false;
+
+    return selected.some((item) => {
+      const normalizedItem = normalizeText(item);
+      return (
+        normalizedItem === normalizedValue ||
+        normalizedValue.includes(normalizedItem) ||
+        normalizedItem.includes(normalizedValue)
+      );
+    });
+  };
+
   const filteredProducts = useMemo(() => {
     return productList.filter((p) => {
       if (inStockOnly && !p.inStock) return false;
-      if (selectedTypes.length > 0 && !selectedTypes.includes(p.diamondType)) return false;
-      if (selectedShapes.length > 0 && !selectedShapes.includes(p.shape)) return false;
-      if (selectedStyles.length > 0 && !selectedStyles.includes(p.style)) return false;
-      if (selectedColors.length > 0 && p.color && !selectedColors.includes(p.color)) return false;
+      if (selectedTypes.length > 0 && !matchesAnyNormalized(p.diamondType, selectedTypes)) return false;
+      if (selectedShapes.length > 0 && !matchesAnyNormalized(p.shape, selectedShapes)) return false;
+      if (selectedStyles.length > 0 && !matchesAnyNormalized(p.style, selectedStyles)) return false;
+      if (selectedColors.length > 0 && p.color && !matchesAnyNormalized(p.color, selectedColors)) return false;
       if (p.price < minPrice || p.price > maxPrice) return false;
       return true;
     });
@@ -948,9 +985,10 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
                   <motion.div
                     whileHover={{ y: -6 }}
                     transition={{ duration: 0.2 }}
+                    className="product-card"
                     style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.02)",
-                      border: "1px solid rgba(255, 255, 255, 0.06)",
+                      backgroundColor: "#090909",
+                      border: "1px solid rgba(255, 255, 255, 0.08)",
                       borderRadius: "0px",
                       overflow: "hidden",
                       display: "flex",
@@ -958,118 +996,26 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
                       position: "relative",
                       transition: "all 0.3s ease",
                     }}
-                    className="product-card"
                   >
-                    {/* Badge */}
-                    {product.badge && (
-                      <span
-                        style={{
-                          position: "absolute",
-                          top: "12px",
-                          left: "12px",
-                          backgroundColor: "#c6a45f",
-                          color: "#000000",
-                          fontSize: "9px",
-                          fontWeight: "700",
-                          padding: "3px 8px",
-                          letterSpacing: "1px",
-                          zIndex: 2,
-                        }}
-                      >
-                        {product.badge}
-                      </span>
-                    )}
+                    {product.badge && <span className="product-badge">{product.badge}</span>}
 
-                    {/* Diamond Ring Image Preview */}
-                    <div style={{ position: "relative", width: "100%", paddingTop: "100%", overflow: "hidden" }}>
-                      <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}>
-                        {product.image ? (
-                          <img
-                            src={product.image}
-                            alt={product.title}
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                          />
-                        ) : (
-                          <ImagePlaceholder
-                            width="100%"
-                            height="100%"
-                            label={product.title}
-                            aspectRatio="1/1"
-                          />
-                        )}
-                      </div>
+                    <div className="product-image-block">
+                      {product.image ? (
+                        <img src={product.image} alt={product.title} />
+                      ) : (
+                        <ImagePlaceholder
+                          width="100%"
+                          height="100%"
+                          label={product.title}
+                          aspectRatio="1/1"
+                        />
+                      )}
                     </div>
 
-                    {/* Product Details */}
-                    <div
-                      style={{
-                        padding: "16px",
-                        display: "flex",
-                        flexDirection: "column",
-                        flexGrow: 1,
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <div>
-                        <span
-                          style={{
-                            fontSize: "10px",
-                            color: "#c6a45f",
-                            textTransform: "uppercase",
-                            letterSpacing: "1px",
-                            fontFamily: "'Poppins', sans-serif",
-                            display: "block",
-                            marginBottom: "4px",
-                          }}
-                        >
-                          {product.diamondType}
-                        </span>
-                        <h3
-                          style={{
-                            fontFamily: "'Playfair Display', serif",
-                            fontSize: "14px",
-                            fontWeight: "400",
-                            color: "#ffffff",
-                            lineHeight: "1.4",
-                            marginBottom: "12px",
-                          }}
-                        >
-                          {product.title}
-                        </h3>
-                      </div>
-
-                      <div>
-                        <div
-                          style={{
-                            fontFamily: "'Poppins', sans-serif",
-                            fontSize: "14px",
-                            fontWeight: "600",
-                            color: "#c6a45f",
-                            marginBottom: "12px",
-                          }}
-                        >
-                          {formatPrice(product.price)}
-                        </div>
-
-                        <button
-                          style={{
-                            width: "100%",
-                            padding: "10px",
-                            backgroundColor: "transparent",
-                            border: "1px solid #c6a45f",
-                            color: "#c6a45f",
-                            fontFamily: "'Poppins', sans-serif",
-                            fontSize: "11px",
-                            fontWeight: "600",
-                            letterSpacing: "1px",
-                            textTransform: "uppercase",
-                            cursor: "pointer",
-                            transition: "all 0.2s ease",
-                          }}
-                        >
-                          View Details
-                        </button>
-                      </div>
+                    <div className="product-card-body">
+                      <div className="product-card-subtitle">{product.diamondType}</div>
+                      <h3 className="product-card-title">{product.title}</h3>
+                      <div className="product-card-price">{formatPrice(product.price || 0)}</div>
                     </div>
                   </motion.div>
                 </Link>

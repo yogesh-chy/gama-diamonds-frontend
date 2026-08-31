@@ -1,14 +1,26 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import CategoryListing, { ProductItem } from "@/components/rings/CategoryListing";
-import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
-import CertificationBar from "@/components/landing/CertificationBar";
+import GoldColourClient from "./GoldColourClient";
 
 export const metadata = {
   title: "Gold Colour Jewellery | Gama Jewels – Fine Yellow Gold Jewellery",
   description:
     "Discover our exquisite Gold Colour jewellery collection — earrings, necklaces, bracelets, and rings crafted in warm yellow, white and rose gold tones.",
 };
+
+export default function GoldColourPage() {
+  return (
+    <div className="page-bg" style={{ backgroundColor: "#000000", color: "#ffffff" }}>
+      <Header />
+      <GoldColourClient />
+      <Footer />
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   ARCHIVED MOCK DATA (NO LONGER USED)
+   ───────────────────────────────────────── */
 
 const GOLD_METALS = [
   "9K White Gold",
@@ -39,7 +51,7 @@ const GOLD_CARATS = [
   "1.20ct",
 ];
 
-const GOLD_COLOUR_PRODUCTS: ProductItem[] = [
+const GOLD_COLOUR_PRODUCTS = [
   {
     id: "gc-01",
     title: "Round Brilliant Diamond Solitaire Pendant in 18ct Yellow Gold",
@@ -173,26 +185,3 @@ const GOLD_COLOUR_PRODUCTS: ProductItem[] = [
     style: "Heart Pendant",
   },
 ];
-
-export default function GoldColourPage() {
-  return (
-    <div className="page-bg" style={{ backgroundColor: "#000000", color: "#ffffff" }}>
-      <Header />
-      <CategoryListing
-        products={GOLD_COLOUR_PRODUCTS}
-        categoryTitle="Gold Colour Jewellery"
-        customMetals={GOLD_METALS}
-        customCarats={GOLD_CARATS}
-        defaultMinPrice={290}
-        defaultMaxPrice={8700}
-        hideDiamondType={false}
-        hideCarat={false}
-        hideColor={true}
-        hideStyle={true}
-      />
-      <RingsRecentlyViewed />
-      <CertificationBar />
-      <Footer />
-    </div>
-  );
-}

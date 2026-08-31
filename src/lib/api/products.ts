@@ -53,6 +53,7 @@ export interface ProductSize {
 }
 
 export interface DiamondSpec {
+  diamond_shape?: string | null;
   carat_weight?: string | number;
   caratWeight?: string | number;
   center_carat_weight?: string | number | null;
@@ -115,6 +116,10 @@ export interface ProductItem {
   isActive?: boolean;
   is_featured: boolean;
   isFeatured?: boolean;
+  video_url?: string | null;
+  videoUrl?: string | null;
+  thumbnail?: string | null;
+  image?: string | null;
   styles?: number[];
   collections?: number[];
   diamond_type?: number | null;

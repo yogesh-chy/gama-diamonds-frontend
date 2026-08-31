@@ -26,69 +26,12 @@ const CROSS_PENDANT_SIZES = [
   "3.00ct",
 ];
 
-const CROSS_PENDANT_PRODUCTS: ProductItem[] = [
-  {
-    id: "cp-01",
-    title: "Classic Diamond Cross Pendant in 18K White Gold",
-    metal: "18K White Gold",
-    price: 1250,
-    badge: "BESTSELLER",
-    inStock: true,
-    carat: "0.50ct",
-  },
-  {
-    id: "cp-02",
-    title: "Vintage Diamond Cross Pendant in 18K Yellow Gold",
-    metal: "18K Yellow Gold",
-    price: 1850,
-    badge: "POPULAR",
-    inStock: true,
-    carat: "1.00ct",
-  },
-  {
-    id: "cp-03",
-    title: "Petite Diamond Cross Pendant in 18K White Gold",
-    metal: "18K White Gold",
-    price: 650,
-    badge: "NEXT DAY",
-    inStock: true,
-    carat: "0.25ct",
-  },
-  {
-    id: "cp-04",
-    title: "Large Statement Diamond Cross Pendant in 18K Yellow Gold",
-    metal: "18K Yellow Gold",
-    price: 3450,
-    badge: "EXCLUSIVE",
-    inStock: true,
-    carat: "2.00ct",
-  },
-  {
-    id: "cp-05",
-    title: "Micro-Pave Diamond Cross Pendant in 18K White Gold",
-    metal: "18K White Gold",
-    price: 490,
-    badge: "NEW",
-    inStock: true,
-    carat: "0.11ct",
-  },
-  {
-    id: "cp-06",
-    title: "Grand Diamond Cross Pendant in 18K White Gold",
-    metal: "18K White Gold",
-    price: 4850,
-    badge: "EXCLUSIVE",
-    inStock: true,
-    carat: "3.00ct",
-  },
-];
-
 export default function CrossPendantsPage() {
   return (
     <div className="page-bg" style={{ backgroundColor: "#000000", color: "#ffffff" }}>
       <Header />
       <CategoryListing
-        products={CROSS_PENDANT_PRODUCTS}
+        products={[]}
         categoryTitle="Cross Pendants"
         customMetals={CROSS_PENDANT_METALS}
         customCarats={CROSS_PENDANT_SIZES}

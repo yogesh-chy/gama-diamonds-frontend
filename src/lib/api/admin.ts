@@ -6,6 +6,8 @@ export interface AdminProduct {
   slug: string;
   sku: string;
   description: string;
+  product_code?: string;
+  internal_reference?: string;
   category: string;
   subcategory?: string | null;
   base_price: string | number;
@@ -17,21 +19,94 @@ export interface AdminProduct {
   metal_type?: string | null;
   metal_karat?: string | null;
   diamond_cut?: string | null;
-  earring_type?: string | null;
-  necklace_style?: string | null;
-  bracelet_type?: string | null;
+
+  ring_type?: string;
+  ring_style?: string;
+  ring_shape?: string;
+  band_style?: string;
   band_fit?: string | null;
+  band_width?: string;
+  ring_profile?: string;
+  ring_finish?: string;
+  ring_thickness?: string;
+  resizable?: string;
+
+  earring_type?: string | null;
+  earring_style?: string;
+  closure_type?: string;
+  drop_length?: string;
+  earring_width?: string;
+  earring_height?: string;
+
+  necklace_type?: string;
+  necklace_style?: string | null;
+  chain_type?: string;
+  chain_length?: string;
+  pendant_included?: string;
+  pendant_type?: string;
+  pendant_shape?: string;
+  pendant_height?: string;
+  pendant_width?: string;
+  pendant_depth?: string;
+  chain_included?: string;
+  clasp_type?: string;
+
+  bracelet_type?: string | null;
+  bracelet_style?: string;
+  bracelet_length?: string;
+  bracelet_width?: string;
+  bracelet_thickness?: string;
+  bangle_type?: string;
+  inner_diameter?: string;
+  bangle_width?: string;
+  bangle_thickness?: string;
+  opening_type?: string;
+  bangle_size?: string;
+  adjustable?: string;
+
+  gemstone_included?: string;
+  gemstone_type?: string;
+  gemstone_shape?: string;
+  gemstone_colour?: string;
+  gemstone_carat_weight?: string | number | null;
+  gemstone_count?: number | null;
+  gemstone_origin?: string;
+
+  height?: string;
+  width?: string;
+  length?: string;
+  depth?: string;
+  thickness?: string;
+  weight?: string | number | null;
+
   finish?: string;
   customisation_available?: string;
   engraving_available?: string;
+  engraving_character_limit?: number;
+  engraving_instructions?: string;
+  personalisation_available?: string;
+
+  delivery_type?: string;
+  estimated_delivery_time?: string;
+  next_day_delivery_available?: string;
+  made_to_order?: string;
+  production_time?: string;
+  shipping_weight?: string | number | null;
+
   gender?: string;
   occasion?: string;
+
   seo_title?: string;
   seoTitle?: string;
   seo_description?: string;
   seoDescription?: string;
   seo_keywords?: string;
   seoKeywords?: string;
+  canonical_url?: string;
+  og_title?: string;
+  og_description?: string;
+  og_image?: string;
+
   tax_percentage?: string | number;
   low_stock_threshold?: number;
   video_url?: string | null;
@@ -43,22 +118,29 @@ export interface AdminProduct {
   stylesDetail?: Array<{ id: number; name: string; slug: string }>;
   collections?: number[];
   collectionsDetail?: Array<{ id: number; name: string; slug: string }>;
+  related_products?: number[];
   diamond_type?: number | null;
   diamondTypeDetail?: { id: number; name: string; slug: string } | null;
   brand?: number | null;
   brandDetail?: { id: number; name: string; slug: string } | null;
   diamond_spec?: {
     diamond_origin?: string;
+    diamond_shape?: string;
     carat_weight?: string | number;
     center_carat_weight?: string | number | null;
     side_carat_weight?: string | number | null;
     total_carat_weight?: string | number | null;
+    number_of_diamonds?: number | null;
     diamond_value?: string | number | null;
     cut_grade?: string | null;
     colour_grade?: string | null;
     clarity_grade?: string | null;
+    polish?: string;
+    symmetry?: string;
+    fluorescence?: string;
     certification_lab?: string;
     certificate_number?: string;
+    certificate_url?: string;
   } | null;
   images?: Array<{ id?: number; url: string; publicId?: string; isPrimary?: boolean }>;
   variants?: Array<{
@@ -68,13 +150,20 @@ export interface AdminProduct {
     metal_karat?: string;
     metal_weight_grams?: string | number | null;
     size?: string;
+    length?: string;
+    bangle_size?: string;
     price?: string | number | null;
     compare_at_price?: string | number | null;
+    cost_price?: string | number | null;
     stock?: number;
+    low_stock_threshold?: number;
+    track_inventory?: boolean;
+    allow_backorder?: boolean;
+    availability?: string;
     is_active?: boolean;
     is_default?: boolean;
     isDefault?: boolean;
-    images?: Array<{ id?: number; url: string; isPrimary?: boolean }>;
+    images?: Array<{ id?: number; url: string; publicId?: string; isPrimary?: boolean }>;
   }>;
   sizes?: Array<{ id?: number; size: string; stock: number }>;
   created_at: string;

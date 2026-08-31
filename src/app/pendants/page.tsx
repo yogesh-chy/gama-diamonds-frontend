@@ -21,69 +21,12 @@ const PENDANT_STYLES = [
   "Pendant",
 ];
 
-const PENDANT_PRODUCTS: ProductItem[] = [
-  {
-    id: "pd-01",
-    title: "Round Diamond Solitaire Pendant in 18K White Gold",
-    metal: "18K White Gold",
-    price: 1650,
-    badge: "BESTSELLER",
-    inStock: true,
-    style: "Pendant",
-  },
-  {
-    id: "pd-02",
-    title: "Classic Diamond Cross Pendant in 18K Yellow Gold",
-    metal: "18K Yellow Gold",
-    price: 2450,
-    badge: "POPULAR",
-    inStock: true,
-    style: "Cross Pendant",
-  },
-  {
-    id: "pd-03",
-    title: "Heart Shaped Diamond Pendant in 18K White Gold",
-    metal: "18K White Gold",
-    price: 1980,
-    badge: "EXCLUSIVE",
-    inStock: true,
-    style: "Heart Pendant",
-  },
-  {
-    id: "pd-04",
-    title: "Vintage Cross Diamond Pendant in 18K White Gold",
-    metal: "18K White Gold",
-    price: 2150,
-    badge: "NEW",
-    inStock: true,
-    style: "Cross Pendant",
-  },
-  {
-    id: "pd-05",
-    title: "Elegant Solitaire Pendant in 18K Yellow Gold",
-    metal: "18K Yellow Gold",
-    price: 1450,
-    badge: "NEXT DAY",
-    inStock: true,
-    style: "Pendant",
-  },
-  {
-    id: "pd-06",
-    title: "Romantic Heart Pendant in 18K Yellow Gold",
-    metal: "18K Yellow Gold",
-    price: 1890,
-    badge: "POPULAR",
-    inStock: true,
-    style: "Heart Pendant",
-  },
-];
-
 export default function PendantsPage() {
   return (
     <div className="page-bg" style={{ backgroundColor: "#000000", color: "#ffffff" }}>
       <Header />
       <CategoryListing
-        products={PENDANT_PRODUCTS}
+        products={[]}
         categoryTitle="Pendants"
         customMetals={PENDANT_METALS}
         customStyles={PENDANT_STYLES}

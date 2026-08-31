@@ -1,14 +1,26 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import CategoryListing, { ProductItem } from "@/components/rings/CategoryListing";
-import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
-import CertificationBar from "@/components/landing/CertificationBar";
+import RoseGoldClient from "./RoseGoldClient";
 
 export const metadata = {
   title: "Rose Gold Jewellery | Gama Jewels – Fine Rose Gold Jewellery",
   description:
     "Shop our romantic Rose Gold jewellery collection — blush-toned earrings, pendants, bracelets, and rings crafted in 9K and 18K rose gold.",
 };
+
+export default function RoseGoldPage() {
+  return (
+    <div className="page-bg" style={{ backgroundColor: "#000000", color: "#ffffff" }}>
+      <Header />
+      <RoseGoldClient />
+      <Footer />
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   ARCHIVED MOCK DATA (NO LONGER USED)
+   ───────────────────────────────────────── */
 
 const ROSE_GOLD_METALS = [
   "9K Rose Gold",
@@ -29,7 +41,7 @@ const ROSE_GOLD_CARATS = [
   "1.20ct",
 ];
 
-const ROSE_GOLD_PRODUCTS: ProductItem[] = [
+const ROSE_GOLD_PRODUCTS = [
   {
     id: "rg-01",
     title: "Round Brilliant Diamond Halo Ring in 18K Rose Gold",
@@ -163,26 +175,3 @@ const ROSE_GOLD_PRODUCTS: ProductItem[] = [
     style: "Cluster Pendant",
   },
 ];
-
-export default function RoseGoldPage() {
-  return (
-    <div className="page-bg" style={{ backgroundColor: "#000000", color: "#ffffff" }}>
-      <Header />
-      <CategoryListing
-        products={ROSE_GOLD_PRODUCTS}
-        categoryTitle="Rose Gold Jewellery"
-        customMetals={ROSE_GOLD_METALS}
-        customCarats={ROSE_GOLD_CARATS}
-        defaultMinPrice={290}
-        defaultMaxPrice={8700}
-        hideDiamondType={false}
-        hideCarat={false}
-        hideColor={true}
-        hideStyle={true}
-      />
-      <RingsRecentlyViewed />
-      <CertificationBar />
-      <Footer />
-    </div>
-  );
-}

@@ -28,76 +28,13 @@ const HOOP_EARRINGS_STYLES = [
   "Stud Earrings",
 ];
 
-const HOOP_EARRINGS_PRODUCTS: ProductItem[] = [
-  {
-    id: "he-01",
-    title: "Round Brilliant Diamond Hoop Earrings in 18K White Gold",
-    metal: "18K White Gold",
-    price: 1250,
-    badge: "BESTSELLER",
-    inStock: true,
-    diamondType: "Natural Diamond",
-    style: "Hoop Earrings",
-  },
-  {
-    id: "he-02",
-    title: "Classic Diamond Huggie Hoops in Platinum",
-    metal: "Platinum",
-    price: 1850,
-    badge: "EXCLUSIVE",
-    inStock: true,
-    diamondType: "Lab Grown Diamond",
-    style: "STYLE: HOOPS",
-  },
-  {
-    id: "he-03",
-    title: "Round Diamond Drop Hoop Earrings in 18K Yellow Gold",
-    metal: "18K Yellow Gold",
-    price: 1450,
-    badge: "POPULAR",
-    inStock: true,
-    diamondType: "Natural Diamond",
-    style: "Drop Earrings",
-  },
-  {
-    id: "he-04",
-    title: "Micro-Pave Diamond Hoop Earrings in 9K White Gold",
-    metal: "9K White Gold",
-    price: 650,
-    badge: "NEXT DAY",
-    inStock: true,
-    diamondType: "Lab Grown Diamond",
-    style: "Earring",
-  },
-  {
-    id: "he-05",
-    title: "Rose Gold Diamond Huggies in 18K Rose Gold",
-    metal: "18K Rose Gold",
-    price: 1150,
-    badge: "NEW",
-    inStock: true,
-    diamondType: "Natural Diamond",
-    style: "Hoop Earrings",
-  },
-  {
-    id: "he-06",
-    title: "Small Solitaire Diamond Stud Earrings in 9K Rose Gold",
-    metal: "9K Rose Gold",
-    price: 490,
-    badge: "POPULAR",
-    inStock: true,
-    diamondType: "Lab Grown Diamond",
-    style: "Stud Earrings",
-  },
-];
-
 export default function HoopEarringsPage() {
   return (
     <div className="page-bg" style={{ backgroundColor: "#000000", color: "#ffffff" }}>
       <Header />
       <CategoryListing
-        products={HOOP_EARRINGS_PRODUCTS}
-        categoryTitle="Hoop Earrings"
+        products={[]}
+        categoryTitle="Earrings"
         customMetals={HOOP_EARRINGS_METALS}
         customStyles={HOOP_EARRINGS_STYLES}
         hideDiamondType={false}

@@ -22,6 +22,37 @@ interface WeddingProductGridProps {
   onCategoryChange?: (cat: "all" | "women" | "men") => void;
 }
 
+function normalizeGender(value?: string | null): "men" | "women" | "unisex" {
+  const normalized = String(value ?? "").trim().toLowerCase();
+
+  if (["men", "male", "m", "man"].includes(normalized)) return "men";
+  if (["women", "female", "f", "woman"].includes(normalized)) return "women";
+  return "unisex";
+}
+
+function isWeddingProduct(item: any): boolean {
+  const categoryValue = String(item?.category ?? "").trim().toLowerCase();
+  const categoryName = String(item?.category_ref?.name ?? item?.category_name ?? "").trim().toLowerCase();
+  const name = String(item?.name ?? "").trim().toLowerCase();
+
+  const isWeddingCategory =
+    categoryValue === "wedding-bands" ||
+    categoryValue === "wedding" ||
+    categoryValue === "wedding-rings" ||
+    categoryValue === "wedding-bands" ||
+    categoryName.includes("wedding") ||
+    name.includes("wedding");
+
+  const isRingLike =
+    categoryValue === "rings" ||
+    categoryValue === "engagement-rings" ||
+    categoryValue === "eternity-bands" ||
+    name.includes("ring") ||
+    name.includes("band");
+
+  return isWeddingCategory || (isRingLike && (name.includes("wedding") || name.includes("band")));
+}
+
 export default function WeddingProductGrid({
   selectedCategory = "all",
   onCategoryChange,
@@ -37,18 +68,40 @@ export default function WeddingProductGrid({
     async function fetchWeddingBands() {
       setLoading(true);
       try {
-        const res = await productsApi.getProducts({ category: "wedding-bands" });
-        const list = res.data?.data || [];
-        const mapped: WeddingProduct[] = list.map((item: any) => ({
-          id: String(item.id || item.slug),
-          title: item.name,
-          category: item.gender === "men" ? "men" : "women",
-          metal: item.metal_type?.replace("-", " ") || "18K Gold",
-          price: typeof item.base_price === "number" ? item.base_price : parseFloat(item.base_price || "0") || 0,
-          image: item.images?.[0]?.url || "/women_wedding_ring.png",
-          badge: item.is_featured ? "BESTSELLER" : undefined,
-          href: `/product/${item.id || item.slug}`,
-        }));
+        const primaryRes = await productsApi.getProducts({
+          category: "wedding-bands",
+          status: "active",
+          limit: 200,
+        });
+
+        const primaryList = primaryRes.data?.data || [];
+        let list = primaryList.filter((item: any) => item?.is_active !== false);
+
+        if (!list.length) {
+          const fallbackRes = await productsApi.getProducts({ status: "active", limit: 200 });
+          list = (fallbackRes.data?.data || []).filter((item: any) => item?.is_active !== false);
+        }
+
+        const filteredWeddingProducts = list.filter((item: any) => isWeddingProduct(item));
+
+        const mapped: WeddingProduct[] = filteredWeddingProducts.map((item: any) => {
+          const gender = normalizeGender(item.gender);
+
+          return {
+            id: String(item.id || item.slug),
+            title: item.name,
+            category: gender === "men" ? "men" : gender === "women" ? "women" : "women",
+            metal: item.metal_type?.replace("-", " ") || "18K Gold",
+            price:
+              typeof item.base_price === "number"
+                ? item.base_price
+                : parseFloat(item.base_price || "0") || 0,
+            image: item.images?.[0]?.url || "/women_wedding_ring.png",
+            badge: item.is_featured ? "BESTSELLER" : undefined,
+            href: `/product/${item.id || item.slug}`,
+          };
+        });
+
         setProducts(mapped);
       } catch (err) {
         setProducts([]);

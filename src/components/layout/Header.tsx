@@ -36,6 +36,19 @@ const PRODUCT_TYPES_NAV = [
 
 const SAMPLE_SEARCH_CATALOG: SearchSuggestionProduct[] = [];
 
+const normalizePrice = (value: unknown): number => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const cleaned = Number(value.replace(/[^0-9.-]/g, ""));
+    return Number.isFinite(cleaned) ? cleaned : 0;
+  }
+  if (value && typeof value === "object") {
+    const maybe = value as { min?: unknown; max?: unknown; price?: unknown; value?: unknown; basePrice?: unknown; discountPrice?: unknown };
+    const direct = maybe.min ?? maybe.max ?? maybe.price ?? maybe.value ?? maybe.basePrice ?? maybe.discountPrice;
+    if (direct !== undefined && direct !== null) return normalizePrice(direct);
+  }
+  return 0;
+};
 
 function CurrencySelector() {
   const { currency, symbol, flag, setCurrency, isLoaded } = useCurrency();
@@ -170,7 +183,13 @@ export default function Header() {
               id: p.id,
               name: p.name,
               category: p.category || "Jewellery",
-              price: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
+              price:
+                normalizePrice(p.base_price) ||
+                normalizePrice(p.basePrice) ||
+                normalizePrice(p.discount_price) ||
+                normalizePrice(p.discountPrice) ||
+                normalizePrice(p.variants?.[0]?.price) ||
+                0,
               href: `/product/${p.id}`,
             }));
             setBackendSuggestions(mapped);

@@ -102,6 +102,8 @@ function getDynamicProduct(id: string) {
     badge: "NEXT DAY DELIVERY",
     rating: 5.0,
     reviewCount: 1240,
+    video_url: null as string | null,
+    description: "",
     images: [
       "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&h=800&fit=crop",
       "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&h=800&fit=crop",
@@ -147,23 +149,32 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
         const p = res.data;
         setNumericId(p.id);
         const imagesList = p.images?.map((img) => img.url) || [];
-        setProduct({
+        setProduct((prev) => ({
+          ...prev,
           id: String(p.id),
           title: p.name,
           category: p.category || "Jewellery",
           price: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
           sku: p.sku || `AD${p.id}3275`,
-          metal: p.metal_type || initialFallback.metal,
-          carat: String(p.diamond_spec?.carat_weight || p.diamond_spec?.caratWeight || initialFallback.carat),
-          shape: p.diamond_cut || initialFallback.shape,
+          metal: p.metal_type
+            ? p.metal_type.replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase())
+            : initialFallback.metal,
+          carat: p.diamond_spec?.total_carat_weight
+            ? `${p.diamond_spec.total_carat_weight}ct`
+            : p.diamond_spec?.carat_weight
+            ? `${p.diamond_spec.carat_weight}ct`
+            : initialFallback.carat,
+          shape: p.diamond_cut || p.diamond_spec?.diamond_shape || initialFallback.shape,
           clarity: String(p.diamond_spec?.clarity_grade || p.diamond_spec?.clarityGrade || "VS1"),
           color: String(p.diamond_spec?.colour_grade || p.diamond_spec?.colourGrade || "F Color"),
           certification: String(p.diamond_spec?.certification_lab || p.diamond_spec?.certificationLab || "GIA Certified"),
           badge: p.is_featured ? "FEATURED" : "NEXT DAY DELIVERY",
           rating: 5.0,
           reviewCount: 1240,
+          description: p.description || prev.description,
+          video_url: p.video_url || p.videoUrl || null,
           images: imagesList.length > 0 ? imagesList : initialFallback.images,
-        });
+        }));
         if (p.metal_type) setSelectedMetal(p.metal_type);
 
         // Track in Recently Viewed
@@ -244,7 +255,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     })),
     {
       type: "video" as const,
-      src: product.images[2] || product.images[0], // Thumbnail for video
+      src: product.video_url || product.images[2] || product.images[0],
       alt: "360° HD Video Showcase",
     },
   ];
