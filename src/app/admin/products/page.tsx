@@ -886,7 +886,7 @@ export default function AdminProductsPage() {
                   const varCount = prod.variants?.length || 0;
                   const totalStockNum = varCount > 0
                     ? prod.variants?.reduce((sum, v) => sum + (v.stock || 0), 0) ?? 0
-                    : (prod.total_stock ?? prod.totalStock ?? prod.inventory?.totalStock ?? 0);
+                    : (prod.total_stock ?? prod.totalStock ?? 0);
 
                   return (
                     <tr key={prod.id} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.05)" }}>
