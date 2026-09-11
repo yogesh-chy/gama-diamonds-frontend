@@ -2,7 +2,8 @@ import axios, { AxiosError, AxiosHeaders, InternalAxiosRequestConfig } from "axi
 import { tokenStorage } from "./tokenStorage";
 
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") || "http://localhost:8000/api";
+  (process.env.NEXT_PUBLIC_API_URL || process.env.API_URL)?.replace(/\/+$/, "") ||
+  "http://localhost:8000/api";
 
 /** Dispatched on `window` whenever the session is force-ended (refresh failed,
  * no refresh token available, etc). AuthContext listens for this to sync
