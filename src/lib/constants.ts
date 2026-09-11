@@ -80,47 +80,47 @@ export const categoryGridItems: CategoryItem[] = [
 export const diamondShapes: DiamondShape[] = [
   {
     name: "Round Cut",
-    href: "/rings?shape=round",
+    href: "/rings/round",
     image: "/DiamondShape/round.png",
   },
   {
     name: "Emerald Cut",
-    href: "/rings?shape=emerald-cut",
+    href: "/rings/emerald-cut",
     image: "/DiamondShape/emerald.png",
   },
   {
     name: "Cushion Cut",
-    href: "/rings?shape=cushion",
+    href: "/rings/cushion",
     image: "/DiamondShape/cushion.png",
   },
   {
     name: "Pear Cut",
-    href: "/rings?shape=pear",
+    href: "/rings/pear",
     image: "/DiamondShape/pear.png",
   },
   {
     name: "Princess Cut",
-    href: "/rings?shape=princess",
+    href: "/rings/princess",
     image: "/DiamondShape/princess.png",
   },
   {
     name: "Oval Cut",
-    href: "/rings?shape=oval",
+    href: "/rings/oval",
     image: "/DiamondShape/oval.png",
   },
   {
     name: "Marquise Cut",
-    href: "/rings?shape=marquise",
+    href: "/rings/marquise",
     image: "/DiamondShape/marquise.png",
   },
   {
     name: "Heart Cut",
-    href: "/rings?shape=heart",
+    href: "/rings/heart",
     image: "/DiamondShape/heart.png",
   },
   {
     name: "Asscher Cut",
-    href: "/rings?shape=asscher",
+    href: "/rings/asscher",
     image: "/DiamondShape/asscher.png",
   },
 ];

@@ -884,6 +884,9 @@ export default function AdminProductsPage() {
                   const rawPrice = defaultVar?.price ?? prod.base_price ?? prod.basePrice;
                   const priceNum = typeof rawPrice === "number" ? rawPrice : parseFloat(String(rawPrice || 0)) || 0;
                   const varCount = prod.variants?.length || 0;
+                  const totalStockNum = varCount > 0
+                    ? prod.variants?.reduce((sum, v) => sum + (v.stock || 0), 0) ?? 0
+                    : (prod.total_stock ?? prod.totalStock ?? prod.inventory?.totalStock ?? 0);
 
                   return (
                     <tr key={prod.id} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.05)" }}>
@@ -926,8 +929,8 @@ export default function AdminProductsPage() {
                       </td>
 
                       <td style={{ padding: "12px 14px" }}>
-                        <span style={{ color: prod.total_stock > 0 ? "#4ade80" : "#f43f5e" }}>
-                          {prod.total_stock > 0 ? `${prod.total_stock} in stock` : "Out of Stock"}
+                        <span style={{ color: totalStockNum > 0 ? "#4ade80" : "#f43f5e" }}>
+                          {totalStockNum > 0 ? `${totalStockNum} in stock` : "Out of Stock"}
                         </span>
                       </td>
 
@@ -1788,6 +1791,7 @@ export default function AdminProductsPage() {
                               <th style={{ padding: "8px" }}>Metal</th>
                               <th style={{ padding: "8px" }}>Karat</th>
                               {!isEarringCategory && <th style={{ padding: "8px" }}>Size / Length / Bangle Size</th>}
+                              <th style={{ padding: "8px" }}>Weight (g)</th>
                               <th style={{ padding: "8px" }}>Price (£/$)</th>
                               <th style={{ padding: "8px" }}>Stock</th>
                               <th style={{ padding: "8px" }}>Variant Image</th>
@@ -1856,6 +1860,16 @@ export default function AdminProductsPage() {
                                       />
                                     </td>
                                   )}
+                                  <td style={{ padding: "8px" }}>
+                                    <input
+                                      type="number"
+                                      step="0.01"
+                                      value={variant.metal_weight_grams ?? ""}
+                                      onChange={(e) => updateVariant(idx, { metal_weight_grams: e.target.value })}
+                                      placeholder="e.g. 2.50"
+                                      style={{ ...inputStyle, width: 75, padding: "4px 6px", textAlign: "center", fontSize: "10px" }}
+                                    />
+                                  </td>
                                   <td style={{ padding: "8px" }}>
                                     <input
                                       type="number"

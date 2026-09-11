@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect as useEffectReact } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -34,7 +34,6 @@ import { useAuth } from "@/context/AuthContext";
 import { productsApi, type ProductItem } from "@/lib/api/products";
 import { cartApi } from "@/lib/api/orders";
 import { toast } from "sonner";
-import { useEffect } from "react";
 
 interface ProductDetailProps {
   productId: string;
@@ -125,6 +124,10 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
   );
 
   // Component States
+  const [variants, setVariants] = useState<any[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
+  const [isAutoplayPaused, setIsAutoplayPaused] = useState(false);
+
   const [selectedSize, setSelectedSize] = useState("M");
   const [selectedMetal, setSelectedMetal] = useState(initialFallback.metal);
   const [selectedCarat, setSelectedCarat] = useState("0.50ct");
@@ -149,13 +152,28 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
         const p = res.data;
         setNumericId(p.id);
         const imagesList = p.images?.map((img) => img.url) || [];
+
+        const pVars = (p.variants || []) as any[];
+        setVariants(pVars);
+        const initialVar = pVars.find((v: any) => v.is_default || v.isDefault) || pVars[0] || null;
+        setSelectedVariant(initialVar);
+
+        if (initialVar) {
+          const mType = initialVar.metal_type || initialVar.metalType;
+          if (mType) {
+            setSelectedMetal(mType.replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase()));
+          }
+          const sVal = initialVar.size || initialVar.length || initialVar.bangle_size || initialVar.bangleSize;
+          if (sVal) setSelectedSize(sVal);
+        }
+
         setProduct((prev) => ({
           ...prev,
           id: String(p.id),
           title: p.name,
           category: p.category || "Jewellery",
           price: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
-          sku: p.sku || `AD${p.id}3275`,
+          sku: initialVar?.sku || p.sku || `AD${p.id}3275`,
           metal: p.metal_type
             ? p.metal_type.replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase())
             : initialFallback.metal,
@@ -175,7 +193,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
           video_url: p.video_url || p.videoUrl || null,
           images: imagesList.length > 0 ? imagesList : initialFallback.images,
         }));
-        if (p.metal_type) setSelectedMetal(p.metal_type);
+        if (p.metal_type && !initialVar) setSelectedMetal(p.metal_type);
 
         // Track in Recently Viewed
         try {
@@ -202,27 +220,42 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     };
   }, [productId]);
 
+  // Handle manual variant selection
+  const handleSelectVariant = (varId: number) => {
+    const found = variants.find((v) => v.id === varId);
+    if (found) {
+      setSelectedVariant(found);
+      const mType = found.metal_type || found.metalType;
+      if (mType) {
+        setSelectedMetal(mType.replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase()));
+      }
+      const sVal = found.size || found.length || found.bangle_size || found.bangleSize;
+      if (sVal) setSelectedSize(sVal);
+
+      // Lock to chosen variant image and stop auto-scrolling
+      setIsAutoplayPaused(true);
+      setSlideDirection(1);
+      setSelectedSlide(0);
+    }
+  };
+
   // Dynamic Variant Price Calculation
   const metalPriceAddon = selectedMetal.includes("Platinum") ? 350 : selectedMetal.includes("White") ? 50 : selectedMetal.includes("Rose") ? 50 : 0;
   const caratPriceAddon = selectedCarat === "0.75ct" ? 450 : selectedCarat === "1.00ct" ? 1100 : selectedCarat === "1.50ct" ? 2200 : 0;
-  const dynamicPrice = product.price + metalPriceAddon + caratPriceAddon;
+  
+  const selectedVariantPrice = selectedVariant
+    ? typeof selectedVariant.price === "number"
+      ? selectedVariant.price
+      : parseFloat(String(selectedVariant.price || 0))
+    : null;
+
+  const dynamicPrice = selectedVariantPrice ?? (product.price + metalPriceAddon + caratPriceAddon);
 
   const handleAddToCart = async () => {
     try {
+      const variantId = selectedVariant?.id;
       // 1. If authenticated and numericId exists, send to backend API
       if (isAuthenticated && numericId) {
-        let variantId: number | undefined;
-        try {
-          const resolved = await productsApi.resolveVariant(productId, {
-            metal_type: selectedMetal,
-            size: selectedSize,
-          });
-          if (resolved.data && (resolved.data.variant_id || resolved.data.id)) {
-            variantId = resolved.data.variant_id || resolved.data.id;
-          }
-        } catch {
-          // ignore resolution fallback
-        }
         await cartApi.addItem(numericId, selectedSize, quantity, variantId);
       }
 
@@ -230,7 +263,8 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
       const existingCart = JSON.parse(localStorage.getItem("gama_cart") || "[]");
       existingCart.push({
         id: numericId || product.id,
-        title: `${product.title} (${selectedMetal}, ${selectedCarat})`,
+        variant_id: variantId,
+        title: `${product.title} (${selectedMetal}${selectedVariant?.metal_karat ? " " + selectedVariant.metal_karat : ""})`,
         price: dynamicPrice,
         metal: selectedMetal,
         carat: selectedCarat,
@@ -246,9 +280,15 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
   };
 
   // ── Slider / Carousel Media Items ──
-  // Combine images and a video entry into one unified media array
+  // Extract active variant primary image if available
+  const variantImgUrl = selectedVariant?.images?.find((i: any) => i.isPrimary || i.is_primary)?.url || selectedVariant?.images?.[0]?.url;
+  const rawImageList = product.images || [];
+  const galleryImages = variantImgUrl
+    ? [variantImgUrl, ...rawImageList.filter((url) => url !== variantImgUrl)]
+    : rawImageList;
+
   const mediaItems: { type: "image" | "video"; src: string; alt: string }[] = [
-    ...product.images.map((img, i) => ({
+    ...galleryImages.map((img, i) => ({
       type: "image" as const,
       src: img,
       alt: `${product.title} view ${i + 1}`,
@@ -280,7 +320,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
   }, [selectedSlide, totalSlides, goToSlide]);
 
   // Keyboard navigation
-  useEffectReact(() => {
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") nextSlide();
       if (e.key === "ArrowLeft") prevSlide();
@@ -290,9 +330,9 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [nextSlide, prevSlide]);
 
-  // Auto-play: advance every 1 second, pause on hover or video play
-  useEffectReact(() => {
-    if (isHovering || isPlayingVideo || isFullscreen) {
+  // Auto-play: advance every 3 seconds, pause on hover, video play, or when variant is chosen
+  useEffect(() => {
+    if (isHovering || isPlayingVideo || isFullscreen || isAutoplayPaused) {
       if (autoPlayTimer.current) {
         clearInterval(autoPlayTimer.current);
         autoPlayTimer.current = null;
@@ -306,7 +346,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     return () => {
       if (autoPlayTimer.current) clearInterval(autoPlayTimer.current);
     };
-  }, [isHovering, isPlayingVideo, isFullscreen, totalSlides]);
+  }, [isHovering, isPlayingVideo, isFullscreen, isAutoplayPaused, totalSlides]);
 
   // Slide animation variants
   const slideVariants = {
@@ -326,7 +366,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
 
   const [relatedProducts, setRelatedProducts] = useState<{id: string; title: string; price: number; badge?: string; image?: string}[]>([]);
 
-  useEffectReact(() => {
+  useEffect(() => {
     productsApi
       .getProducts({ category: product.category?.toLowerCase().replace(" ", "-"), limit: 4 })
       .then((res) => {
@@ -532,7 +572,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
               {/* Animated Slide Content */}
               <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
                 <motion.div
-                  key={selectedSlide}
+                  key={`${selectedSlide}-${variantImgUrl || 'default'}`}
                   custom={slideDirection}
                   variants={slideVariants}
                   initial="enter"
@@ -907,7 +947,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                 >
                   <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
                     <motion.img
-                      key={`fs-${selectedSlide}`}
+                      key={`fs-${selectedSlide}-${variantImgUrl || 'default'}`}
                       custom={slideDirection}
                       variants={slideVariants}
                       initial="enter"
@@ -963,7 +1003,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                 {product.title}
               </h1>
               <div style={{ fontSize: "11px", letterSpacing: "1px", color: "#888888" }}>
-                SKU: {product.sku}
+                SKU: {selectedVariant?.sku || product.sku}
               </div>
             </div>
 
@@ -985,52 +1025,58 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
               </span>
             </div>
 
-            {/* Selector 1: Precious Metal */}
-            <div>
-              <label
-                style={{
-                  display: "block",
-                  fontFamily: "'Poppins', sans-serif",
-                  fontSize: "11px",
-                  fontWeight: "600",
-                  color: "#c6a45f",
-                  textTransform: "uppercase",
-                  letterSpacing: "1px",
-                  marginBottom: "8px",
-                }}
-              >
-                Precious Metal:
-              </label>
-              <select
-                value={selectedMetal}
-                onChange={(e) => setSelectedMetal(e.target.value)}
-                style={{
-                  width: "100%",
-                  height: "44px",
-                  backgroundColor: "#0d0d0d",
-                  border: "1px solid rgba(198, 164, 95, 0.4)",
-                  color: "#ffffff",
-                  fontFamily: "'Poppins', sans-serif",
-                  fontSize: "12px",
-                  padding: "0 16px",
-                  outline: "none",
-                  cursor: "pointer",
-                }}
-              >
-                <option value="18ct Yellow Gold" style={{ background: "#0c0c0c" }}>
-                  18ct Yellow Gold (Base)
-                </option>
-                <option value="18ct White Gold" style={{ background: "#0c0c0c" }}>
-                  18ct White Gold (+{formatPrice(50)})
-                </option>
-                <option value="18ct Rose Gold" style={{ background: "#0c0c0c" }}>
-                  18ct Rose Gold (+{formatPrice(50)})
-                </option>
-                <option value="Platinum 950" style={{ background: "#0c0c0c" }}>
-                  Platinum 950 (+{formatPrice(350)})
-                </option>
-              </select>
-            </div>
+            {/* Created Variants Selector (If actual product variants exist) */}
+            {variants.length > 0 && (
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontFamily: "'Poppins', sans-serif",
+                    fontSize: "11px",
+                    fontWeight: "600",
+                    color: "#c6a45f",
+                    textTransform: "uppercase",
+                    letterSpacing: "1px",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Select Variant:
+                </label>
+                <select
+                  value={selectedVariant?.id || ""}
+                  onChange={(e) => handleSelectVariant(Number(e.target.value))}
+                  style={{
+                    width: "100%",
+                    height: "44px",
+                    backgroundColor: "#0d0d0d",
+                    border: "1px solid #c6a45f",
+                    color: "#ffffff",
+                    fontFamily: "'Poppins', sans-serif",
+                    fontSize: "12px",
+                    padding: "0 16px",
+                    outline: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  {variants.map((v) => {
+                    const metalLabel = (v.metal_type || v.metalType || "").replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
+                    const karatLabel = v.metal_karat || v.metalKarat || "";
+                    const dimLabel = v.size ? `Size ${v.size}` : v.length ? v.length : v.bangle_size || v.bangleSize || "";
+                    const weightLabel = v.metal_weight_grams || v.metalWeightGrams ? `${v.metal_weight_grams || v.metalWeightGrams}g` : "";
+                    const vPrice = typeof v.price === "number" ? v.price : parseFloat(String(v.price || 0));
+                    
+                    const detailsStr = [metalLabel, karatLabel, dimLabel, weightLabel].filter(Boolean).join(" · ");
+                    const isDefault = v.is_default || v.isDefault;
+
+                    return (
+                      <option key={v.id} value={v.id} style={{ background: "#0c0c0c" }}>
+                        {detailsStr || v.sku} — {formatPrice(vPrice)} {isDefault ? "(Default)" : ""}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            )}
 
             {/* Selector 2: Diamond Carat Weight */}
             <div>
@@ -1305,14 +1351,16 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
 
               {specOpen && (
                 <div style={{ marginTop: "12px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "11px", color: "#a0a0a0" }}>
-                  <div><strong>Precious Metal:</strong> {selectedMetal}</div>
+                  <div><strong>Precious Metal:</strong> {selectedMetal} {selectedVariant?.metal_karat || ""}</div>
                   <div><strong>Diamond Carat:</strong> {selectedCarat}</div>
                   <div><strong>Diamond Shape:</strong> {product.shape}</div>
                   <div><strong>Diamond Cut:</strong> Excellent Cut</div>
                   <div><strong>Clarity:</strong> {product.clarity}</div>
                   <div><strong>Color:</strong> {product.color}</div>
                   <div><strong>Certificate:</strong> {product.certification}</div>
-                  <div><strong>Origin:</strong> Gama Jewels, Mumbai</div>
+                  {(selectedVariant?.metal_weight_grams || selectedVariant?.metalWeightGrams) && (
+                    <div><strong>Metal Weight:</strong> {selectedVariant.metal_weight_grams || selectedVariant.metalWeightGrams}g</div>
+                  )}
                 </div>
               )}
             </div>

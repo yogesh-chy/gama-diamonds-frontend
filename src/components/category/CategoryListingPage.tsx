@@ -12,6 +12,7 @@ import { useCurrency } from "@/context/CurrencyContext";
 import { useAuth } from "@/context/AuthContext";
 import { productsApi } from "@/lib/api/products";
 import { cartApi } from "@/lib/api/orders";
+import { applyProductFilters } from "@/lib/productFilters";
 import { toast } from "sonner";
 
 export interface CategoryProduct {
@@ -141,81 +142,26 @@ export default function CategoryListingPage({
     setSortBy("featured");
   };
 
-  const normalizeText = (value?: string | null) => {
-    if (!value) return "";
-    const aliasMap: Record<string, string> = {
-      "18k white gold": "18ct white gold",
-      "18 ct white gold": "18ct white gold",
-      "18k yellow gold": "18ct yellow gold",
-      "18 ct yellow gold": "18ct yellow gold",
-      "18k rose gold": "18ct rose gold",
-      "18 ct rose gold": "18ct rose gold",
-      "950 platinum": "platinum",
-      "platinum 950": "platinum",
-      "studs": "stud earrings",
-      "stud": "stud earrings",
-      "hoops": "hoop earrings",
-      "hoop": "hoop earrings",
-      "drops": "drop earrings",
-      "drop": "drop earrings",
-      "trilogy": "three stone",
-      "three stone": "three stone",
-      "three-stone": "three stone",
-      "diamond shoulder": "diamond shoulder",
-      "diamond shoulders": "diamond shoulder",
-    };
-
-    const compact = String(value).toLowerCase().replace(/&/g, " and ");
-    const cleaned = compact.replace(/[^a-z0-9]+/g, " ").trim();
-    return (aliasMap[cleaned] || cleaned).replace(/\s+/g, " ");
-  };
-
-  const matchesAnyNormalized = (value: string | undefined, selected: string[]) => {
-    if (selected.length === 0) return true;
-    const normalizedValue = normalizeText(value);
-    if (!normalizedValue) return false;
-
-    return selected.some((item) => {
-      const normalizedItem = normalizeText(item);
-      return (
-        normalizedItem === normalizedValue ||
-        normalizedValue.includes(normalizedItem) ||
-        normalizedItem.includes(normalizedValue)
-      );
-    });
-  };
-
   // Filter Logic
   const filteredProducts = useMemo(() => {
-    let result = [...productList];
+    let result = applyProductFilters(productList, {
+      inStockOnly,
+      selectedMetals,
+      selectedStyles,
+      selectedColors: selectedGemstones,
+      minPrice: priceRange === "under-1500" ? 0 : priceRange === "1500-3000" ? 1500 : priceRange === "3000-5000" ? 3000 : priceRange === "above-5000" ? 5000 : 0,
+      maxPrice:
+        priceRange === "under-1500"
+          ? 1500
+          : priceRange === "1500-3000"
+            ? 3000
+            : priceRange === "3000-5000"
+              ? 5000
+              : priceRange === "above-5000"
+                ? Number.MAX_SAFE_INTEGER
+                : Number.MAX_SAFE_INTEGER,
+    });
 
-    if (selectedMetals.length > 0) {
-      result = result.filter((p) => matchesAnyNormalized(p.metal, selectedMetals));
-    }
-
-    if (selectedGemstones.length > 0) {
-      result = result.filter((p) => matchesAnyNormalized(p.gemstone, selectedGemstones));
-    }
-
-    if (selectedStyles.length > 0) {
-      result = result.filter((p) => matchesAnyNormalized(p.style, selectedStyles));
-    }
-
-    if (inStockOnly) {
-      result = result.filter((p) => p.inStock);
-    }
-
-    if (priceRange === "under-1500") {
-      result = result.filter((p) => p.price < 1500);
-    } else if (priceRange === "1500-3000") {
-      result = result.filter((p) => p.price >= 1500 && p.price <= 3000);
-    } else if (priceRange === "3000-5000") {
-      result = result.filter((p) => p.price > 3000 && p.price <= 5000);
-    } else if (priceRange === "above-5000") {
-      result = result.filter((p) => p.price > 5000);
-    }
-
-    // Sort Logic
     if (sortBy === "price-low") {
       result.sort((a, b) => a.price - b.price);
     } else if (sortBy === "price-high") {

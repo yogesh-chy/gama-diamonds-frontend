@@ -7,6 +7,7 @@ import { Check, RotateCcw, ChevronDown, Package } from "lucide-react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { useCurrency } from "@/context/CurrencyContext";
 import { productsApi } from "@/lib/api/products";
+import { applyProductFilters } from "@/lib/productFilters";
 
 interface Product {
   id: string;
@@ -22,6 +23,7 @@ interface Product {
 }
 
 const SHAPE_NAMES: Record<string, string> = {
+  round: "Round Cut",
   princess: "Princess Cut",
   cushion: "Cushion Cut",
   oval: "Oval Cut",
@@ -31,6 +33,7 @@ const SHAPE_NAMES: Record<string, string> = {
   marquise: "Marquise Cut",
   radiant: "Radiant Cut",
   asscher: "Asscher Cut",
+  heart: "Heart Cut",
 };
 
 function formatShapeTitle(slug: string): string {
@@ -151,48 +154,14 @@ export default function RingsOtherCutsListing({ shapeSlug }: RingsOtherCutsListi
     setSortBy("featured");
   };
 
-  const normalizeText = (value?: string | null) => {
-    if (!value) return "";
-    const aliasMap: Record<string, string> = {
-      "lab grown diamond": "lab grown diamond",
-      "natural diamond": "natural diamond",
-      "solitaire": "solitaire",
-      "halo": "halo",
-      "under halo": "under halo",
-      "three stone": "three stone",
-      "trilogy": "three stone",
-      "diamond shoulder": "diamond shoulder",
-      "diamond shoulders": "diamond shoulder",
-    };
-
-    const cleaned = String(value).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-    return (aliasMap[cleaned] || cleaned).replace(/\s+/g, " ");
-  };
-
-  const matchesAnyNormalized = (value: string | undefined, selected: string[]) => {
-    if (selected.length === 0) return true;
-    const normalizedValue = normalizeText(value);
-    if (!normalizedValue) return false;
-
-    return selected.some((item) => {
-      const normalizedItem = normalizeText(item);
-      return (
-        normalizedItem === normalizedValue ||
-        normalizedValue.includes(normalizedItem) ||
-        normalizedItem.includes(normalizedValue)
-      );
-    });
-  };
-
-  // Filter Products
   const filteredProducts = useMemo(() => {
-    return products.filter((p) => {
-      if (inStockOnly && !p.inStock) return false;
-      if (selectedTypes.length > 0 && !matchesAnyNormalized(p.diamondType, selectedTypes)) return false;
-      if (selectedStyles.length > 0 && !matchesAnyNormalized(p.style, selectedStyles)) return false;
-      if (selectedColors.length > 0 && p.color && !matchesAnyNormalized(p.color, selectedColors)) return false;
-      if (p.price < minPrice || p.price > maxPrice) return false;
-      return true;
+    return applyProductFilters(products, {
+      inStockOnly,
+      selectedDiamondTypes: selectedTypes,
+      selectedStyles,
+      selectedColors,
+      minPrice,
+      maxPrice,
     });
   }, [products, inStockOnly, selectedTypes, selectedStyles, selectedColors, minPrice, maxPrice]);
 
