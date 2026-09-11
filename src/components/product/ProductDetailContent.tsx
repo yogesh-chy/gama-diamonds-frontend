@@ -4,15 +4,11 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Star,
   Shield,
   Truck,
   Award,
   RefreshCw,
-  MessageSquare,
-  Mail,
   Calendar,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   ShoppingBag,
@@ -28,10 +24,9 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CertificationBar from "@/components/landing/CertificationBar";
 import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
-import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useAuth } from "@/context/AuthContext";
-import { productsApi, type ProductItem } from "@/lib/api/products";
+import { productsApi } from "@/lib/api/products";
 import { cartApi } from "@/lib/api/orders";
 import { toast } from "sonner";
 
@@ -39,76 +34,70 @@ interface ProductDetailProps {
   productId: string;
 }
 
-// Helper to generate dynamic product data based on productId / slug
+// Fallback helper for dynamic products
 function getDynamicProduct(id: string) {
   const normalized = id.toLowerCase();
-  
+
   let category = "Engagement Ring";
-  let defaultTitle = `"MARGELLES" 0.50 CARAT ROUND CUT NATURAL DIAMOND SOLITAIRE ENGAGEMENT RING`;
+  let defaultTitle = `MARGELLES 0.50 CARAT ROUND CUT NATURAL DIAMOND SOLITAIRE RING`;
   let defaultPrice = 1850;
   let metal = "18ct Yellow Gold";
   let carat = "0.50ct";
   let shape = "Round Cut";
   let clarity = "VS1";
-  let color = "F Color";
+  let color = "F";
   let certification = "GIA Certified";
 
   if (normalized.includes("er") || normalized.includes("earring")) {
     category = "Earrings";
-    defaultTitle = "ROUND CUT SAPPHIRE & DIAMOND DROP EARRINGS IN 18CT WHITE GOLD";
+    defaultTitle = "ROUND CUT SAPPHIRE & DIAMOND DROP EARRINGS";
     defaultPrice = 1850;
     metal = "18ct White Gold";
     carat = "1.50ct";
     shape = "Round Cut";
   } else if (normalized.includes("et") || normalized.includes("eternity")) {
     category = "Eternity Ring";
-    defaultTitle = "ROUND BRILLIANT FULL ETERNITY DIAMOND RING IN 18CT WHITE GOLD";
+    defaultTitle = "ROUND BRILLIANT FULL ETERNITY DIAMOND RING";
     defaultPrice = 3450;
     metal = "18ct White Gold";
     carat = "2.00ct";
     shape = "Round Cut";
   } else if (normalized.includes("nk") || normalized.includes("necklace")) {
     category = "Necklace";
-    defaultTitle = "ROUND BRILLIANT DIAMOND SOLITAIRE PENDANT IN 18CT WHITE GOLD";
+    defaultTitle = "ROUND BRILLIANT DIAMOND SOLITAIRE PENDANT";
     defaultPrice = 1650;
     metal = "18ct White Gold";
     carat = "0.75ct";
     shape = "Round Cut";
   } else if (normalized.includes("br") || normalized.includes("bracelet")) {
     category = "Bracelet";
-    defaultTitle = "ROUND CUT DIAMOND TENNIS BRACELET IN 18CT WHITE GOLD";
+    defaultTitle = "ROUND CUT DIAMOND TENNIS BRACELET";
     defaultPrice = 4850;
     metal = "18ct White Gold";
     carat = "4.00ct";
     shape = "Round Cut";
   }
 
-  // Clean title display
-  const title = defaultTitle;
-
   return {
     id,
-    title,
+    title: defaultTitle,
     category,
     price: defaultPrice,
-    sku: `AD${id.toUpperCase().replace(/[^A-Z0-9]/g, "")}3275`,
+    sku: `GD-${id.toUpperCase().replace(/[^A-Z0-9]/g, "")}`,
     metal,
     carat,
     shape,
     clarity,
     color,
     certification,
-    badge: "NEXT DAY DELIVERY",
-    rating: 5.0,
-    reviewCount: 1240,
+    badge: "HANDCRAFTED",
     video_url: null as string | null,
-    description: "",
+    description: "Meticulously crafted by master goldsmiths, featuring hand-selected certified diamonds handset into solid precious metal. Designed for everlasting brilliance.",
     images: [
       "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&h=800&fit=crop",
       "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&h=800&fit=crop",
       "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800&h=800&fit=crop",
       "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?w=800&h=800&fit=crop",
-      "https://images.unsplash.com/photo-1630019852942-f89202989a59?w=800&h=800&fit=crop",
     ],
   };
 }
@@ -130,8 +119,6 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
 
   const [selectedSize, setSelectedSize] = useState("M");
   const [selectedMetal, setSelectedMetal] = useState(initialFallback.metal);
-  const [selectedCarat, setSelectedCarat] = useState("0.50ct");
-  const [selectedDeposit, setSelectedDeposit] = useState("Full Payment");
   const [quantity, setQuantity] = useState(1);
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
   const [selectedSlide, setSelectedSlide] = useState(0);
@@ -139,8 +126,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const autoPlayTimer = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [activeTab, setActiveTab] = useState<"spec" | "shipping" | "warranty">("spec");
-  const [specOpen, setSpecOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState<"details" | "spec" | "shipping">("details");
 
   // Fetch real backend product data if available
   useEffect(() => {
@@ -173,7 +159,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
           title: p.name,
           category: p.category || "Jewellery",
           price: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
-          sku: initialVar?.sku || p.sku || `AD${p.id}3275`,
+          sku: initialVar?.sku || p.sku || `GD-${p.id}`,
           metal: p.metal_type
             ? p.metal_type.replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase())
             : initialFallback.metal,
@@ -184,15 +170,14 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
             : initialFallback.carat,
           shape: p.diamond_cut || p.diamond_spec?.diamond_shape || initialFallback.shape,
           clarity: String(p.diamond_spec?.clarity_grade || p.diamond_spec?.clarityGrade || "VS1"),
-          color: String(p.diamond_spec?.colour_grade || p.diamond_spec?.colourGrade || "F Color"),
+          color: String(p.diamond_spec?.colour_grade || p.diamond_spec?.colourGrade || "F"),
           certification: String(p.diamond_spec?.certification_lab || p.diamond_spec?.certificationLab || "GIA Certified"),
-          badge: p.is_featured ? "FEATURED" : "NEXT DAY DELIVERY",
-          rating: 5.0,
-          reviewCount: 1240,
+          badge: p.is_featured ? "FEATURED" : "SIGNATURE",
           description: p.description || prev.description,
           video_url: p.video_url || p.videoUrl || null,
           images: imagesList.length > 0 ? imagesList : initialFallback.images,
         }));
+
         if (p.metal_type && !initialVar) setSelectedMetal(p.metal_type);
 
         // Track in Recently Viewed
@@ -201,7 +186,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
           const itemToStore = {
             title: p.name,
             rawPrice: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
-            hasPrefix: true,
+            hasPrefix: false,
             href: `/product/${p.id || p.slug || productId}`,
             badge: p.is_featured ? "FEATURED" : null,
             image: primaryImg,
@@ -209,12 +194,11 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
           const existing = JSON.parse(localStorage.getItem("gama_recently_viewed") || "[]");
           const filtered = Array.isArray(existing) ? existing.filter((item: any) => item.href !== itemToStore.href) : [];
           filtered.unshift(itemToStore);
-          localStorage.setItem("gama_recently_viewed", JSON.stringify(filtered.slice(0, 10)));
-        } catch (e) {}
+          localStorage.setItem("gama_recently_viewed", JSON.stringify(filtered.slice(0, 8)));
+        } catch {}
       })
-      .catch(() => {
-        // Fall back gracefully to initial dynamic product
-      });
+      .catch(() => {});
+
     return () => {
       cancelled = true;
     };
@@ -232,34 +216,27 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
       const sVal = found.size || found.length || found.bangle_size || found.bangleSize;
       if (sVal) setSelectedSize(sVal);
 
-      // Lock to chosen variant image and stop auto-scrolling
       setIsAutoplayPaused(true);
       setSlideDirection(1);
       setSelectedSlide(0);
     }
   };
 
-  // Dynamic Variant Price Calculation
-  const metalPriceAddon = selectedMetal.includes("Platinum") ? 350 : selectedMetal.includes("White") ? 50 : selectedMetal.includes("Rose") ? 50 : 0;
-  const caratPriceAddon = selectedCarat === "0.75ct" ? 450 : selectedCarat === "1.00ct" ? 1100 : selectedCarat === "1.50ct" ? 2200 : 0;
-  
   const selectedVariantPrice = selectedVariant
     ? typeof selectedVariant.price === "number"
       ? selectedVariant.price
       : parseFloat(String(selectedVariant.price || 0))
     : null;
 
-  const dynamicPrice = selectedVariantPrice ?? (product.price + metalPriceAddon + caratPriceAddon);
+  const dynamicPrice = selectedVariantPrice ?? product.price;
 
   const handleAddToCart = async () => {
     try {
       const variantId = selectedVariant?.id;
-      // 1. If authenticated and numericId exists, send to backend API
       if (isAuthenticated && numericId) {
         await cartApi.addItem(numericId, selectedSize, quantity, variantId);
       }
 
-      // 2. Also persist to local cart & notify UI
       const existingCart = JSON.parse(localStorage.getItem("gama_cart") || "[]");
       existingCart.push({
         id: numericId || product.id,
@@ -267,20 +244,18 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
         title: `${product.title} (${selectedMetal}${selectedVariant?.metal_karat ? " " + selectedVariant.metal_karat : ""})`,
         price: dynamicPrice,
         metal: selectedMetal,
-        carat: selectedCarat,
         size: selectedSize,
         quantity,
       });
       localStorage.setItem("gama_cart", JSON.stringify(existingCart));
       window.dispatchEvent(new Event("cartUpdated"));
-      toast.success(`${product.title} added to cart!`);
+      toast.success(`${product.title} added to bag!`);
     } catch {
-      toast.error("Failed to add product to cart");
+      toast.error("Failed to add to bag");
     }
   };
 
-  // ── Slider / Carousel Media Items ──
-  // Extract active variant primary image if available
+  // Slider items
   const variantImgUrl = selectedVariant?.images?.find((i: any) => i.isPrimary || i.is_primary)?.url || selectedVariant?.images?.[0]?.url;
   const rawImageList = product.images || [];
   const galleryImages = variantImgUrl
@@ -295,8 +270,8 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     })),
     {
       type: "video" as const,
-      src: product.video_url || product.images[2] || product.images[0],
-      alt: "360° HD Video Showcase",
+      src: product.video_url || product.images[1] || product.images[0],
+      alt: "360° Showcase",
     },
   ];
 
@@ -330,7 +305,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [nextSlide, prevSlide]);
 
-  // Auto-play: advance every 3 seconds, pause on hover, video play, or when variant is chosen
+  // Auto-play
   useEffect(() => {
     if (isHovering || isPlayingVideo || isFullscreen || isAutoplayPaused) {
       if (autoPlayTimer.current) {
@@ -342,13 +317,12 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     autoPlayTimer.current = setInterval(() => {
       setSlideDirection(1);
       setSelectedSlide((prev) => (prev + 1) % totalSlides);
-    }, 3000);
+    }, 4000);
     return () => {
       if (autoPlayTimer.current) clearInterval(autoPlayTimer.current);
     };
   }, [isHovering, isPlayingVideo, isFullscreen, isAutoplayPaused, totalSlides]);
 
-  // Slide animation variants
   const slideVariants = {
     enter: (direction: number) => ({
       x: direction > 0 ? "100%" : "-100%",
@@ -364,68 +338,51 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     }),
   };
 
-  const [relatedProducts, setRelatedProducts] = useState<{id: string; title: string; price: number; badge?: string; image?: string}[]>([]);
-
-  useEffect(() => {
-    productsApi
-      .getProducts({ category: product.category?.toLowerCase().replace(" ", "-"), limit: 4 })
-      .then((res) => {
-        const list = res.data?.data || [];
-        const mapped = list
-          .filter((p: any) => String(p.id) !== String(product.id))
-          .slice(0, 4)
-          .map((p: any) => ({
-            id: String(p.id || p.slug),
-            title: p.name,
-            price: typeof p.base_price === "number" ? p.base_price : parseFloat(p.base_price || "0") || 0,
-            badge: p.is_featured ? "FEATURED" : undefined,
-            image: p.images?.[0]?.url,
-          }));
-        setRelatedProducts(mapped);
-      })
-      .catch(() => {});
-  }, [product.id, product.category]);
+  const isRing = !product.category.toLowerCase().includes("earring") &&
+                 !product.category.toLowerCase().includes("necklace") &&
+                 !product.category.toLowerCase().includes("bracelet");
 
   return (
     <div className="page-bg" style={{ backgroundColor: "#000000", color: "#ffffff", minHeight: "100vh" }}>
       <Header />
 
-      {/* Main Product Details Section */}
-      <section style={{ maxWidth: "1400px", margin: "0 auto", padding: "40px 24px 80px" }}>
-        {/* Breadcrumb */}
-        <nav style={{ display: "flex", gap: "8px", fontSize: "11px", letterSpacing: "1px", textTransform: "uppercase", color: "#888888", marginBottom: "28px" }}>
-          <Link href="/" style={{ color: "#888888" }}>Home</Link>
-          <span>/</span>
-          <Link href={`/${product.category.toLowerCase().replace(" ", "s")}`} style={{ color: "#888888" }}>
+      {/* Main Container */}
+      <main style={{ maxWidth: "1360px", margin: "0 auto", padding: "32px 24px 80px" }}>
+        {/* Clean Breadcrumb */}
+        <nav style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: "#777777", marginBottom: "32px" }}>
+          <Link href="/" style={{ color: "#777777", textDecoration: "none", transition: "color 0.2s" }} className="hover:text-gold">
+            Home
+          </Link>
+          <span style={{ opacity: 0.4 }}>/</span>
+          <Link href={`/${product.category.toLowerCase().replace(/\s+/g, "-")}`} style={{ color: "#777777", textDecoration: "none", transition: "color 0.2s" }} className="hover:text-gold">
             {product.category}
           </Link>
-          <span>/</span>
+          <span style={{ opacity: 0.4 }}>/</span>
           <span style={{ color: "#c6a45f" }}>{product.title}</span>
         </nav>
 
-        {/* 2-Column Main Layout: Left Media Gallery & Right Product Panel */}
-        <div className="product-detail-main-grid">
-          {/* ── LEFT SIDE: SINGLE IMAGE SLIDER WITH MEDIA GALLERY ── */}
+        {/* 2-Column Luxury Layout */}
+        <div style={{ display: "grid", gridTemplateColumns: "1.1fr 0.9fr", gap: "48px", alignItems: "start" }}>
+          
+          {/* ── LEFT: MEDIA SHOWCASE ── */}
           <div
-            style={{ display: "flex", flexDirection: "column", gap: "0" }}
+            style={{ display: "flex", flexDirection: "column", gap: "14px" }}
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
           >
-            {/* ── Main Slider Container ── */}
+            {/* Main Image Slider Viewport */}
             <div
               style={{
                 position: "relative",
                 width: "100%",
                 aspectRatio: "1/1",
-                maxHeight: "540px",
-                backgroundColor: "#111111",
-                border: "1px solid rgba(198, 164, 95, 0.25)",
+                backgroundColor: "#080808",
+                border: "1px solid rgba(198, 164, 95, 0.2)",
                 overflow: "hidden",
-                borderRadius: "4px",
-                boxShadow: "0 20px 40px rgba(0, 0, 0, 0.5)",
+                borderRadius: "2px",
               }}
             >
-              {/* Badge Overlay */}
+              {/* Badge */}
               {product.badge && (
                 <span
                   style={{
@@ -438,7 +395,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                     fontSize: "9px",
                     fontWeight: "700",
                     letterSpacing: "1.5px",
-                    padding: "5px 12px",
+                    padding: "4px 10px",
                     textTransform: "uppercase",
                   }}
                 >
@@ -455,18 +412,16 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                   zIndex: 10,
                   backgroundColor: "rgba(0, 0, 0, 0.6)",
                   backdropFilter: "blur(8px)",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  padding: "4px 12px",
-                  fontSize: "11px",
-                  fontFamily: "'Poppins', sans-serif",
-                  color: "#ffffff",
-                  letterSpacing: "1px",
+                  padding: "4px 10px",
+                  fontSize: "10px",
+                  letterSpacing: "1.5px",
+                  color: "#aaaaaa",
                 }}
               >
                 {selectedSlide + 1} / {totalSlides}
               </div>
 
-              {/* Fullscreen Toggle */}
+              {/* Fullscreen Button */}
               <button
                 onClick={() => setIsFullscreen(true)}
                 style={{
@@ -484,38 +439,14 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                   justifyContent: "center",
                   cursor: "pointer",
                   color: "#ffffff",
-                  transition: "all 0.3s ease",
+                  transition: "all 0.2s ease",
                 }}
                 aria-label="View fullscreen"
               >
                 <Maximize2 size={14} />
               </button>
 
-              {/* Heart / Wishlist Button */}
-              <button
-                style={{
-                  position: "absolute",
-                  bottom: "16px",
-                  right: "60px",
-                  zIndex: 10,
-                  backgroundColor: "rgba(0, 0, 0, 0.5)",
-                  backdropFilter: "blur(8px)",
-                  border: "1px solid rgba(255, 255, 255, 0.15)",
-                  width: "36px",
-                  height: "36px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  color: "#ffffff",
-                  transition: "all 0.3s ease",
-                }}
-                aria-label="Add to wishlist"
-              >
-                <Heart size={14} />
-              </button>
-
-              {/* Previous Arrow */}
+              {/* Nav Arrows */}
               <button
                 onClick={prevSlide}
                 style={{
@@ -524,10 +455,10 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                   top: "50%",
                   transform: "translateY(-50%)",
                   zIndex: 10,
-                  width: "44px",
-                  height: "44px",
-                  backgroundColor: "rgba(0, 0, 0, 0.45)",
-                  backdropFilter: "blur(10px)",
+                  width: "40px",
+                  height: "40px",
+                  backgroundColor: "rgba(0, 0, 0, 0.5)",
+                  backdropFilter: "blur(8px)",
                   border: "1px solid rgba(198, 164, 95, 0.3)",
                   borderRadius: "50%",
                   display: "flex",
@@ -535,14 +466,13 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                   justifyContent: "center",
                   cursor: "pointer",
                   color: "#ffffff",
-                  transition: "all 0.3s ease",
+                  transition: "all 0.2s ease",
                 }}
-                aria-label="Previous slide"
+                aria-label="Previous"
               >
-                <ChevronLeft size={20} />
+                <ChevronLeft size={18} />
               </button>
 
-              {/* Next Arrow */}
               <button
                 onClick={nextSlide}
                 style={{
@@ -551,10 +481,10 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                   top: "50%",
                   transform: "translateY(-50%)",
                   zIndex: 10,
-                  width: "44px",
-                  height: "44px",
-                  backgroundColor: "rgba(0, 0, 0, 0.45)",
-                  backdropFilter: "blur(10px)",
+                  width: "40px",
+                  height: "40px",
+                  backgroundColor: "rgba(0, 0, 0, 0.5)",
+                  backdropFilter: "blur(8px)",
                   border: "1px solid rgba(198, 164, 95, 0.3)",
                   borderRadius: "50%",
                   display: "flex",
@@ -562,14 +492,14 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                   justifyContent: "center",
                   cursor: "pointer",
                   color: "#ffffff",
-                  transition: "all 0.3s ease",
+                  transition: "all 0.2s ease",
                 }}
-                aria-label="Next slide"
+                aria-label="Next"
               >
-                <ChevronRight size={20} />
+                <ChevronRight size={18} />
               </button>
 
-              {/* Animated Slide Content */}
+              {/* Animated Slides */}
               <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
                 <motion.div
                   key={`${selectedSlide}-${variantImgUrl || 'default'}`}
@@ -578,29 +508,17 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                   initial="enter"
                   animate="center"
                   exit="exit"
-                  transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                  }}
+                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
                 >
                   {mediaItems[selectedSlide].type === "image" ? (
                     <img
                       src={mediaItems[selectedSlide].src}
                       alt={mediaItems[selectedSlide].alt}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        userSelect: "none",
-                        pointerEvents: "none",
-                      }}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
                       draggable={false}
                     />
                   ) : (
-                    /* Video Slide */
                     <div
                       style={{
                         width: "100%",
@@ -615,213 +533,92 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                         style={{
                           position: "absolute",
                           inset: 0,
-                          backgroundImage: `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.75)), url(${mediaItems[selectedSlide].src})`,
+                          backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url(${mediaItems[selectedSlide].src})`,
                           backgroundSize: "cover",
                           backgroundPosition: "center",
                           filter: "blur(3px)",
                         }}
                       />
                       {!isPlayingVideo ? (
-                        <div
-                          style={{
-                            position: "relative",
-                            zIndex: 2,
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            textAlign: "center",
-                          }}
-                        >
+                        <div style={{ position: "relative", zIndex: 2, textAlign: "center" }}>
                           <motion.button
                             onClick={() => setIsPlayingVideo(true)}
-                            whileHover={{ scale: 1.1 }}
+                            whileHover={{ scale: 1.08 }}
                             whileTap={{ scale: 0.95 }}
                             style={{
-                              width: "80px",
-                              height: "80px",
+                              width: "70px",
+                              height: "70px",
                               borderRadius: "50%",
                               background: "linear-gradient(135deg, #c6a45f 0%, #e8d5a3 50%, #c6a45f 100%)",
                               color: "#000000",
                               border: "none",
-                              display: "flex",
+                              display: "inline-flex",
                               alignItems: "center",
                               justifyContent: "center",
                               cursor: "pointer",
-                              boxShadow: "0 0 40px rgba(198, 164, 95, 0.5), 0 0 80px rgba(198, 164, 95, 0.2)",
-                              marginBottom: "20px",
+                              boxShadow: "0 0 30px rgba(198, 164, 95, 0.4)",
+                              marginBottom: "16px",
                             }}
                           >
-                            <Play size={32} fill="#000000" style={{ marginLeft: "4px" }} />
+                            <Play size={28} fill="#000000" style={{ marginLeft: "3px" }} />
                           </motion.button>
-                          <span
-                            style={{
-                              fontFamily: "'Playfair Display', serif",
-                              fontSize: "18px",
-                              fontWeight: "700",
-                              letterSpacing: "3px",
-                              color: "#ffffff",
-                              textTransform: "uppercase",
-                              marginBottom: "8px",
-                            }}
-                          >
-                            360° HD Video
-                          </span>
-                          <span
-                            style={{
-                              fontFamily: "'Poppins', sans-serif",
-                              fontSize: "11px",
-                              letterSpacing: "1.5px",
-                              color: "#c6a45f",
-                              textTransform: "uppercase",
-                            }}
-                          >
-                            Inspect diamond brilliance & setting details
-                          </span>
+                          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", letterSpacing: "2px", color: "#ffffff", textTransform: "uppercase" }}>
+                            360° Video Preview
+                          </div>
                         </div>
                       ) : (
-                        <div
-                          style={{
-                            position: "relative",
-                            zIndex: 2,
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            textAlign: "center",
-                          }}
-                        >
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                          >
-                            <Sparkles size={48} color="#c6a45f" />
-                          </motion.div>
-                          <p
-                            style={{
-                              fontFamily: "'Poppins', sans-serif",
-                              fontSize: "14px",
-                              color: "#ffffff",
-                              marginTop: "16px",
-                              marginBottom: "4px",
-                            }}
-                          >
-                            Playing 360° Interactive Video...
+                        <div style={{ position: "relative", zIndex: 2, textAlign: "center" }}>
+                          <Sparkles size={40} color="#c6a45f" style={{ margin: "0 auto 12px" }} />
+                          <p style={{ fontSize: "13px", color: "#ffffff", marginBottom: "14px" }}>
+                            Interactive 360° View Active
                           </p>
-                          <motion.button
+                          <button
                             onClick={() => setIsPlayingVideo(false)}
-                            whileHover={{ scale: 1.05 }}
                             style={{
-                              marginTop: "16px",
                               background: "none",
                               border: "1px solid rgba(198, 164, 95, 0.5)",
                               color: "#c6a45f",
-                              padding: "8px 20px",
+                              padding: "6px 16px",
                               fontSize: "10px",
                               cursor: "pointer",
                               textTransform: "uppercase",
                               letterSpacing: "1.5px",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
                             }}
                           >
-                            <Pause size={12} /> Pause Video
-                          </motion.button>
+                            <Pause size={10} style={{ display: "inline", marginRight: "4px" }} /> Pause
+                          </button>
                         </div>
                       )}
                     </div>
                   )}
                 </motion.div>
               </AnimatePresence>
-
-              {/* Dot Indicators */}
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: "16px",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  zIndex: 10,
-                  display: "flex",
-                  gap: "8px",
-                  backgroundColor: "rgba(0, 0, 0, 0.4)",
-                  backdropFilter: "blur(8px)",
-                  padding: "6px 12px",
-                  borderRadius: "20px",
-                }}
-              >
-                {mediaItems.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => goToSlide(idx)}
-                    style={{
-                      width: selectedSlide === idx ? "24px" : "8px",
-                      height: "8px",
-                      borderRadius: "4px",
-                      border: "none",
-                      backgroundColor: selectedSlide === idx ? "#c6a45f" : "rgba(255, 255, 255, 0.35)",
-                      cursor: "pointer",
-                      transition: "all 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
-                      padding: 0,
-                    }}
-                    aria-label={`Go to slide ${idx + 1}`}
-                  />
-                ))}
-              </div>
             </div>
 
-            {/* ── Thumbnail Strip ── */}
-            <div
-              style={{
-                display: "flex",
-                gap: "8px",
-                marginTop: "12px",
-                overflowX: "auto",
-                paddingBottom: "4px",
-                scrollbarWidth: "thin",
-                scrollbarColor: "rgba(198,164,95,0.3) transparent",
-              }}
-            >
+            {/* Thumbnail Strip */}
+            <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "4px" }}>
               {mediaItems.map((item, idx) => (
                 <button
                   key={idx}
                   onClick={() => goToSlide(idx)}
                   style={{
                     flexShrink: 0,
-                    width: "72px",
-                    height: "72px",
-                    border: selectedSlide === idx
-                      ? "2px solid #c6a45f"
-                      : "1px solid rgba(255, 255, 255, 0.1)",
+                    width: "64px",
+                    height: "64px",
+                    border: selectedSlide === idx ? "2px solid #c6a45f" : "1px solid rgba(255, 255, 255, 0.1)",
                     backgroundColor: "#0d0d0d",
                     cursor: "pointer",
                     overflow: "hidden",
-                    opacity: selectedSlide === idx ? 1 : 0.6,
-                    transition: "all 0.3s ease",
+                    opacity: selectedSlide === idx ? 1 : 0.5,
+                    transition: "all 0.2s ease",
                     padding: 0,
                     position: "relative",
                   }}
                 >
-                  <img
-                    src={item.src}
-                    alt={item.alt}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
+                  <img src={item.src} alt={item.alt} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   {item.type === "video" && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        inset: 0,
-                        backgroundColor: "rgba(0, 0, 0, 0.45)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Play size={16} fill="#c6a45f" color="#c6a45f" />
+                    <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Play size={12} fill="#c6a45f" color="#c6a45f" />
                     </div>
                   )}
                 </button>
@@ -829,229 +626,65 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
             </div>
           </div>
 
-          {/* ── Fullscreen Lightbox ── */}
-          <AnimatePresence>
-            {isFullscreen && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                style={{
-                  position: "fixed",
-                  inset: 0,
-                  zIndex: 9999,
-                  backgroundColor: "rgba(0, 0, 0, 0.95)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-                onClick={() => setIsFullscreen(false)}
-              >
-                {/* Close Button */}
-                <button
-                  onClick={() => setIsFullscreen(false)}
-                  style={{
-                    position: "absolute",
-                    top: "24px",
-                    right: "24px",
-                    zIndex: 10001,
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    color: "#ffffff",
-                  }}
-                >
-                  <X size={20} />
-                </button>
-
-                {/* Fullscreen Prev */}
-                <button
-                  onClick={(e) => { e.stopPropagation(); prevSlide(); }}
-                  style={{
-                    position: "absolute",
-                    left: "24px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    zIndex: 10001,
-                    width: "52px",
-                    height: "52px",
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    border: "1px solid rgba(198, 164, 95, 0.4)",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    color: "#ffffff",
-                  }}
-                >
-                  <ChevronLeft size={24} />
-                </button>
-
-                {/* Fullscreen Next */}
-                <button
-                  onClick={(e) => { e.stopPropagation(); nextSlide(); }}
-                  style={{
-                    position: "absolute",
-                    right: "24px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    zIndex: 10001,
-                    width: "52px",
-                    height: "52px",
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    border: "1px solid rgba(198, 164, 95, 0.4)",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    color: "#ffffff",
-                  }}
-                >
-                  <ChevronRight size={24} />
-                </button>
-
-                {/* Fullscreen Counter */}
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: "24px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    zIndex: 10001,
-                    fontSize: "13px",
-                    fontFamily: "'Poppins', sans-serif",
-                    color: "#ffffff",
-                    letterSpacing: "2px",
-                  }}
-                >
-                  {selectedSlide + 1} / {totalSlides}
-                </div>
-
-                {/* Fullscreen Image */}
-                <div
-                  onClick={(e) => e.stopPropagation()}
-                  style={{
-                    maxWidth: "85vw",
-                    maxHeight: "85vh",
-                    position: "relative",
-                  }}
-                >
-                  <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
-                    <motion.img
-                      key={`fs-${selectedSlide}-${variantImgUrl || 'default'}`}
-                      custom={slideDirection}
-                      variants={slideVariants}
-                      initial="enter"
-                      animate="center"
-                      exit="exit"
-                      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-                      src={mediaItems[selectedSlide].src}
-                      alt={mediaItems[selectedSlide].alt}
-                      style={{
-                        maxWidth: "85vw",
-                        maxHeight: "85vh",
-                        objectFit: "contain",
-                      }}
-                      draggable={false}
-                    />
-                  </AnimatePresence>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* ── RIGHT SIDE: PRODUCT SPECS & PURCHASE PANEL ── */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-            {/* Trustpilot / Google Reviews Header */}
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: "12px", fontWeight: "700", color: "#ffffff" }}>
-                Excellent
-              </span>
-              <div style={{ display: "flex", gap: "2px", color: "#c6a45f" }}>
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={14} fill="#c6a45f" stroke="none" />
-                ))}
-              </div>
-              <span style={{ fontSize: "11px", color: "#888888" }}>
-                5.0 out of 5 based on <strong>{product.reviewCount}</strong> reviews
-              </span>
-            </div>
-
-            {/* Product Title & SKU */}
+          {/* ── RIGHT: PRODUCT DETAILS & PURCHASING ── */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+            
+            {/* Title & SKU */}
             <div>
+              <div style={{ fontSize: "11px", letterSpacing: "2px", color: "#c6a45f", textTransform: "uppercase", marginBottom: "8px" }}>
+                {product.category}
+              </div>
               <h1
                 style={{
                   fontFamily: "'Playfair Display', serif",
-                  fontSize: "22px",
-                  fontWeight: "700",
-                  letterSpacing: "1px",
+                  fontSize: "24px",
+                  fontWeight: "600",
+                  letterSpacing: "0.5px",
                   color: "#ffffff",
-                  lineHeight: "1.4",
-                  marginBottom: "8px",
-                  textTransform: "uppercase",
+                  lineHeight: "1.35",
+                  marginBottom: "10px",
                 }}
               >
                 {product.title}
               </h1>
-              <div style={{ fontSize: "11px", letterSpacing: "1px", color: "#888888" }}>
+              <div style={{ fontSize: "11px", letterSpacing: "1px", color: "#666666" }}>
                 SKU: {selectedVariant?.sku || product.sku}
               </div>
             </div>
 
             {/* Price */}
-            <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: "16px", paddingBottom: "20px", borderBottom: "1px solid rgba(255, 255, 255, 0.08)" }}>
               <span
                 style={{
                   fontFamily: "'Playfair Display', serif",
-                  fontSize: "28px",
+                  fontSize: "30px",
                   fontWeight: "700",
                   color: "#c6a45f",
-                  letterSpacing: "1px",
+                  letterSpacing: "0.5px",
                 }}
               >
                 {formatPrice(dynamicPrice)}
               </span>
-              <span style={{ fontSize: "11px", color: "#888888" }}>
-                (Includes UK VAT & Fully Insured Express Shipping)
+              <span style={{ fontSize: "11px", color: "#888888", display: "flex", alignItems: "center", gap: "6px" }}>
+                <CheckCircle2 size={13} color="#c6a45f" /> Fully Insured Express Delivery Included
               </span>
             </div>
 
-            {/* Created Variants Selector (If actual product variants exist) */}
-            {variants.length > 0 && (
+            {/* Variants / Metal Selection */}
+            {variants.length > 0 ? (
               <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontFamily: "'Poppins', sans-serif",
-                    fontSize: "11px",
-                    fontWeight: "600",
-                    color: "#c6a45f",
-                    textTransform: "uppercase",
-                    letterSpacing: "1px",
-                    marginBottom: "8px",
-                  }}
-                >
-                  Select Variant:
+                <label style={{ display: "block", fontSize: "11px", fontWeight: "600", color: "#aaaaaa", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "10px" }}>
+                  Selected Specification
                 </label>
                 <select
                   value={selectedVariant?.id || ""}
                   onChange={(e) => handleSelectVariant(Number(e.target.value))}
                   style={{
                     width: "100%",
-                    height: "44px",
+                    height: "46px",
                     backgroundColor: "#0d0d0d",
-                    border: "1px solid #c6a45f",
+                    border: "1px solid rgba(198, 164, 95, 0.4)",
                     color: "#ffffff",
-                    fontFamily: "'Poppins', sans-serif",
                     fontSize: "12px",
                     padding: "0 16px",
                     outline: "none",
@@ -1062,548 +695,256 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                     const metalLabel = (v.metal_type || v.metalType || "").replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
                     const karatLabel = v.metal_karat || v.metalKarat || "";
                     const dimLabel = v.size ? `Size ${v.size}` : v.length ? v.length : v.bangle_size || v.bangleSize || "";
-                    const weightLabel = v.metal_weight_grams || v.metalWeightGrams ? `${v.metal_weight_grams || v.metalWeightGrams}g` : "";
                     const vPrice = typeof v.price === "number" ? v.price : parseFloat(String(v.price || 0));
-                    
-                    const detailsStr = [metalLabel, karatLabel, dimLabel, weightLabel].filter(Boolean).join(" · ");
-                    const isDefault = v.is_default || v.isDefault;
-
+                    const detailsStr = [metalLabel, karatLabel, dimLabel].filter(Boolean).join(" · ");
                     return (
                       <option key={v.id} value={v.id} style={{ background: "#0c0c0c" }}>
-                        {detailsStr || v.sku} — {formatPrice(vPrice)} {isDefault ? "(Default)" : ""}
+                        {detailsStr || v.sku} — {formatPrice(vPrice)}
                       </option>
                     );
                   })}
                 </select>
               </div>
+            ) : (
+              <div>
+                <label style={{ display: "block", fontSize: "11px", fontWeight: "600", color: "#aaaaaa", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "10px" }}>
+                  Precious Metal: <span style={{ color: "#ffffff" }}>{selectedMetal}</span>
+                </label>
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                  {["18ct Yellow Gold", "18ct White Gold", "18ct Rose Gold", "Platinum"].map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => setSelectedMetal(m)}
+                      style={{
+                        padding: "10px 16px",
+                        fontSize: "11px",
+                        letterSpacing: "1px",
+                        backgroundColor: selectedMetal === m ? "#141414" : "#080808",
+                        color: selectedMetal === m ? "#c6a45f" : "#888888",
+                        border: selectedMetal === m ? "1px solid #c6a45f" : "1px solid rgba(255, 255, 255, 0.1)",
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
 
-            {/* Selector 2: Diamond Carat Weight */}
-            <div>
-              <label
-                style={{
-                  display: "block",
-                  fontFamily: "'Poppins', sans-serif",
-                  fontSize: "11px",
-                  fontWeight: "600",
-                  color: "#c6a45f",
-                  textTransform: "uppercase",
-                  letterSpacing: "1px",
-                  marginBottom: "8px",
-                }}
-              >
-                Diamond Carat:
-              </label>
-              <select
-                value={selectedCarat}
-                onChange={(e) => setSelectedCarat(e.target.value)}
-                style={{
-                  width: "100%",
-                  height: "44px",
-                  backgroundColor: "#0d0d0d",
-                  border: "1px solid rgba(198, 164, 95, 0.4)",
-                  color: "#ffffff",
-                  fontFamily: "'Poppins', sans-serif",
-                  fontSize: "12px",
-                  padding: "0 16px",
-                  outline: "none",
-                  cursor: "pointer",
-                }}
-              >
-                <option value="0.50ct" style={{ background: "#0c0c0c" }}>
-                  0.50 Carat (Base)
-                </option>
-                <option value="0.75ct" style={{ background: "#0c0c0c" }}>
-                  0.75 Carat (+{formatPrice(450)})
-                </option>
-                <option value="1.00ct" style={{ background: "#0c0c0c" }}>
-                  1.00 Carat (+{formatPrice(1100)})
-                </option>
-                <option value="1.50ct" style={{ background: "#0c0c0c" }}>
-                  1.50 Carat (+{formatPrice(2200)})
-                </option>
-              </select>
-            </div>
-
-            {/* Selector 3: Ring Size */}
-            <div>
-              <label
-                style={{
-                  display: "block",
-                  fontFamily: "'Poppins', sans-serif",
-                  fontSize: "11px",
-                  fontWeight: "600",
-                  color: "#c6a45f",
-                  textTransform: "uppercase",
-                  letterSpacing: "1px",
-                  marginBottom: "8px",
-                }}
-              >
-                Select Size:
-              </label>
-              <select
-                value={selectedSize}
-                onChange={(e) => setSelectedSize(e.target.value)}
-                style={{
-                  width: "100%",
-                  height: "44px",
-                  backgroundColor: "#0d0d0d",
-                  border: "1px solid rgba(198, 164, 95, 0.4)",
-                  color: "#ffffff",
-                  fontFamily: "'Poppins', sans-serif",
-                  fontSize: "12px",
-                  padding: "0 16px",
-                  outline: "none",
-                  cursor: "pointer",
-                }}
-              >
-                {["H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"].map((size) => (
-                  <option key={size} value={size} style={{ background: "#0c0c0c" }}>
-                    UK Ring Size {size} (Standard Delivery)
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Selector 4: Deposit / Payment Option */}
-            <div>
-              <label
-                style={{
-                  display: "block",
-                  fontFamily: "'Poppins', sans-serif",
-                  fontSize: "11px",
-                  fontWeight: "600",
-                  color: "#c6a45f",
-                  textTransform: "uppercase",
-                  letterSpacing: "1px",
-                  marginBottom: "8px",
-                }}
-              >
-                Payment Option:
-              </label>
-              <select
-                value={selectedDeposit}
-                onChange={(e) => setSelectedDeposit(e.target.value)}
-                style={{
-                  width: "100%",
-                  height: "44px",
-                  backgroundColor: "#0d0d0d",
-                  border: "1px solid rgba(198, 164, 95, 0.4)",
-                  color: "#ffffff",
-                  fontFamily: "'Poppins', sans-serif",
-                  fontSize: "12px",
-                  padding: "0 16px",
-                  outline: "none",
-                  cursor: "pointer",
-                }}
-              >
-                <option value="Full Payment" style={{ background: "#0c0c0c" }}>
-                  Full Payment – {formatPrice(dynamicPrice)}
-                </option>
-                <option value="25% Deposit" style={{ background: "#0c0c0c" }}>
-                  25% Deposit – {formatPrice(dynamicPrice * 0.25)}
-                </option>
-                <option value="50% Deposit" style={{ background: "#0c0c0c" }}>
-                  50% Deposit – {formatPrice(dynamicPrice * 0.5)}
-                </option>
-              </select>
-            </div>
-
-            {/* Add to Cart Button */}
-            <button
-              onClick={handleAddToCart}
-              style={{
-                width: "100%",
-                height: "52px",
-                backgroundColor: "#c6a45f",
-                color: "#000000",
-                border: "none",
-                fontFamily: "'Poppins', sans-serif",
-                fontSize: "13px",
-                fontWeight: "700",
-                letterSpacing: "2px",
-                textTransform: "uppercase",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "10px",
-                boxShadow: "0 0 25px rgba(198, 164, 95, 0.3)",
-                transition: "all 0.3s ease",
-              }}
-            >
-              <ShoppingBag size={18} /> ADD TO CART • {formatPrice(selectedDeposit === "25% Deposit" ? dynamicPrice * 0.25 : selectedDeposit === "50% Deposit" ? dynamicPrice * 0.5 : dynamicPrice)}
-            </button>
-
-            {/* Urgent Assistance Callout Bar */}
-            <div
-              style={{
-                backgroundColor: "#080808",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                padding: "16px",
-                textAlign: "center",
-              }}
-            >
-              <p
-                style={{
-                  fontFamily: "'Poppins', sans-serif",
-                  fontSize: "12px",
-                  color: "#d0d0d0",
-                  marginBottom: "12px",
-                }}
-              >
-                Need your ring urgently? Get in touch 👇
-              </p>
-              <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
-                <a
-                  href="#book-view"
+            {/* Size Selector (If ring or applicable) */}
+            {isRing && (
+              <div>
+                <label style={{ display: "block", fontSize: "11px", fontWeight: "600", color: "#aaaaaa", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "10px" }}>
+                  Ring Size
+                </label>
+                <select
+                  value={selectedSize}
+                  onChange={(e) => setSelectedSize(e.target.value)}
                   style={{
-                    border: "1px solid rgba(198, 164, 95, 0.4)",
-                    color: "#c6a45f",
-                    padding: "8px 14px",
-                    fontSize: "10px",
-                    letterSpacing: "1px",
-                    textTransform: "uppercase",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
+                    width: "100%",
+                    height: "46px",
+                    backgroundColor: "#0d0d0d",
+                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                    color: "#ffffff",
+                    fontSize: "12px",
+                    padding: "0 16px",
+                    outline: "none",
+                    cursor: "pointer",
                   }}
                 >
-                  <Calendar size={12} /> Book View
-                </a>
-                <a
-                  href="mailto:customerservice@gamajewels.net"
-                  style={{
-                    border: "1px solid rgba(198, 164, 95, 0.4)",
-                    color: "#c6a45f",
-                    padding: "8px 14px",
-                    fontSize: "10px",
-                    letterSpacing: "1px",
-                    textTransform: "uppercase",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <Mail size={12} /> Email
-                </a>
-                <a
-                  href="https://wa.me/447981839498"
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    border: "1px solid rgba(198, 164, 95, 0.4)",
-                    color: "#c6a45f",
-                    padding: "8px 14px",
-                    fontSize: "10px",
-                    letterSpacing: "1px",
-                    textTransform: "uppercase",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <MessageSquare size={12} /> +44 *******
-                </a>
+                  {["H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"].map((size) => (
+                    <option key={size} value={size} style={{ background: "#0c0c0c" }}>
+                      UK Size {size}
+                    </option>
+                  ))}
+                </select>
               </div>
-            </div>
+            )}
 
-            {/* Trust Benefits 2x2 Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "11px", color: "#a0a0a0" }}>
-                <Shield size={16} color="#c6a45f" /> 1 Year Free Warranty
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "11px", color: "#a0a0a0" }}>
-                <Truck size={16} color="#c6a45f" /> Insured Delivery
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "11px", color: "#a0a0a0" }}>
-                <Award size={16} color="#c6a45f" /> Diamond Certificate
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "11px", color: "#a0a0a0" }}>
-                <RefreshCw size={16} color="#c6a45f" /> 30 Day Exchange Policy
-              </div>
-            </div>
-
-            {/* Product Specification Collapsible Accordion */}
-            <div style={{ borderTop: "1px solid rgba(255, 255, 255, 0.08)", paddingTop: "16px" }}>
+            {/* Add to Bag CTA */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <button
-                onClick={() => setSpecOpen(!specOpen)}
+                onClick={handleAddToCart}
                 style={{
                   width: "100%",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  background: "none",
+                  height: "54px",
+                  backgroundColor: "#c6a45f",
+                  color: "#000000",
                   border: "none",
-                  padding: "8px 0",
-                  cursor: "pointer",
-                  color: "#c6a45f",
-                  fontFamily: "'Playfair Display', serif",
-                  fontSize: "14px",
+                  fontSize: "12px",
                   fontWeight: "700",
-                  letterSpacing: "1px",
+                  letterSpacing: "2.5px",
                   textTransform: "uppercase",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "10px",
+                  boxShadow: "0 4px 20px rgba(198, 164, 95, 0.25)",
+                  transition: "all 0.2s ease",
                 }}
               >
-                PRODUCT SPECIFICATION
-                <ChevronDown size={16} style={{ transform: specOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
+                <ShoppingBag size={17} /> ADD TO SHOPPING BAG • {formatPrice(dynamicPrice)}
               </button>
 
-              {specOpen && (
-                <div style={{ marginTop: "12px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "11px", color: "#a0a0a0" }}>
-                  <div><strong>Precious Metal:</strong> {selectedMetal} {selectedVariant?.metal_karat || ""}</div>
-                  <div><strong>Diamond Carat:</strong> {selectedCarat}</div>
-                  <div><strong>Diamond Shape:</strong> {product.shape}</div>
-                  <div><strong>Diamond Cut:</strong> Excellent Cut</div>
-                  <div><strong>Clarity:</strong> {product.clarity}</div>
-                  <div><strong>Color:</strong> {product.color}</div>
-                  <div><strong>Certificate:</strong> {product.certification}</div>
-                  {(selectedVariant?.metal_weight_grams || selectedVariant?.metalWeightGrams) && (
-                    <div><strong>Metal Weight:</strong> {selectedVariant.metal_weight_grams || selectedVariant.metalWeightGrams}g</div>
-                  )}
+              <Link
+                href="/bespoke"
+                style={{
+                  display: "block",
+                  textAlign: "center",
+                  border: "1px solid rgba(198, 164, 95, 0.35)",
+                  color: "#c6a45f",
+                  padding: "12px",
+                  fontSize: "10.5px",
+                  fontWeight: "600",
+                  letterSpacing: "1.5px",
+                  textTransform: "uppercase",
+                  textDecoration: "none",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                Request Custom Diamond or Metal
+              </Link>
+            </div>
+
+            {/* Trust Badges */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", padding: "18px 0", borderTop: "1px solid rgba(255, 255, 255, 0.08)", borderBottom: "1px solid rgba(255, 255, 255, 0.08)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "11px", color: "#aaaaaa" }}>
+                <Shield size={15} color="#c6a45f" /> 1 Year Free Warranty
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "11px", color: "#aaaaaa" }}>
+                <Truck size={15} color="#c6a45f" /> Insured Delivery
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "11px", color: "#aaaaaa" }}>
+                <Award size={15} color="#c6a45f" /> Certified Diamonds
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "11px", color: "#aaaaaa" }}>
+                <RefreshCw size={15} color="#c6a45f" /> 30-Day Exchange
+              </div>
+            </div>
+
+            {/* Tabbed Clean Information */}
+            <div>
+              {/* Tab Navigation */}
+              <div style={{ display: "flex", gap: "24px", borderBottom: "1px solid rgba(255, 255, 255, 0.1)", marginBottom: "18px" }}>
+                {(["details", "spec", "shipping"] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      borderBottom: activeTab === tab ? "2px solid #c6a45f" : "2px solid transparent",
+                      color: activeTab === tab ? "#c6a45f" : "#777777",
+                      paddingBottom: "10px",
+                      fontSize: "11px",
+                      fontWeight: "600",
+                      letterSpacing: "1.5px",
+                      textTransform: "uppercase",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    {tab === "details" ? "Overview" : tab === "spec" ? "Specifications" : "Delivery & Care"}
+                  </button>
+                ))}
+              </div>
+
+              {/* Tab Content */}
+              {activeTab === "details" && (
+                <div style={{ fontSize: "12px", lineHeight: "1.7", color: "#b0b0b0" }}>
+                  <p style={{ marginBottom: "12px" }}>
+                    {product.description || "Each piece is meticulously crafted with the finest attention to detail, balancing timeless elegance with modern luxury craftsmanship."}
+                  </p>
+                  <ul style={{ paddingLeft: "16px", display: "flex", flexDirection: "column", gap: "6px", color: "#999999" }}>
+                    <li>Handset diamond settings for maximum light dispersion</li>
+                    <li>Solid hallmarked precious metal composition</li>
+                    <li>Includes signature presentation box and diamond certificate</li>
+                  </ul>
+                </div>
+              )}
+
+              {activeTab === "spec" && (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "11px", color: "#aaaaaa" }}>
+                  <div><strong style={{ color: "#dddddd" }}>Precious Metal:</strong> {selectedMetal}</div>
+                  <div><strong style={{ color: "#dddddd" }}>Diamond Shape:</strong> {product.shape}</div>
+                  <div><strong style={{ color: "#dddddd" }}>Diamond Carat:</strong> {product.carat}</div>
+                  <div><strong style={{ color: "#dddddd" }}>Clarity Grade:</strong> {product.clarity}</div>
+                  <div><strong style={{ color: "#dddddd" }}>Colour Grade:</strong> {product.color}</div>
+                  <div><strong style={{ color: "#dddddd" }}>Certification:</strong> {product.certification}</div>
+                </div>
+              )}
+
+              {activeTab === "shipping" && (
+                <div style={{ fontSize: "12px", lineHeight: "1.7", color: "#b0b0b0" }}>
+                  <p style={{ marginBottom: "8px" }}>
+                    <strong style={{ color: "#ffffff" }}>Complimentary Insured Shipping:</strong> Delivered in discreet, high-security packaging with full transit insurance.
+                  </p>
+                  <p>
+                    <strong style={{ color: "#ffffff" }}>Complimentary Resizing:</strong> We offer one free ring resize within 30 days of receiving your order.
+                  </p>
                 </div>
               )}
             </div>
 
-            {/* Bespoke Callout Button */}
-            <Link
-              href="/bespoke"
-              style={{
-                display: "block",
-                textAlign: "center",
-                border: "1px solid #c6a45f",
-                color: "#c6a45f",
-                padding: "14px",
-                fontSize: "11px",
-                fontWeight: "600",
-                letterSpacing: "2px",
-                textTransform: "uppercase",
-              }}
-            >
-              Not Quite? Create Your Own Design
-            </Link>
+          </div>
+        </div>
+      </main>
 
-            {/* Klarna Financing Box */}
-            <div
+      {/* Fullscreen Lightbox Modal */}
+      <AnimatePresence>
+        {isFullscreen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 9999,
+              backgroundColor: "rgba(0, 0, 0, 0.95)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onClick={() => setIsFullscreen(false)}
+          >
+            <button
+              onClick={() => setIsFullscreen(false)}
               style={{
-                backgroundColor: "#0d0d0d",
-                border: "1px solid rgba(198, 164, 95, 0.2)",
-                padding: "14px 18px",
+                position: "absolute",
+                top: "24px",
+                right: "24px",
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                border: "none",
+                width: "40px",
+                height: "40px",
+                borderRadius: "50%",
+                color: "#ffffff",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "space-between",
+                justifyContent: "center",
+                cursor: "pointer",
               }}
             >
-              <div>
-                <div style={{ fontSize: "11px", fontWeight: "600", color: "#ffffff" }}>
-                  Pay in 30 days with Klarna
-                </div>
-                <div style={{ fontSize: "10px", color: "#888888" }}>
-                  0% APR Interest Free. T&Cs apply.
-                </div>
-              </div>
-              <span style={{ fontSize: "11px", fontWeight: "700", color: "#FFB3C7" }}>
-                Klarna.
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── SECTION 2: LUXURY WITH CONFIDENCE ── */}
-      <section
-        style={{
-          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
-          backgroundColor: "#050505",
-          padding: "60px 0",
-        }}
-      >
-        <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
-          <h2
-            style={{
-              fontFamily: "'Playfair Display', serif",
-              fontSize: "24px",
-              fontWeight: "700",
-              letterSpacing: "3px",
-              color: "#ffffff",
-              textTransform: "uppercase",
-              marginBottom: "40px",
-            }}
-          >
-            LUXURY WITH CONFIDENCE
-          </h2>
-
-          <div className="product-trust-grid">
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-              <div style={{ width: "54px", height: "54px", borderRadius: "50%", border: "1px solid rgba(198,164,95,0.4)", display: "flex", alignItems: "center", justifyContent: "center", color: "#c6a45f", marginBottom: "14px" }}>
-                <RefreshCw size={22} />
-              </div>
-              <h4 style={{ fontSize: "12px", letterSpacing: "1.5px", textTransform: "uppercase", color: "#ffffff", marginBottom: "4px" }}>
-                30 Day Exchange
-              </h4>
-              <p style={{ fontSize: "11px", color: "#888888" }}>Hassle-free exchange policy</p>
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-              <div style={{ width: "54px", height: "54px", borderRadius: "50%", border: "1px solid rgba(198,164,95,0.4)", display: "flex", alignItems: "center", justifyContent: "center", color: "#c6a45f", marginBottom: "14px" }}>
-                <Sparkles size={22} />
-              </div>
-              <h4 style={{ fontSize: "12px", letterSpacing: "1.5px", textTransform: "uppercase", color: "#ffffff", marginBottom: "4px" }}>
-                Luxury Packaging
-              </h4>
-              <p style={{ fontSize: "11px", color: "#888888" }}>Signature velvet presentation box</p>
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-              <div style={{ width: "54px", height: "54px", borderRadius: "50%", border: "1px solid rgba(198,164,95,0.4)", display: "flex", alignItems: "center", justifyContent: "center", color: "#c6a45f", marginBottom: "14px" }}>
-                <Shield size={22} />
-              </div>
-              <h4 style={{ fontSize: "12px", letterSpacing: "1.5px", textTransform: "uppercase", color: "#ffffff", marginBottom: "4px" }}>
-                1 Year Warranty
-              </h4>
-              <p style={{ fontSize: "11px", color: "#888888" }}>Complimentary annual inspection</p>
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-              <div style={{ width: "54px", height: "54px", borderRadius: "50%", border: "1px solid rgba(198,164,95,0.4)", display: "flex", alignItems: "center", justifyContent: "center", color: "#c6a45f", marginBottom: "14px" }}>
-                <Award size={22} />
-              </div>
-              <h4 style={{ fontSize: "12px", letterSpacing: "1.5px", textTransform: "uppercase", color: "#ffffff", marginBottom: "4px" }}>
-                Bespoke Design
-              </h4>
-              <p style={{ fontSize: "11px", color: "#888888" }}>Hatton Garden 3D CAD workshop</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── SECTION 3: CUSTOMER REVIEWS ── */}
-      <section style={{ borderTop: "1px solid rgba(255, 255, 255, 0.08)", padding: "60px 0" }}>
-        <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
-          <h2
-            style={{
-              fontFamily: "'Playfair Display', serif",
-              fontSize: "24px",
-              fontWeight: "700",
-              letterSpacing: "3px",
-              color: "#ffffff",
-              textTransform: "uppercase",
-              marginBottom: "16px",
-            }}
-          >
-            Customer Reviews
-          </h2>
-
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "24px", marginBottom: "32px" }}>
-            <div>
-              <div style={{ display: "flex", gap: "4px", justifyContent: "center", color: "#c6a45f", marginBottom: "4px" }}>
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={18} fill="#c6a45f" stroke="none" />
-                ))}
-              </div>
-              <div style={{ fontSize: "12px", color: "#888888" }}>Based on {product.reviewCount} reviews</div>
-            </div>
-
-            <button className="btn-gold" style={{ padding: "12px 24px", fontSize: "10px" }}>
-              Write a Review
+              <X size={18} />
             </button>
-          </div>
-        </div>
-      </section>
+            <img
+              src={mediaItems[selectedSlide].src}
+              alt={mediaItems[selectedSlide].alt}
+              style={{ maxWidth: "85vw", maxHeight: "85vh", objectFit: "contain" }}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* ── SECTION 4: YOU MAY ALSO LIKE ── */}
-      <section style={{ borderTop: "1px solid rgba(255, 255, 255, 0.08)", padding: "60px 0" }}>
-        <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 24px" }}>
-          <h2
-            style={{
-              fontFamily: "'Playfair Display', serif",
-              fontSize: "22px",
-              fontWeight: "700",
-              letterSpacing: "2px",
-              color: "#ffffff",
-              textTransform: "uppercase",
-              textAlign: "center",
-              marginBottom: "32px",
-            }}
-          >
-            YOU MAY ALSO LIKE
-          </h2>
-
-          <div className="product-related-grid">
-            {relatedProducts.map((item) => (
-              <Link
-                key={item.id}
-                href={`/product/${item.id}`}
-                style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.015)",
-                  border: "1px solid rgba(255, 255, 255, 0.08)",
-                  padding: "16px",
-                  display: "flex",
-                  flexDirection: "column",
-                  position: "relative",
-                  textDecoration: "none",
-                }}
-              >
-                {item.badge && (
-                  <span
-                    style={{
-                      position: "absolute",
-                      top: "24px",
-                      left: "24px",
-                      zIndex: 2,
-                      fontSize: "9px",
-                      fontWeight: "700",
-                      letterSpacing: "1.5px",
-                      textTransform: "uppercase",
-                      backgroundColor: "#c6a45f",
-                      color: "#000000",
-                      padding: "3px 8px",
-                    }}
-                  >
-                    {item.badge}
-                  </span>
-                )}
-
-                <div style={{ width: "100%", height: "240px", marginBottom: "16px" }}>
-                  <ImagePlaceholder height="100%" label="IMAGE PLACEHOLDER" />
-                </div>
-
-                <h3
-                  style={{
-                    fontFamily: "'Poppins', sans-serif",
-                    fontSize: "11px",
-                    fontWeight: "500",
-                    color: "#dddddd",
-                    lineHeight: "1.5",
-                    marginBottom: "10px",
-                    height: "33px",
-                    overflow: "hidden",
-                  }}
-                >
-                  {item.title}
-                </h3>
-
-                <div
-                  style={{
-                    fontFamily: "'Playfair Display', serif",
-                    fontSize: "15px",
-                    fontWeight: "600",
-                    color: "#c6a45f",
-                    marginTop: "auto",
-                  }}
-                >
-                  {formatPrice(item.price)}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Recently Viewed Carousel */}
+      {/* Recently Viewed */}
       <RingsRecentlyViewed category={product.category} shape={product.shape} />
 
-      {/* Certification Bar */}
+      {/* Certification Strip */}
       <CertificationBar />
 
       {/* Footer */}
@@ -1611,3 +952,4 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     </div>
   );
 }
+

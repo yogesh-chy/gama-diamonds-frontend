@@ -69,24 +69,26 @@ export default function RingsRecentlyViewed({ category, shape, style }: RingsRec
 
         // Add appointment card at end
         combined.push({
-          title: "APPOINTMENT PAGE | SCHEDULE YOUR CONSULTATION",
+          title: "BESPOKE DESIGN CONSULTATION",
           rawPrice: 0,
           hasPrefix: false,
           href: "/bespoke",
-          badge: null,
+          badge: "BESPOKE",
           isAppointment: true,
+          image: "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?w=800&h=800&fit=crop",
         });
 
         setRecentlyViewedItems(combined.slice(0, 4));
       } catch (err) {
         setRecentlyViewedItems([
           {
-            title: "APPOINTMENT PAGE | SCHEDULE YOUR CONSULTATION",
+            title: "BESPOKE DESIGN CONSULTATION",
             rawPrice: 0,
             hasPrefix: false,
             href: "/bespoke",
-            badge: null,
+            badge: "BESPOKE",
             isAppointment: true,
+            image: "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?w=800&h=800&fit=crop",
           },
         ]);
       }
@@ -173,25 +175,13 @@ export default function RingsRecentlyViewed({ category, shape, style }: RingsRec
                     )}
 
                     {/* Product Image */}
-                    {item.image ? (
-                      <div style={{ width: "100%", height: "240px", overflow: "hidden", position: "relative" }}>
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                        />
-                      </div>
-                    ) : (
-                      <ImagePlaceholder
-                        height="240px"
-                        label={
-                          item.isAppointment
-                            ? "BOOK APPOINTMENT BANNER"
-                            : `Product ${idx + 1} Image`
-                        }
-                        style={{ borderRadius: "0px", border: "none" }}
+                    <div style={{ width: "100%", height: "240px", overflow: "hidden", position: "relative" }}>
+                      <img
+                        src={item.image || "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&h=800&fit=crop"}
+                        alt={item.title}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
                       />
-                    )}
+                    </div>
 
                     {/* Product Details Text */}
                     <div
@@ -231,7 +221,11 @@ export default function RingsRecentlyViewed({ category, shape, style }: RingsRec
                           letterSpacing: "1px",
                         }}
                       >
-                        {item.hasPrefix ? `FROM ${formatPrice(item.rawPrice)}` : formatPrice(item.rawPrice)}
+                        {item.isAppointment
+                          ? "COMPLIMENTARY"
+                          : item.hasPrefix
+                          ? `FROM ${formatPrice(item.rawPrice)}`
+                          : formatPrice(item.rawPrice)}
                       </span>
                     </div>
                   </div>
