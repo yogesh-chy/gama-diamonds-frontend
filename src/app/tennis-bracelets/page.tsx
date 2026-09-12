@@ -5,10 +5,21 @@ import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Tennis Bracelets | Gama Jewels – Fine Diamond Bracelets",
+  title: "Diamond Tennis Bracelets | Handcrafted Luxury Diamond Bracelets",
   description:
-    "Explore our luxurious collection of diamond tennis bracelets in 9K, 18K white, yellow, rose gold, and platinum.",
+    "Explore our collection of diamond tennis bracelets in 18ct white, yellow, rose gold, and platinum. GIA certified natural & lab-grown diamonds handcrafted in Mumbai.",
+  alternates: {
+    canonical: "https://www.gamajewels.com/tennis-bracelets",
+  },
+  openGraph: {
+    title: "Diamond Tennis Bracelets | Gama Jewels",
+    description:
+      "Handcrafted diamond tennis bracelets in 18ct gold and platinum. Exceptional sparkle, bespoke carat options.",
+    url: "https://www.gamajewels.com/tennis-bracelets",
+    type: "website",
+  },
 };
+
 
 const TENNIS_BRACELET_METALS = [
   "9K White Gold",

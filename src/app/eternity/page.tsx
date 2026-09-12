@@ -5,9 +5,19 @@ import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Eternity Rings | Gama Jewels – Fine Jewellery",
+  title: "Diamond Eternity Rings | Full, Half & Micro-Pave Bands",
   description:
-    "Explore our handcrafted diamond eternity rings. Crafted by master goldsmiths in Mumbai.",
+    "Discover handcrafted diamond eternity rings — full eternity, half eternity & micro-pave bands in 18ct gold & platinum. GIA certified natural & lab-grown diamonds. Free insured delivery.",
+  alternates: {
+    canonical: "https://www.gamajewels.com/eternity",
+  },
+  openGraph: {
+    title: "Diamond Eternity Rings | Gama Jewels",
+    description:
+      "Handcrafted diamond eternity rings in 18ct gold & platinum. Full, half eternity & micro-pave designs.",
+    url: "https://www.gamajewels.com/eternity",
+    images: [{ url: "/shopbycategory/eternity_ring.png", width: 800, height: 600, alt: "Diamond Eternity Rings Collection" }],
+  },
 };
 
 export default function EternityRingsPage() {

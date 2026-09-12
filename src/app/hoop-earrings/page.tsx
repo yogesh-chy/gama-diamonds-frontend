@@ -5,10 +5,21 @@ import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Hoop Earrings | Gama Jewels – Fine Diamond Hoop Earrings",
+  title: "Diamond Hoop Earrings & Huggies | Luxury Diamond Earrings",
   description:
-    "Shop our luxurious collection of diamond hoop & drop earrings crafted in 9K, 18K white gold, yellow gold, rose gold, and platinum.",
+    "Shop our luxurious collection of diamond hoop and huggie earrings crafted in 18ct white gold, yellow gold, rose gold, and platinum. GIA certified diamonds.",
+  alternates: {
+    canonical: "https://www.gamajewels.com/hoop-earrings",
+  },
+  openGraph: {
+    title: "Diamond Hoop Earrings | Gama Jewels",
+    description:
+      "Handcrafted diamond hoop and huggie earrings in 18ct gold and platinum.",
+    url: "https://www.gamajewels.com/hoop-earrings",
+    type: "website",
+  },
 };
+
 
 const HOOP_EARRINGS_METALS = [
   "9K White Gold",

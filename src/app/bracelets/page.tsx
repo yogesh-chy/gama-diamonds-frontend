@@ -5,9 +5,19 @@ import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Bracelets & Bangles | Gama Jewels – Fine Jewellery",
+  title: "Diamond Bracelets & Bangles | Tennis Bracelets & Cuff Designs",
   description:
-    "Explore our handcrafted diamond & gemstone bracelets and bangles. Crafted by master goldsmiths in Mumbai.",
+    "Shop exquisite diamond bracelets & bangles — tennis bracelets, cuff & bangle designs in 18ct gold & platinum. GIA certified diamonds, handcrafted by master goldsmiths. Free insured delivery.",
+  alternates: {
+    canonical: "https://www.gamajewels.com/bracelets",
+  },
+  openGraph: {
+    title: "Diamond Bracelets & Bangles | Gama Jewels",
+    description:
+      "Handcrafted diamond bracelets & bangles in 18ct gold & platinum. Tennis bracelets & bangle designs with certified diamonds.",
+    url: "https://www.gamajewels.com/bracelets",
+    images: [{ url: "/shopbycategory/bracelet.png", width: 800, height: 600, alt: "Diamond Bracelets & Bangles Collection" }],
+  },
 };
 
 const BRACELET_METALS = [

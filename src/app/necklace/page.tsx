@@ -5,9 +5,19 @@ import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Necklaces & Pendants | Gama Jewels – Fine Jewellery",
+  title: "Diamond Necklaces & Pendants | Cross, Heart & Solitaire Designs",
   description:
-    "Explore our handcrafted diamond & gemstone necklaces and pendants. Crafted by master goldsmiths in Mumbai.",
+    "Explore handcrafted diamond necklaces & pendants — cross, heart & solitaire designs in 18ct gold & platinum. GIA certified diamonds, master goldsmith craftsmanship. Free insured delivery worldwide.",
+  alternates: {
+    canonical: "https://www.gamajewels.com/necklace",
+  },
+  openGraph: {
+    title: "Diamond Necklaces & Pendants | Gama Jewels",
+    description:
+      "Handcrafted diamond necklaces & pendants in 18ct gold & platinum. Cross, heart & solitaire designs.",
+    url: "https://www.gamajewels.com/necklace",
+    images: [{ url: "/shopbycategory/necklace.png", width: 800, height: 600, alt: "Diamond Necklaces & Pendants Collection" }],
+  },
 };
 
 const NECKLACE_METALS = [

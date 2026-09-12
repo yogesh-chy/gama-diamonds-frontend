@@ -14,10 +14,48 @@ import ServiceFeatures from "@/components/landing/ServiceFeatures";
 import GalleryGrid from "@/components/landing/GalleryGrid";
 import ReviewsSection from "@/components/landing/ReviewsSection";
 import CertificationBar from "@/components/landing/CertificationBar";
+import {
+  OrganizationJsonLd,
+  LocalBusinessJsonLd,
+  FAQJsonLd,
+} from "@/components/seo/JsonLd";
 
 export default function Home() {
   return (
     <div className="page-bg" style={{ backgroundColor: "#000000", color: "#ffffff" }}>
+      {/* ─── SEO: Structured Data ─── */}
+      <OrganizationJsonLd />
+      <LocalBusinessJsonLd />
+      <FAQJsonLd
+        items={[
+          {
+            question: "What types of diamonds does Gama Jewels offer?",
+            answer:
+              "Gama Jewels offers both GIA certified natural diamonds and sustainable lab-grown diamonds. All diamonds come with full certification and a lifetime warranty.",
+          },
+          {
+            question: "Can I create a custom engagement ring?",
+            answer:
+              "Yes! We specialise in bespoke engagement rings. Our master goldsmiths use 3D CAD design to create your dream ring from concept to completion, handcrafted in our Mumbai atelier.",
+          },
+          {
+            question: "Do you offer free delivery?",
+            answer:
+              "Yes, we offer free insured delivery on all orders over £376. All shipments are fully insured and sent via discreet, secure courier service worldwide.",
+          },
+          {
+            question: "What is your return policy?",
+            answer:
+              "We offer a 30-day exchange policy on all our jewellery pieces. Each piece also comes with a 1-year warranty and complimentary annual servicing.",
+          },
+          {
+            question: "Where is Gama Jewels located?",
+            answer:
+              "Our showroom is located at SHOP NO.08, TOP COOL SERVICES, MAROL, ANDHERI(E.) MUMBAI 400059, Maharashtra, India. We welcome private appointments and walk-in consultations.",
+          },
+        ]}
+      />
+
       {/* ─── HEADER ─── */}
       <Header />
 
@@ -68,3 +106,4 @@ export default function Home() {
     </div>
   );
 }
+

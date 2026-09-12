@@ -27,6 +27,7 @@ import Footer from "@/components/layout/Footer";
 import CertificationBar from "@/components/landing/CertificationBar";
 import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import LuxurySelect from "@/components/ui/LuxurySelect";
+import { ProductJsonLd, BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useAuth } from "@/context/AuthContext";
 import { productsApi } from "@/lib/api/products";
@@ -451,6 +452,25 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
   // ── 3. LOADED PRODUCT STATE ──
   return (
     <div className="page-bg" style={{ backgroundColor: "#000000", color: "#ffffff", minHeight: "100vh" }}>
+      {/* SEO: Product Structured Data */}
+      <ProductJsonLd
+        name={product.title}
+        description={product.description}
+        image={galleryImages.filter(Boolean) as string[]}
+        sku={product.sku}
+        price={dynamicPrice}
+        currency="GBP"
+        category={product.category}
+        url={`https://www.gamajewels.com/product/${productId}`}
+        availability="InStock"
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", href: "/" },
+          { name: product.category || "Jewellery", href: `/${(product.category || "rings").toLowerCase().replace(/\s+/g, "-")}` },
+          { name: product.title, href: `/product/${productId}` },
+        ]}
+      />
       <Header />
 
       {/* Main Container with Ample Breathing Room Below Navbar */}
@@ -1125,7 +1145,11 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
       </AnimatePresence>
 
       {/* Recently Viewed */}
-      <RingsRecentlyViewed category={product.category} shape={product.shape} />
+      <RingsRecentlyViewed
+        category={product.category}
+        shape={product.shape}
+        currentProductId={productId}
+      />
 
       {/* Certification Strip */}
       <CertificationBar />

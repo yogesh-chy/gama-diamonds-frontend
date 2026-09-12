@@ -5,10 +5,21 @@ import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Solitaire Studs | Gama Jewels – Fine Diamond Earrings",
+  title: "Diamond Solitaire Stud Earrings | Classic Four-Prong & Bezel Studs",
   description:
-    "Discover our collection of timeless solitaire diamond stud earrings in white gold, yellow gold, rose gold, and platinum.",
+    "Discover our collection of timeless solitaire diamond stud earrings in white gold, yellow gold, rose gold, and platinum. GIA certified diamonds handcrafted in Mumbai.",
+  alternates: {
+    canonical: "https://www.gamajewels.com/solitaire-studs",
+  },
+  openGraph: {
+    title: "Diamond Solitaire Stud Earrings | Gama Jewels",
+    description:
+      "Timeless solitaire diamond stud earrings handcrafted in 18ct gold and platinum.",
+    url: "https://www.gamajewels.com/solitaire-studs",
+    type: "website",
+  },
 };
+
 
 const SOLITAIRE_STUDS_METALS = [
   "9K White Gold",

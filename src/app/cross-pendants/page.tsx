@@ -5,10 +5,21 @@ import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Cross Pendants | Gama Jewels – Fine Diamond Cross Pendants",
+  title: "Diamond Cross Pendants & Necklaces | Fine Religious Jewellery",
   description:
-    "Discover our collection of handcrafted diamond cross pendants in 18K white gold and 18K yellow gold across multiple carat sizes.",
+    "Discover our collection of handcrafted diamond cross pendants in 18K white gold and 18K yellow gold across multiple carat sizes. GIA certified diamonds.",
+  alternates: {
+    canonical: "https://www.gamajewels.com/cross-pendants",
+  },
+  openGraph: {
+    title: "Diamond Cross Pendants | Gama Jewels",
+    description:
+      "Handcrafted diamond cross pendants in 18K gold. Exquisite craftsmanship and brilliant diamonds.",
+    url: "https://www.gamajewels.com/cross-pendants",
+    type: "website",
+  },
 };
+
 
 const CROSS_PENDANT_METALS = [
   "18K White Gold",

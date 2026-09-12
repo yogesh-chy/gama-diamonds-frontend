@@ -10,9 +10,19 @@ import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Engagement Rings | Gama Jewels – Handcrafted Fine Jewellery",
+  title: "Diamond Engagement Rings | Solitaire, Halo & Bespoke Designs",
   description:
-    "Discover our exquisite collection of engagement rings. From solitaire to halo, every ring is handcrafted by master goldsmiths in Mumbai.",
+    "Discover our exquisite collection of diamond engagement rings — solitaire, halo, trilogy & under-halo styles. GIA certified natural & lab-grown diamonds, handcrafted by master goldsmiths. Free UK delivery.",
+  alternates: {
+    canonical: "https://www.gamajewels.com/rings",
+  },
+  openGraph: {
+    title: "Diamond Engagement Rings | Gama Jewels",
+    description:
+      "Handcrafted diamond engagement rings in 18ct gold & platinum. Solitaire, halo & bespoke designs with GIA certified diamonds.",
+    url: "https://www.gamajewels.com/rings",
+    images: [{ url: "/shopbycategory/engement_ring.png", width: 800, height: 600, alt: "Diamond Engagement Rings Collection" }],
+  },
 };
 
 export default function EngagementRingsPage() {

@@ -5,10 +5,21 @@ import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 
 export const metadata = {
-  title: "Heart Pendants | Gama Jewels – Fine Diamond Pendants",
+  title: "Diamond Heart Pendants & Necklaces | Romantic Fine Jewellery",
   description:
-    "Explore our romantic collection of diamond heart pendants in 18ct white gold, yellow gold, and rose gold.",
+    "Explore our romantic collection of diamond heart pendants in 18ct white gold, yellow gold, and rose gold. Handcrafted by master goldsmiths in Mumbai.",
+  alternates: {
+    canonical: "https://www.gamajewels.com/heart-pendants",
+  },
+  openGraph: {
+    title: "Diamond Heart Pendants | Gama Jewels",
+    description:
+      "Romantic diamond heart pendants in 18ct gold. GIA certified natural & lab-grown diamonds.",
+    url: "https://www.gamajewels.com/heart-pendants",
+    type: "website",
+  },
 };
+
 
 const HEART_PENDANT_METALS = [
   "18ct White Gold",

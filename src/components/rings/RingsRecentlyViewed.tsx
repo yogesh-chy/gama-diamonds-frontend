@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useCurrency } from "@/context/CurrencyContext";
-import { productsApi } from "@/lib/api/products";
 
 interface RecentlyViewedItem {
   title: string;
@@ -12,7 +11,6 @@ interface RecentlyViewedItem {
   hasPrefix: boolean;
   href: string;
   badge: string | null;
-  isAppointment?: boolean;
   image?: string;
 }
 
@@ -20,80 +18,59 @@ interface RingsRecentlyViewedProps {
   category?: string;
   shape?: string;
   style?: string;
+  currentProductId?: string | number;
 }
 
-export default function RingsRecentlyViewed({ category, shape, style }: RingsRecentlyViewedProps = {}) {
+export default function RingsRecentlyViewed({
+  currentProductId,
+}: RingsRecentlyViewedProps = {}) {
   const { formatPrice } = useCurrency();
-  const [recentlyViewedItems, setRecentlyViewedItems] = useState<RecentlyViewedItem[]>([]);
+  const [items, setItems] = useState<RecentlyViewedItem[]>([]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    async function fetchRecentProducts() {
-      try {
-        let storedItems: RecentlyViewedItem[] = [];
-        try {
-          const raw = localStorage.getItem("gama_recently_viewed");
-          if (raw) {
-            storedItems = JSON.parse(raw);
-          }
-        } catch (e) {}
+    setMounted(true);
+    try {
+      const raw = localStorage.getItem("gama_recently_viewed");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          // Keep ONLY genuine products that the user has actually visited
+          const realVisitedProducts: RecentlyViewedItem[] = parsed
+            .filter(
+              (x) =>
+                x &&
+                typeof x.title === "string" &&
+                typeof x.href === "string" &&
+                x.href.startsWith("/product/") &&
+                !x.isAppointment &&
+                (!currentProductId || !x.href.endsWith(`/${currentProductId}`))
+            )
+            .map((x) => ({
+              title: x.title,
+              rawPrice:
+                typeof x.rawPrice === "number"
+                  ? x.rawPrice
+                  : parseFloat(x.rawPrice || "0") || 0,
+              hasPrefix: Boolean(x.hasPrefix),
+              href: x.href,
+              badge: x.badge || null,
+              image: x.image || undefined,
+            }))
+            .slice(0, 4);
 
-        const params: any = { limit: 6 };
-        if (category) params.category = category;
-        if (shape) params.diamond_cut = shape;
-        if (style) params.style = style;
-
-        const res = await productsApi.getProducts(params);
-        const list = res.data?.data || [];
-        const mappedApi: RecentlyViewedItem[] = list.map((item: any) => ({
-          title: item.name || "Product",
-          rawPrice: typeof item.base_price === "number" ? item.base_price : parseFloat(item.base_price || "0") || 0,
-          hasPrefix: true,
-          href: `/product/${item.id || item.slug}`,
-          badge: item.is_featured ? "FEATURED" : null,
-          image: item.thumbnail || item.images?.find((img: any) => img.isPrimary || img.is_primary)?.url || item.images?.[0]?.url || item.variants?.[0]?.images?.[0]?.url || item.image,
-        }));
-
-        // Merge stored local items + API items up to 3 products
-        const combined: RecentlyViewedItem[] = [];
-        for (const item of storedItems) {
-          if (combined.length >= 3) break;
-          combined.push(item);
+          setItems(realVisitedProducts);
         }
-        for (const apiItem of mappedApi) {
-          if (combined.length >= 3) break;
-          if (!combined.some((x) => x.href === apiItem.href)) {
-            combined.push(apiItem);
-          }
-        }
-
-        // Add appointment card at end
-        combined.push({
-          title: "BESPOKE DESIGN CONSULTATION",
-          rawPrice: 0,
-          hasPrefix: false,
-          href: "/bespoke",
-          badge: "BESPOKE",
-          isAppointment: true,
-          image: "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?w=800&h=800&fit=crop",
-        });
-
-        setRecentlyViewedItems(combined.slice(0, 4));
-      } catch (err) {
-        setRecentlyViewedItems([
-          {
-            title: "BESPOKE DESIGN CONSULTATION",
-            rawPrice: 0,
-            hasPrefix: false,
-            href: "/bespoke",
-            badge: "BESPOKE",
-            isAppointment: true,
-            image: "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?w=800&h=800&fit=crop",
-          },
-        ]);
       }
+    } catch {
+      setItems([]);
     }
-    fetchRecentProducts();
-  }, [category, shape, style]);
+  }, [currentProductId]);
+
+  // If the user hasn't browsed/viewed any products yet, do NOT render the section
+  if (!mounted || items.length === 0) {
+    return null;
+  }
 
   return (
     <section
@@ -104,7 +81,7 @@ export default function RingsRecentlyViewed({ category, shape, style }: RingsRec
     >
       <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 24px" }}>
         {/* Section Header */}
-        <div style={{ textAlign: "center", marginBottom: "40px" }}>
+        <div style={{ textAlign: "center", marginBottom: "36px" }}>
           <h2
             style={{
               fontFamily: "'Poppins', sans-serif",
@@ -119,19 +96,27 @@ export default function RingsRecentlyViewed({ category, shape, style }: RingsRec
           </h2>
         </div>
 
-        {/* Product Cards Grid */}
+        {/* Real Visited Products Grid (1 to 4 cards) */}
         <div style={{ position: "relative" }}>
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
+              gridTemplateColumns:
+                items.length === 1
+                  ? "minmax(260px, 320px)"
+                  : items.length === 2
+                  ? "repeat(2, minmax(260px, 320px))"
+                  : items.length === 3
+                  ? "repeat(3, minmax(240px, 1fr))"
+                  : "repeat(4, 1fr)",
+              justifyContent: "center",
               gap: "20px",
             }}
             className="er-featured-grid"
           >
-            {recentlyViewedItems.map((item, idx) => (
+            {items.map((item, idx) => (
               <motion.div
-                key={idx}
+                key={item.href || idx}
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -148,9 +133,10 @@ export default function RingsRecentlyViewed({ category, shape, style }: RingsRec
                       border: "1px solid rgba(255,255,255,0.06)",
                       position: "relative",
                       overflow: "hidden",
+                      transition: "border-color 0.3s ease, transform 0.3s ease",
                     }}
                   >
-                    {/* Top-Left Badge */}
+                    {/* Badge */}
                     {item.badge && (
                       <div
                         style={{
@@ -174,24 +160,60 @@ export default function RingsRecentlyViewed({ category, shape, style }: RingsRec
                     )}
 
                     {/* Product Image */}
-                    <div style={{ width: "100%", height: "240px", overflow: "hidden", position: "relative" }}>
-                      <img
-                        src={item.image || "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&h=800&fit=crop"}
-                        alt={item.title}
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                      />
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "260px",
+                        overflow: "hidden",
+                        position: "relative",
+                        background: "#0a0a0a",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "16px",
+                      }}
+                    >
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "contain",
+                            transition: "transform 0.5s ease",
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#555555",
+                            fontFamily: "'Poppins', sans-serif",
+                            fontSize: "11px",
+                            letterSpacing: "1.5px",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          Gama Jewels
+                        </div>
+                      )}
                     </div>
 
                     {/* Product Details Text */}
                     <div
                       style={{
-                        padding: "16px 12px 20px",
+                        padding: "16px 14px 20px",
                         textAlign: "center",
                         display: "flex",
                         flexDirection: "column",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        minHeight: "90px",
+                        minHeight: "92px",
                       }}
                     >
                       <p
@@ -201,11 +223,14 @@ export default function RingsRecentlyViewed({ category, shape, style }: RingsRec
                           fontWeight: "500",
                           letterSpacing: "1.2px",
                           textTransform: "uppercase",
-                          color: "#b0b0b0",
+                          color: "#c0c0c0",
                           lineHeight: "1.6",
                           marginBottom: "8px",
                           maxHeight: "3.2em",
                           overflow: "hidden",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
                         }}
                       >
                         {item.title}
@@ -220,11 +245,11 @@ export default function RingsRecentlyViewed({ category, shape, style }: RingsRec
                           letterSpacing: "1px",
                         }}
                       >
-                        {item.isAppointment
-                          ? "COMPLIMENTARY"
-                          : item.hasPrefix
-                          ? `FROM ${formatPrice(item.rawPrice)}`
-                          : formatPrice(item.rawPrice)}
+                        {item.rawPrice > 0
+                          ? item.hasPrefix
+                            ? `FROM ${formatPrice(item.rawPrice)}`
+                            : formatPrice(item.rawPrice)
+                          : "PRICE ON REQUEST"}
                       </span>
                     </div>
                   </div>

@@ -518,16 +518,8 @@ function LoginPageInner() {
                     href="/terms"
                     style={{ color: "#a0a0a0", textDecoration: "underline" }}
                   >
-                    Terms
-                  </Link>{" "}
-                  &amp;{" "}
-                  <Link
-                    href="/privacy"
-                    style={{ color: "#a0a0a0", textDecoration: "underline" }}
-                  >
-                    Privacy Policy
+                    Terms & Conditions
                   </Link>
-                  .
                 </p>
               </form>
             </motion.div>
