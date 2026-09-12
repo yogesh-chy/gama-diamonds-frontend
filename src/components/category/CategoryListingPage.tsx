@@ -8,6 +8,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CertificationBar from "@/components/landing/CertificationBar";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
+import LuxurySelect from "@/components/ui/LuxurySelect";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useAuth } from "@/context/AuthContext";
 import { productsApi } from "@/lib/api/products";
@@ -360,27 +361,19 @@ export default function CategoryListingPage({
 
             {/* Sort Dropdown */}
             <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ fontSize: "11px", letterSpacing: "1px", textTransform: "uppercase", color: "#888888" }}>Sort By:</span>
-              <select
+              <span style={{ fontSize: "11px", letterSpacing: "1px", textTransform: "uppercase", color: "#888888", whiteSpace: "nowrap" }}>Sort By:</span>
+              <LuxurySelect
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                style={{
-                  background: "#111111",
-                  color: "#ffffff",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  padding: "8px 14px",
-                  fontSize: "11px",
-                  letterSpacing: "1px",
-                  cursor: "pointer",
-                  outline: "none",
-                  fontFamily: "'Poppins', sans-serif",
-                }}
-              >
-                <option value="featured">Featured Collection</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="title">Title: A to Z</option>
-              </select>
+                onChange={(val) => setSortBy(val)}
+                size="sm"
+                style={{ minWidth: "175px" }}
+                options={[
+                  { value: "featured", label: "Featured Collection" },
+                  { value: "price-low", label: "Price: Low to High" },
+                  { value: "price-high", label: "Price: High to Low" },
+                  { value: "title", label: "Title: A to Z" },
+                ]}
+              />
             </div>
           </div>
         </div>

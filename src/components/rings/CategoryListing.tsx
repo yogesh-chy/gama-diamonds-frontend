@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, RotateCcw, ChevronDown } from "lucide-react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
+import LuxurySelect from "@/components/ui/LuxurySelect";
 import { useCurrency } from "@/context/CurrencyContext";
 import { productsApi } from "@/lib/api/products";
 
@@ -1297,52 +1298,23 @@ export default function CategoryListing({
                     color: "#c6a45f",
                     textTransform: "uppercase",
                     letterSpacing: "1px",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   Sort by:
                 </span>
-                <div style={{ position: "relative" }}>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.03)",
-                      border: "1px solid rgba(198, 164, 95, 0.35)",
-                      borderRadius: "0px",
-                      color: "#ffffff",
-                      fontFamily: "'Poppins', sans-serif",
-                      fontSize: "12px",
-                      padding: "8px 32px 8px 14px",
-                      appearance: "none",
-                      outline: "none",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <option value="featured" style={{ background: "#0c0c0c" }}>
-                      Featured
-                    </option>
-                    <option value="price-low" style={{ background: "#0c0c0c" }}>
-                      Price: Low to High
-                    </option>
-                    <option value="price-high" style={{ background: "#0c0c0c" }}>
-                      Price: High to Low
-                    </option>
-                    <option value="newest" style={{ background: "#0c0c0c" }}>
-                      Newest
-                    </option>
-                  </select>
-                  <ChevronDown
-                    size={13}
-                    style={{
-                      position: "absolute",
-                      right: "10px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      color: "#c6a45f",
-                      pointerEvents: "none",
-                    }}
-                  />
-                </div>
+                <LuxurySelect
+                  value={sortBy}
+                  onChange={(val) => setSortBy(val)}
+                  size="sm"
+                  style={{ minWidth: "170px" }}
+                  options={[
+                    { value: "featured", label: "Featured" },
+                    { value: "price-low", label: "Price: Low to High" },
+                    { value: "price-high", label: "Price: High to Low" },
+                    { value: "newest", label: "Newest" },
+                  ]}
+                />
               </div>
             </div>
 
@@ -1414,7 +1386,7 @@ export default function CategoryListing({
                         {product.image ? (
                           <img src={product.image} alt={product.title} />
                         ) : (
-                          <ImagePlaceholder height="100%" label="IMAGE PLACEHOLDER" />
+                          <ImagePlaceholder height="100%" label={product.title} />
                         )}
                       </div>
 

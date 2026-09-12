@@ -119,6 +119,11 @@ export const diamondShapes: DiamondShape[] = [
     image: "/DiamondShape/heart.png",
   },
   {
+    name: "Radiant Cut",
+    href: "/rings/radiant",
+    image: "/DiamondShape/radiant.png",
+  },
+  {
     name: "Asscher Cut",
     href: "/rings/asscher",
     image: "/DiamondShape/asscher.png",
@@ -364,6 +369,12 @@ export const footerLinks: FooterLinks = {
     { name: "Fine Jewellery", href: "/jewellery" },
     { name: "My Shopping Bag", href: "/cart" },
     { name: "Client Account", href: "/login" },
+  ],
+  policies: [
+    { name: "About Us", href: "/about" },
+    { name: "Shipping & Delivery", href: "/shipping" },
+    { name: "Return & Refund Policy", href: "/return-policy" },
+    { name: "Terms & Conditions", href: "/terms" },
   ],
 };
 

@@ -155,11 +155,7 @@ export default function BespokeInquiryForm() {
           viewport={{ once: true }}
           variants={fadeInUp}
           onSubmit={handleSubmit}
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, 1fr)",
-            gap: "24px",
-          }}
+          className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6"
         >
           {/* First Name */}
           <Field label="First Name">

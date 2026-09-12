@@ -16,6 +16,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
+import LuxurySelect from "@/components/ui/LuxurySelect";
 import { adminApi, AdminOrder } from "@/lib/api/admin";
 
 const ORDER_STATUSES = [
@@ -216,18 +217,18 @@ export default function AdminOrdersPage() {
                 <p className="admin-font-semibold admin-text-white uppercase tracking-wider text-xs">Update Status</p>
               </div>
 
-              <select
-                disabled={updatingStatus}
-                value={selectedOrder.status}
-                onChange={(e) => handleStatusChange(e.target.value)}
-                className="admin-select"
-              >
-                {ORDER_STATUSES.filter((s) => s.key).map((s) => (
-                  <option key={s.key} value={s.key}>
-                    {s.label}
-                  </option>
-                ))}
-              </select>
+              <div style={{ minWidth: "190px" }}>
+                <LuxurySelect
+                  disabled={updatingStatus}
+                  value={selectedOrder.status}
+                  onChange={(val) => handleStatusChange(val)}
+                  size="sm"
+                  options={ORDER_STATUSES.filter((s) => s.key).map((s) => ({
+                    value: s.key,
+                    label: s.label,
+                  }))}
+                />
+              </div>
             </div>
 
             {/* Customer & Shipping Info */}

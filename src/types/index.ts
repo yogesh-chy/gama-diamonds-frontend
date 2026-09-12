@@ -76,4 +76,5 @@ export interface FooterLinkItem {
 export interface FooterLinks {
   customerCare: FooterLinkItem[];
   explore: FooterLinkItem[];
+  policies: FooterLinkItem[];
 }

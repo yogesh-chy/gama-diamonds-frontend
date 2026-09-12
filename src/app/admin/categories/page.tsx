@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Plus, FolderTree, Edit2, Trash2, X, RefreshCw, Layers } from "lucide-react";
 import { toast } from "sonner";
+import LuxurySelect from "@/components/ui/LuxurySelect";
 import { adminApi, AdminCategory, AdminSubcategory } from "@/lib/api/admin";
 
 export default function AdminCategoriesPage() {
@@ -350,17 +351,15 @@ export default function AdminCategoriesPage() {
             <form onSubmit={handleSaveSubcategory} className="admin-space-y-4">
               <div>
                 <label className="admin-label">Parent Category</label>
-                <select
+                <LuxurySelect
                   value={subParentCat}
-                  onChange={(e) => setSubParentCat(Number(e.target.value))}
-                  className="admin-input"
-                >
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setSubParentCat(Number(val))}
+                  placeholder="Select Parent Category"
+                  options={categories.map((c) => ({
+                    value: c.id,
+                    label: c.name,
+                  }))}
+                />
               </div>
 
               <div>

@@ -16,6 +16,7 @@ export interface BespokeProcessRow {
 export interface BespokeLoveStory {
   caption: string;
   imageLabel: string;
+  imageSrc: string;
   captionPosition: "top" | "bottom";
 }
 
@@ -26,52 +27,52 @@ export interface BespokeReview {
 }
 
 export const bespokeFeatures: BespokeFeature[] = [
-  { icon: MessageCircle, label: "Consultation" },
-  { icon: Pencil, label: "Design" },
-  { icon: Sparkles, label: "Refine" },
-  { icon: Package, label: "Receive" },
+  { icon: MessageCircle, label: "Private Consultation" },
+  { icon: Pencil, label: "3D CAD & Sketches" },
+  { icon: Sparkles, label: "Wax Prototyping" },
+  { icon: Package, label: "Handcrafted Delivery" },
 ];
 
 export const bespokeIntro = {
-  title: "Your Vision, Our Craft",
+  title: "Your Vision, Our Atelier Craft",
   description:
-    "Every bespoke piece begins with a conversation. From the first sketch to the final polish, our Gama Jewels' goldsmiths guide you through a seamless journey — creating jewellery that is as unique as your story.",
+    "Every bespoke piece begins with an intimate conversation. From the initial hand-drawn sketch to the final master polish, our goldsmiths guide you through a seamless bespoke journey — creating jewellery that is uniquely yours.",
 };
 
 export const bespokeProcessRows: BespokeProcessRow[] = [
   {
-    title: "Inspiration",
+    title: "1. Inspiration & Concept",
     description:
-      "Share your vision, sketches, or reference images with our design team during a complimentary one-on-one consultation at our Hatton Garden studio. We translate your story into a refined concept — from classic solitaires and three-stone settings to contemporary halo and tension-mount silhouettes — ensuring every detail reflects your personal style. Whether it's an engagement ring, anniversary band, or a family heirloom redesign, we take the time to understand the occasion, your lifestyle, and the aesthetic you love.",
-    imageLabel: "Inspiration",
+      "Share your ideas, reference photos, or personal sketches with our master diamond specialists during a one-on-one consultation. We translate your story into an elegant concept — from classic solitaires and three-stone silhouettes to intricate halo and vintage-inspired settings.",
+    imageLabel: "Inspiration & Concept",
     imageSrc: "/bespoke/bespoke_step4.png",
   },
   {
-    title: "Design Process",
+    title: "2. 3D CAD & Digital Rendering",
     description:
-      "Our senior designers create detailed hand-drawn sketches and high-resolution 3D CAD renders so you can visualise your piece from every angle before production begins. We work transparently within your budget, advising on diamond grades (colour, clarity, cut, and carat), metal choices — including platinum, 18ct white, yellow, and rose gold — and design complexity. You'll receive a full digital walkthrough with dimensions, side profiles, and setting details, with unlimited revisions until every element is exactly right.",
-    imageLabel: "Design Process",
+      "Our senior designers create photo-realistic 3D CAD models and detailed blueprints so you can inspect your ring from every perspective. We advise on diamond proportions, 4Cs attributes, and precious metal alloys with unlimited adjustments until you are completely satisfied.",
+    imageLabel: "3D CAD & Design",
     imageSrc: "/bespoke/bespoke_step1.png",
   },
   {
-    title: "3D Wax Printing",
+    title: "3. Precision Wax Prototyping",
     description:
-      "Once your design is approved, we produce a precision 3D wax model using state-of-the-art rapid-prototyping technology. This physical prototype lets you hold and assess the exact proportions, band width, and stone placement of your piece before any precious materials are committed. If adjustments are needed, our team refines the model on the spot — giving you complete confidence that the finished jewellery will sit, feel, and look exactly as envisioned.",
-    imageLabel: "3D Wax Printing",
+      "Before committing precious gold or platinum, we 3D-print a true-to-scale wax prototype. This allows you to inspect the ring's physical dimensions, stone height, and comfort fit in person or via high-definition video showcase.",
+    imageLabel: "Wax Prototyping",
     imageSrc: "/bespoke/bespoke_step2.png",
   },
   {
-    title: "Production",
+    title: "4. Master Goldsmithing & Setting",
     description:
-      "Master goldsmiths bring your design to life in our Mumbai workshop using traditional hand-setting techniques combined with precision micro-pavé and channel-setting methods. Each piece is cast, hand-finished, and polished through multiple stages — including rhodium plating for white gold pieces — to achieve a flawless surface. Ethically sourced natural diamonds and premium lab-grown stones are individually hand-selected and set under magnification, ensuring optimal brilliance and secure placement.",
-    imageLabel: "Production",
+      "Master goldsmiths cast, hand-assemble, and polish your piece in our workshop. Each certified natural or lab-grown diamond is individually hand-set under 10× magnification for supreme security, light refraction, and fire.",
+    imageLabel: "Goldsmithing & Setting",
     imageSrc: "/bespoke/bespoke_step3.png",
   },
   {
-    title: "Your Final Jewellery",
+    title: "5. Hallmarking & Final Presentation",
     description:
-      "Every bespoke piece undergoes rigorous multi-point quality inspection before delivery, including symmetry checks, prong integrity testing, and surface evaluation under 10× magnification. Your jewellery arrives with full GIA or IGI certification, official UK hallmarking, and a bespoke presentation box. We also include complimentary annual servicing — professional cleaning, re-polishing, and prong tightening — along with a lifetime manufacturing warranty to ensure your piece remains as stunning as the day it was crafted.",
-    imageLabel: "Your Final Jewellery",
+      "Every finished piece is officially hallmarked in the UK, undergoes rigorous multi-point quality control, and is presented in a handcrafted luxury wooden presentation box complete with GIA/IGI certification and a lifetime warranty.",
+    imageLabel: "Final Presentation",
     imageSrc: "/bespoke/bespoke_step5.png",
   },
 ];
@@ -79,27 +80,32 @@ export const bespokeProcessRows: BespokeProcessRow[] = [
 export const bespokeLoveStories: BespokeLoveStory[] = [
   {
     caption: "ARJUN NAIR",
-    imageLabel: "Arjun Nair Love Story",
+    imageLabel: "Custom Oval Solitaire",
+    imageSrc: "/shopbycategory/engement_ring.png",
     captionPosition: "top",
   },
   {
     caption: "RACHEL & CALLUM",
-    imageLabel: "Rachel & Callum Love Story",
+    imageLabel: "Pear Shaped Halo Commission",
+    imageSrc: "/bespoke_pear_solitaire.png",
     captionPosition: "bottom",
   },
   {
     caption: "SHAY AND ADI",
-    imageLabel: "Shay and Adi Love Story",
+    imageLabel: "Eternity Diamond Band",
+    imageSrc: "/shopbycategory/eternity_ring.png",
     captionPosition: "top",
   },
   {
     caption: "USMANREZA & PUTRIARS",
-    imageLabel: "Usmanreza & Putriars Love Story",
+    imageLabel: "Oval Solitaire with Diamond Band",
+    imageSrc: "/oval_cut_solitier.png",
     captionPosition: "bottom",
   },
   {
     caption: "HILARY & PAUL",
-    imageLabel: "Hilary & Paul Love Story",
+    imageLabel: "Bespoke Platinum Wedding Ring",
+    imageSrc: "/women_wedding_ring.png",
     captionPosition: "top",
   },
 ];

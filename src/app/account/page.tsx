@@ -20,6 +20,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useCurrency } from "@/context/CurrencyContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import LuxurySelect from "@/components/ui/LuxurySelect";
 import { authApi } from "@/lib/api/auth";
 import { ordersApi } from "@/lib/api/orders";
 import { getApiErrorMessage } from "@/lib/api/errors";
@@ -1183,58 +1184,27 @@ function AccountDashboardContent() {
                   >
                     Country / Region
                   </label>
-                  <div style={{ position: "relative" }}>
-                    <select
-                      value={addressForm.country}
-                      onChange={(e) => setAddressForm({ ...addressForm, country: e.target.value })}
-                      style={{
-                        width: "100%",
-                        height: "46px",
-                        backgroundColor: "rgba(255, 255, 255, 0.02)",
-                        border: "1px solid rgba(255, 255, 255, 0.14)",
-                        borderRadius: "0px",
-                        padding: "0 14px",
-                        color: "#ffffff",
-                        fontFamily: "'Poppins', sans-serif",
-                        fontSize: "12.5px",
-                        appearance: "none",
-                        outline: "none",
-                        cursor: "pointer",
-                      }}
-                      onFocus={(e) => (e.target.style.borderColor = "#c6a45f")}
-                      onBlur={(e) => (e.target.style.borderColor = "rgba(255, 255, 255, 0.14)")}
-                    >
-                      <option value="United Kingdom" style={{ background: "#070707" }}>
-                        United Kingdom
-                      </option>
-                      <option value="United States" style={{ background: "#070707" }}>
-                        United States
-                      </option>
-                      <option value="Canada" style={{ background: "#070707" }}>
-                        Canada
-                      </option>
-                      <option value="Australia" style={{ background: "#070707" }}>
-                        Australia
-                      </option>
-                      <option value="Germany" style={{ background: "#070707" }}>
-                        Germany
-                      </option>
-                      <option value="France" style={{ background: "#070707" }}>
-                        France
-                      </option>
-                    </select>
-                    <ChevronDown
-                      size={14}
-                      style={{
-                        position: "absolute",
-                        right: "14px",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        color: "#c6a45f",
-                        pointerEvents: "none",
-                      }}
-                    />
-                  </div>
+                  <LuxurySelect
+                    value={addressForm.country}
+                    onChange={(val) => setAddressForm({ ...addressForm, country: val })}
+                    placeholder="Select Country / Region"
+                    options={[
+                      { value: "United Kingdom", label: "United Kingdom" },
+                      { value: "United States", label: "United States" },
+                      { value: "Canada", label: "Canada" },
+                      { value: "Australia", label: "Australia" },
+                      { value: "Germany", label: "Germany" },
+                      { value: "France", label: "France" },
+                      { value: "Italy", label: "Italy" },
+                      { value: "Spain", label: "Spain" },
+                      { value: "Netherlands", label: "Netherlands" },
+                      { value: "Switzerland", label: "Switzerland" },
+                      { value: "Ireland", label: "Ireland" },
+                      { value: "India", label: "India" },
+                      { value: "Nepal", label: "Nepal" },
+                      { value: "United Arab Emirates", label: "United Arab Emirates" },
+                    ]}
+                  />
                 </div>
 
                 {/* First Name & Last Name */}

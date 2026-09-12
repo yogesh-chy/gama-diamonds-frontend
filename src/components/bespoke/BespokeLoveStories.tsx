@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { bespokeLoveStories } from "@/lib/bespokeContent";
 import { fadeInUp } from "@/lib/constants";
 
@@ -84,11 +83,48 @@ export default function BespokeLoveStories() {
               <StoryCaption text={story.caption} />
             )}
 
-            <ImagePlaceholder
-              height="420px"
-              label={story.imageLabel}
-              style={{ borderRadius: "0px", width: "100%", minHeight: "420px" }}
-            />
+            <div
+              style={{
+                position: "relative",
+                height: "420px",
+                width: "100%",
+                borderRadius: "3px",
+                overflow: "hidden",
+                border: "1px solid rgba(198, 164, 95, 0.25)",
+                backgroundColor: "#0d0d0d",
+              }}
+            >
+              <img
+                src={story.imageSrc}
+                alt={story.imageLabel}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  transition: "transform 0.5s ease",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.transform = "scale(1.06)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.transform = "scale(1)";
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%)",
+                  display: "flex",
+                  alignItems: "flex-end",
+                  padding: "12px",
+                }}
+              >
+                <span style={{ fontSize: "10px", color: "#e0e0e0", fontFamily: "'Poppins', sans-serif" }}>
+                  {story.imageLabel}
+                </span>
+              </div>
+            </div>
 
             {story.captionPosition === "bottom" && (
               <StoryCaption text={story.caption} />

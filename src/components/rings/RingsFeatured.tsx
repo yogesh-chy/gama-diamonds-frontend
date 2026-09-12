@@ -2,28 +2,31 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 
 const recentDesigns = [
   {
     title: "Yellow Gold Pendant Necklace",
     category: "NECKLACES",
     href: "/necklace",
+    image: "/shopbycategory/necklace.png",
   },
   {
     title: "Solitaire Oval Cut Engagement Ring",
     category: "ENGAGEMENT RINGS",
     href: "/rings?shape=oval",
+    image: "/oval_cut_solitier.png",
   },
   {
     title: "Diamond Eternity Band",
     category: "ETERNITY RINGS",
     href: "/eternity",
+    image: "/shopbycategory/eternity_ring.png",
   },
   {
-    title: "Bespoke Velvet Ring Box & Packaging",
-    category: "BESPOKE ACCESSORIES",
+    title: "Bespoke Packaging & Diamond Presentation",
+    category: "BESPOKE SERVICE",
     href: "/bespoke",
+    image: "/bespoke/bespoke_step5.png",
   },
 ];
 
@@ -86,11 +89,15 @@ export default function RingsFeatured() {
                       "border-color 0.3s, transform 0.3s, box-shadow 0.3s",
                   }}
                 >
-                  <ImagePlaceholder
-                    height="240px"
-                    label={item.title}
-                    style={{ borderRadius: "0px", border: "none" }}
-                  />
+                  <div style={{ height: "240px", overflow: "hidden", position: "relative", backgroundColor: "#0c0c0c" }}>
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s ease" }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLImageElement).style.transform = "scale(1.06)"; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLImageElement).style.transform = "scale(1)"; }}
+                    />
+                  </div>
 
                   <div
                     style={{

@@ -239,6 +239,21 @@ export default function Footer() {
               </ul>
             </div>
 
+            {/* Policies Column */}
+            <div>
+              <h4 className="footer-col-heading">Policies</h4>
+              <ul className="footer-link-list">
+                {footerLinks.policies.map((link, i) => (
+                  <li key={i} className="footer-link-item">
+                    <Link href={link.href}>
+                      <ChevronRight size={11} className="footer-link-arrow" />
+                      <span>{link.name}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
             {/* Newsletter Column */}
             <div className="footer-newsletter-col">
               <h4 className="footer-col-heading">Private Circle</h4>

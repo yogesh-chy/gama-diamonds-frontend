@@ -25,6 +25,7 @@ import {
   Settings,
 } from "lucide-react";
 import { toast } from "sonner";
+import LuxurySelect from "@/components/ui/LuxurySelect";
 import { adminApi, AdminProduct, AdminCategory, AdminSubcategory, AdminTaxonomyItem } from "@/lib/api/admin";
 
 const CATEGORY_OPTIONS = [
@@ -890,26 +891,30 @@ export default function AdminProductsPage() {
         </form>
 
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            style={{ ...inputStyle, width: "auto", minWidth: 150 }}
-          >
-            <option value="">All Categories</option>
-            {CATEGORY_OPTIONS.map((c) => (
-              <option key={c.value} value={c.value}>{c.label}</option>
-            ))}
-          </select>
+          <div style={{ minWidth: "160px" }}>
+            <LuxurySelect
+              value={categoryFilter}
+              onChange={(val) => setCategoryFilter(val)}
+              size="sm"
+              options={[
+                { value: "", label: "All Categories" },
+                ...CATEGORY_OPTIONS.map((c) => ({ value: c.value, label: c.label })),
+              ]}
+            />
+          </div>
 
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            style={{ ...inputStyle, width: "auto", minWidth: 120 }}
-          >
-            <option value="">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Disabled</option>
-          </select>
+          <div style={{ minWidth: "130px" }}>
+            <LuxurySelect
+              value={statusFilter}
+              onChange={(val) => setStatusFilter(val)}
+              size="sm"
+              options={[
+                { value: "", label: "All Status" },
+                { value: "active", label: "Active" },
+                { value: "inactive", label: "Disabled" },
+              ]}
+            />
+          </div>
         </div>
       </div>
 
@@ -1160,15 +1165,12 @@ export default function AdminProductsPage() {
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
                     <div style={fieldGroupStyle}>
                       <label style={labelStyle}>Category *</label>
-                      <select
+                      <LuxurySelect
                         value={formData.category || "engagement-rings"}
-                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                        style={inputStyle}
-                      >
-                        {CATEGORY_OPTIONS.map((cat) => (
-                          <option key={cat.value} value={cat.value}>{cat.label}</option>
-                        ))}
-                      </select>
+                        onChange={(val) => setFormData({ ...formData, category: val })}
+                        size="sm"
+                        options={CATEGORY_OPTIONS.map((cat) => ({ value: cat.value, label: cat.label }))}
+                      />
                     </div>
 
                     <div style={fieldGroupStyle}>
@@ -1224,43 +1226,42 @@ export default function AdminProductsPage() {
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
                     <div style={fieldGroupStyle}>
                       <label style={labelStyle}>Diamond Type</label>
-                      <select
+                      <LuxurySelect
                         value={formData.diamond_type || ""}
-                        onChange={(e) => setFormData({ ...formData, diamond_type: e.target.value ? parseInt(e.target.value) : null })}
-                        style={inputStyle}
-                      >
-                        <option value="">None / Not Applicable</option>
-                        {diamondTypesList.map((dt) => (
-                          <option key={dt.id} value={dt.id}>{dt.name}</option>
-                        ))}
-                      </select>
+                        onChange={(val) => setFormData({ ...formData, diamond_type: val ? parseInt(val) : null })}
+                        size="sm"
+                        options={[
+                          { value: "", label: "None / Not Applicable" },
+                          ...diamondTypesList.map((dt) => ({ value: dt.id, label: dt.name })),
+                        ]}
+                      />
                     </div>
 
                     <div style={fieldGroupStyle}>
                       <label style={labelStyle}>Brand</label>
-                      <select
+                      <LuxurySelect
                         value={formData.brand || ""}
-                        onChange={(e) => setFormData({ ...formData, brand: e.target.value ? parseInt(e.target.value) : null })}
-                        style={inputStyle}
-                      >
-                        <option value="">Gama Diamonds</option>
-                        {brandsList.map((b) => (
-                          <option key={b.id} value={b.id}>{b.name}</option>
-                        ))}
-                      </select>
+                        onChange={(val) => setFormData({ ...formData, brand: val ? parseInt(val) : null })}
+                        size="sm"
+                        options={[
+                          { value: "", label: "Gama Diamonds" },
+                          ...brandsList.map((b) => ({ value: b.id, label: b.name })),
+                        ]}
+                      />
                     </div>
 
                     <div style={fieldGroupStyle}>
                       <label style={labelStyle}>Target Gender</label>
-                      <select
+                      <LuxurySelect
                         value={formData.gender || "women"}
-                        onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                        style={inputStyle}
-                      >
-                        <option value="women">Women</option>
-                        <option value="men">Men</option>
-                        <option value="unisex">Unisex</option>
-                      </select>
+                        onChange={(val) => setFormData({ ...formData, gender: val })}
+                        size="sm"
+                        options={[
+                          { value: "women", label: "Women" },
+                          { value: "men", label: "Men" },
+                          { value: "unisex", label: "Unisex" },
+                        ]}
+                      />
                     </div>
                   </div>
 
@@ -1376,14 +1377,15 @@ export default function AdminProductsPage() {
 
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Band Fit</label>
-                          <select
+                          <LuxurySelect
                             value={formData.band_fit || "comfort"}
-                            onChange={(e) => setFormData({ ...formData, band_fit: e.target.value })}
-                            style={inputStyle}
-                          >
-                            <option value="comfort">Comfort Fit</option>
-                            <option value="standard">Standard Fit</option>
-                          </select>
+                            onChange={(val) => setFormData({ ...formData, band_fit: val })}
+                            size="sm"
+                            options={[
+                              { value: "comfort", label: "Comfort Fit" },
+                              { value: "standard", label: "Standard Fit" },
+                            ]}
+                          />
                         </div>
 
                         <div style={fieldGroupStyle}>
@@ -1423,15 +1425,16 @@ export default function AdminProductsPage() {
 
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Resizable</label>
-                          <select
+                          <LuxurySelect
                             value={formData.resizable || "yes"}
-                            onChange={(e) => setFormData({ ...formData, resizable: e.target.value })}
-                            style={inputStyle}
-                          >
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                            <option value="on_request">On Request</option>
-                          </select>
+                            onChange={(val) => setFormData({ ...formData, resizable: val })}
+                            size="sm"
+                            options={[
+                              { value: "yes", label: "Yes" },
+                              { value: "no", label: "No" },
+                              { value: "on_request", label: "On Request" },
+                            ]}
+                          />
                         </div>
                       </div>
                     </div>
@@ -1445,16 +1448,17 @@ export default function AdminProductsPage() {
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Earring Type</label>
-                          <select
+                          <LuxurySelect
                             value={formData.earring_type || "studs"}
-                            onChange={(e) => setFormData({ ...formData, earring_type: e.target.value })}
-                            style={inputStyle}
-                          >
-                            <option value="studs">Studs</option>
-                            <option value="hoops">Hoops</option>
-                            <option value="drops">Drops</option>
-                            <option value="huggies">Huggies</option>
-                          </select>
+                            onChange={(val) => setFormData({ ...formData, earring_type: val })}
+                            size="sm"
+                            options={[
+                              { value: "studs", label: "Studs" },
+                              { value: "hoops", label: "Hoops" },
+                              { value: "drops", label: "Drops" },
+                              { value: "huggies", label: "Huggies" },
+                            ]}
+                          />
                         </div>
 
                         <div style={fieldGroupStyle}>
@@ -1490,15 +1494,16 @@ export default function AdminProductsPage() {
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Necklace Style</label>
-                          <select
+                          <LuxurySelect
                             value={formData.necklace_style || "pendant"}
-                            onChange={(e) => setFormData({ ...formData, necklace_style: e.target.value })}
-                            style={inputStyle}
-                          >
-                            <option value="pendant">Pendant</option>
-                            <option value="chain">Chain</option>
-                            <option value="tennis">Tennis</option>
-                          </select>
+                            onChange={(val) => setFormData({ ...formData, necklace_style: val })}
+                            size="sm"
+                            options={[
+                              { value: "pendant", label: "Pendant" },
+                              { value: "chain", label: "Chain" },
+                              { value: "tennis", label: "Tennis" },
+                            ]}
+                          />
                         </div>
 
                         <div style={fieldGroupStyle}>
@@ -1610,37 +1615,37 @@ export default function AdminProductsPage() {
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Diamond Origin</label>
-                          <select
+                          <LuxurySelect
                             value={formData.diamond_spec?.diamond_origin || "lab_grown"}
-                            onChange={(e) => setFormData({
+                            onChange={(val) => setFormData({
                               ...formData,
-                              diamond_spec: { ...(formData.diamond_spec || {}), diamond_origin: e.target.value }
+                              diamond_spec: { ...(formData.diamond_spec || {}), diamond_origin: val }
                             })}
-                            style={inputStyle}
-                          >
-                            <option value="lab_grown">Lab Grown</option>
-                            <option value="natural">Natural</option>
-                          </select>
+                            size="sm"
+                            options={[
+                              { value: "lab_grown", label: "Lab Grown" },
+                              { value: "natural", label: "Natural" },
+                            ]}
+                          />
                         </div>
 
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Diamond Shape</label>
-                          <select
+                          <LuxurySelect
                             value={formData.diamond_spec?.diamond_shape || formData.diamond_cut || "round"}
-                            onChange={(e) => {
-                              const val = e.target.value;
+                            onChange={(val) => {
                               setFormData({
                                 ...formData,
                                 diamond_cut: val,
                                 diamond_spec: { ...(formData.diamond_spec || {}), diamond_shape: val }
                               });
                             }}
-                            style={{ ...inputStyle, textTransform: "capitalize" }}
-                          >
-                            {DIAMOND_SHAPE_OPTIONS.map((shape) => (
-                              <option key={shape} value={shape}>{shape.replace("-cut", "")}</option>
-                            ))}
-                          </select>
+                            size="sm"
+                            options={DIAMOND_SHAPE_OPTIONS.map((shape) => ({
+                              value: shape,
+                              label: shape.replace("-cut", "").replace(/\b\w/g, (l) => l.toUpperCase()),
+                            }))}
+                          />
                         </div>
 
                         <div style={fieldGroupStyle}>
@@ -1662,68 +1667,59 @@ export default function AdminProductsPage() {
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Cut Grade</label>
-                          <select
+                          <LuxurySelect
                             value={formData.diamond_spec?.cut_grade || "excellent"}
-                            onChange={(e) => setFormData({
+                            onChange={(val) => setFormData({
                               ...formData,
-                              diamond_spec: { ...(formData.diamond_spec || {}), cut_grade: e.target.value }
+                              diamond_spec: { ...(formData.diamond_spec || {}), cut_grade: val }
                             })}
-                            style={{ ...inputStyle, textTransform: "capitalize" }}
-                          >
-                            {CUT_GRADE_OPTIONS.map((cut) => (
-                              <option key={cut} value={cut}>{cut.replace("_", " ")}</option>
-                            ))}
-                          </select>
+                            size="sm"
+                            options={CUT_GRADE_OPTIONS.map((cut) => ({
+                              value: cut,
+                              label: cut.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+                            }))}
+                          />
                         </div>
 
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Colour Grade</label>
-                          <select
+                          <LuxurySelect
                             value={formData.diamond_spec?.colour_grade || "F"}
-                            onChange={(e) => setFormData({
+                            onChange={(val) => setFormData({
                               ...formData,
-                              diamond_spec: { ...(formData.diamond_spec || {}), colour_grade: e.target.value }
+                              diamond_spec: { ...(formData.diamond_spec || {}), colour_grade: val }
                             })}
-                            style={inputStyle}
-                          >
-                            {COLOUR_GRADE_OPTIONS.map((col) => (
-                              <option key={col} value={col}>{col}</option>
-                            ))}
-                          </select>
+                            size="sm"
+                            options={COLOUR_GRADE_OPTIONS.map((col) => ({ value: col, label: col }))}
+                          />
                         </div>
 
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Clarity Grade</label>
-                          <select
+                          <LuxurySelect
                             value={formData.diamond_spec?.clarity_grade || "VS1"}
-                            onChange={(e) => setFormData({
+                            onChange={(val) => setFormData({
                               ...formData,
-                              diamond_spec: { ...(formData.diamond_spec || {}), clarity_grade: e.target.value }
+                              diamond_spec: { ...(formData.diamond_spec || {}), clarity_grade: val }
                             })}
-                            style={inputStyle}
-                          >
-                            {CLARITY_GRADE_OPTIONS.map((cla) => (
-                              <option key={cla} value={cla}>{cla}</option>
-                            ))}
-                          </select>
+                            size="sm"
+                            options={CLARITY_GRADE_OPTIONS.map((cla) => ({ value: cla, label: cla }))}
+                          />
                         </div>
                       </div>
 
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Certification Lab</label>
-                          <select
+                          <LuxurySelect
                             value={formData.diamond_spec?.certification_lab || "GIA"}
-                            onChange={(e) => setFormData({
+                            onChange={(val) => setFormData({
                               ...formData,
-                              diamond_spec: { ...(formData.diamond_spec || {}), certification_lab: e.target.value }
+                              diamond_spec: { ...(formData.diamond_spec || {}), certification_lab: val }
                             })}
-                            style={inputStyle}
-                          >
-                            {CERT_LAB_OPTIONS.map((lab) => (
-                              <option key={lab} value={lab}>{lab}</option>
-                            ))}
-                          </select>
+                            size="sm"
+                            options={CERT_LAB_OPTIONS.map((lab) => ({ value: lab, label: lab }))}
+                          />
                         </div>
 
                         <div style={fieldGroupStyle}>
@@ -1899,32 +1895,34 @@ export default function AdminProductsPage() {
                                       }}
                                     />
                                   </td>
-                                  <td style={{ padding: "8px" }}>
-                                    <select
+                                  <td style={{ padding: "8px", minWidth: "120px" }}>
+                                    <LuxurySelect
                                       value={variant.metal_type || "yellow-gold"}
-                                      onChange={(e) => updateVariant(idx, { metal_type: e.target.value })}
-                                      style={{ ...inputStyle, width: 110, padding: "4px 6px", fontSize: "10px" }}
-                                    >
-                                      <option value="silver">Silver</option>
-                                      <option value="yellow-gold">Yellow Gold</option>
-                                      <option value="white-gold">White Gold</option>
-                                      <option value="rose-gold">Rose Gold</option>
-                                      <option value="platinum">Platinum</option>
-                                    </select>
+                                      onChange={(val) => updateVariant(idx, { metal_type: val })}
+                                      size="sm"
+                                      options={[
+                                        { value: "silver", label: "Silver" },
+                                        { value: "yellow-gold", label: "Yellow Gold" },
+                                        { value: "white-gold", label: "White Gold" },
+                                        { value: "rose-gold", label: "Rose Gold" },
+                                        { value: "platinum", label: "Platinum" },
+                                      ]}
+                                    />
                                   </td>
-                                  <td style={{ padding: "8px" }}>
-                                    <select
+                                  <td style={{ padding: "8px", minWidth: "100px" }}>
+                                    <LuxurySelect
                                       value={variant.metal_karat || "18K"}
-                                      onChange={(e) => updateVariant(idx, { metal_karat: e.target.value })}
-                                      style={{ ...inputStyle, width: 75, padding: "4px 6px", fontSize: "10px" }}
-                                    >
-                                      <option value="9K">9K</option>
-                                      <option value="10K">10K</option>
-                                      <option value="14K">14K</option>
-                                      <option value="18K">18K</option>
-                                      <option value="950Pt">950 Pt (Platinum)</option>
-                                      <option value="925Ag">925 Ag (Silver)</option>
-                                    </select>
+                                      onChange={(val) => updateVariant(idx, { metal_karat: val })}
+                                      size="sm"
+                                      options={[
+                                        { value: "9K", label: "9K" },
+                                        { value: "10K", label: "10K" },
+                                        { value: "14K", label: "14K" },
+                                        { value: "18K", label: "18K" },
+                                        { value: "950Pt", label: "950 Pt" },
+                                        { value: "925Ag", label: "925 Ag" },
+                                      ]}
+                                    />
                                   </td>
                                   {!isEarringCategory && (
                                     <td style={{ padding: "8px" }}>
@@ -2230,14 +2228,15 @@ export default function AdminProductsPage() {
 
                     <div style={fieldGroupStyle}>
                       <label style={labelStyle}>Made to Order</label>
-                      <select
+                      <LuxurySelect
                         value={formData.made_to_order || "no"}
-                        onChange={(e) => setFormData({ ...formData, made_to_order: e.target.value })}
-                        style={inputStyle}
-                      >
-                        <option value="no">No</option>
-                        <option value="yes">Yes</option>
-                      </select>
+                        onChange={(val) => setFormData({ ...formData, made_to_order: val })}
+                        size="sm"
+                        options={[
+                          { value: "no", label: "No" },
+                          { value: "yes", label: "Yes" },
+                        ]}
+                      />
                     </div>
                   </div>
 

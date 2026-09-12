@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { MapPin, Phone, Clock } from "lucide-react";
-import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { fadeInUp } from "@/lib/constants";
 
 export default function StoreSection() {
@@ -24,18 +23,48 @@ export default function StoreSection() {
             alignItems: "center",
           }}
         >
-          {/* Left Store Front Image Placeholder */}
+          {/* Left Store Front Real Photography */}
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
+            style={{
+              position: "relative",
+              height: "380px",
+              borderRadius: "4px",
+              overflow: "hidden",
+              border: "1px solid rgba(198, 164, 95, 0.3)",
+              boxShadow: "0 16px 40px rgba(0, 0, 0, 0.8)",
+            }}
           >
-            <ImagePlaceholder
-              height="380px"
-              label="Gama Jewels Store Exterior"
-              style={{ borderRadius: "0px" }}
+            <img
+              src="/heritage.png"
+              alt="Gama Jewels Atelier & Showroom"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
             />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "flex-end",
+                padding: "24px",
+              }}
+            >
+              <span style={{ fontSize: "10px", color: "#c6a45f", letterSpacing: "2px", textTransform: "uppercase", fontWeight: 700 }}>
+                SHOWROOM & ATELIER
+              </span>
+              <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", color: "#ffffff", fontWeight: 600 }}>
+                Gama Jewels · Mumbai
+              </span>
+            </div>
           </motion.div>
 
           {/* Right Store Info */}

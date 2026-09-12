@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, RotateCcw, ChevronDown } from "lucide-react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
+import LuxurySelect from "@/components/ui/LuxurySelect";
 import { useCurrency } from "@/context/CurrencyContext";
 import { productsApi } from "@/lib/api/products";
 import { applyProductFilters } from "@/lib/productFilters";
@@ -912,29 +913,23 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
                     color: "#c6a45f",
                     textTransform: "uppercase",
                     letterSpacing: "0.5px",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   Sort by:
                 </span>
-                <select
+                <LuxurySelect
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  style={{
-                    backgroundColor: "rgba(10, 10, 10, 0.9)",
-                    border: "1px solid rgba(198, 164, 95, 0.4)",
-                    color: "#ffffff",
-                    fontFamily: "'Poppins', sans-serif",
-                    fontSize: "12px",
-                    padding: "6px 12px",
-                    outline: "none",
-                    cursor: "pointer",
-                  }}
-                >
-                  <option value="featured" style={{ backgroundColor: "#000000" }}>Featured</option>
-                  <option value="price-low" style={{ backgroundColor: "#000000" }}>Price: Low to High</option>
-                  <option value="price-high" style={{ backgroundColor: "#000000" }}>Price: High to Low</option>
-                  <option value="newest" style={{ backgroundColor: "#000000" }}>Newest Arrival</option>
-                </select>
+                  onChange={(val) => setSortBy(val)}
+                  size="sm"
+                  style={{ minWidth: "165px" }}
+                  options={[
+                    { value: "featured", label: "Featured" },
+                    { value: "price-low", label: "Price: Low to High" },
+                    { value: "price-high", label: "Price: High to Low" },
+                    { value: "newest", label: "Newest Arrival" },
+                  ]}
+                />
               </div>
             </div>
 
