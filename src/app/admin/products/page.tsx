@@ -563,11 +563,30 @@ export default function AdminProductsPage() {
 
   const openEditModal = (prod: AdminProduct) => {
     setEditingProduct(prod);
+    const primaryVar = prod.variants?.find((v) => v.is_default || v.isDefault) || prod.variants?.[0];
+    const initialPrice = prod.base_price ?? prod.basePrice ?? primaryVar?.price ?? (typeof prod.price === "object" ? prod.price?.min : prod.price) ?? 0;
+    const initialStock = prod.total_stock ?? prod.totalStock ?? prod.inventory?.totalStock ?? (prod.variants?.reduce((s, v) => s + (v.stock || 0), 0)) ?? 0;
+
+    const mapId = (val: unknown): number | null => {
+      if (typeof val === "number") return val;
+      if (typeof val === "string" && val.trim() !== "" && !isNaN(Number(val))) return parseInt(val);
+      if (val && typeof val === "object" && "id" in val) return (val as { id: number }).id;
+      return null;
+    };
+    const mapIdArray = (vals: unknown): number[] => {
+      if (!Array.isArray(vals)) return [];
+      return vals.map(mapId).filter((id): id is number => id !== null);
+    };
+
     setFormData({
       ...prod,
-      base_price: prod.base_price || prod.basePrice || 0,
+      base_price: typeof initialPrice === "number" ? initialPrice : parseFloat(String(initialPrice || 0)) || 0,
       discount_price: prod.discount_price ?? prod.discountPrice ?? null,
-      total_stock: prod.total_stock ?? prod.totalStock ?? 0,
+      total_stock: typeof initialStock === "number" ? initialStock : parseInt(String(initialStock || 0)) || 0,
+      diamond_type: mapId(prod.diamond_type) ?? prod.diamondTypeDetail?.id ?? null,
+      brand: mapId(prod.brand) ?? prod.brandDetail?.id ?? null,
+      styles: mapIdArray(prod.styles).length > 0 ? mapIdArray(prod.styles) : (prod.stylesDetail?.map((s) => s.id) || []),
+      collections: mapIdArray(prod.collections).length > 0 ? mapIdArray(prod.collections) : (prod.collectionsDetail?.map((c) => c.id) || []),
       diamond_spec: prod.diamond_spec || {
         diamond_origin: "lab_grown",
         diamond_shape: prod.diamond_cut || "round",
@@ -609,6 +628,18 @@ export default function AdminProductsPage() {
     return isNaN(num) ? null : num;
   };
 
+  const mapId = (val: unknown): number | null => {
+    if (typeof val === "number") return val;
+    if (typeof val === "string" && val.trim() !== "" && !isNaN(Number(val))) return parseInt(val);
+    if (val && typeof val === "object" && "id" in val) return (val as { id: number }).id;
+    return null;
+  };
+
+  const mapIdArray = (vals: unknown): number[] => {
+    if (!Array.isArray(vals)) return [];
+    return vals.map(mapId).filter((id): id is number => id !== null);
+  };
+
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -639,41 +670,72 @@ export default function AdminProductsPage() {
         certificate_url: rawSpec.certificate_url || "",
       };
 
-      const cleanedVariants = (formData.variants || []).map((v, i) => ({
+      const targetStock = formData.total_stock !== undefined ? parseInt(String(formData.total_stock)) || 0 : 10;
+      const targetPrice = typeof formData.base_price === "number" ? formData.base_price : parseFloat(String(formData.base_price || 0)) || 0;
+
+      let rawVariants = formData.variants || [];
+      if (rawVariants.length === 0) {
+        rawVariants = [{
+          sku: formData.sku || generateAutoSku(formData.category, formData.name),
+          metal_type: formData.metal_type || "",
+          metal_karat: formData.metal_karat || "",
+          size: "",
+          price: targetPrice,
+          stock: targetStock,
+          is_default: true,
+          is_active: formData.is_active ?? true,
+          images: [],
+        }];
+      } else if (rawVariants.length === 1) {
+        rawVariants = [{
+          ...rawVariants[0],
+          price: targetPrice,
+          stock: targetStock,
+          is_default: true,
+        }];
+      }
+
+      const cleanedVariants = rawVariants.map((v, i) => ({
         ...v,
         sku: v.sku || `${formData.sku || "PROD"}-${v.metal_karat || i + 1}`,
         metal_weight_grams: parseNumOrNull(v.metal_weight_grams),
-        price: typeof v.price === "number" ? v.price : parseFloat(String(v.price || 0)) || 0,
+        price: typeof v.price === "number" ? v.price : parseFloat(String(v.price || 0)) || targetPrice,
         compare_at_price: parseNumOrNull(v.compare_at_price),
         cost_price: parseNumOrNull(v.cost_price),
-        stock: v.stock ?? 10,
+        stock: v.stock !== undefined ? parseInt(String(v.stock)) || 0 : targetStock,
         is_active: v.is_active ?? true,
-        is_default: v.is_default ?? i === 0,
+        is_default: v.is_default ?? (i === 0),
         images: v.images || [],
       }));
 
-      const payload = {
+      const payload: Partial<AdminProduct> = {
         ...formData,
         sku: formData.sku || generateAutoSku(formData.category, formData.name),
+        base_price: targetPrice,
+        total_stock: targetStock,
         tax_percentage: parseNumOrNull(formData.tax_percentage) || 0,
         low_stock_threshold: formData.low_stock_threshold ?? 5,
+        styles: mapIdArray(formData.styles),
+        collections: mapIdArray(formData.collections),
+        related_products: mapIdArray(formData.related_products),
+        diamond_type: mapId(formData.diamond_type),
+        brand: mapId(formData.brand),
         diamond_spec: cleanedDiamondSpec,
         variants: cleanedVariants,
-        base_price: cleanedVariants.find((v) => v.is_default)?.price || formData.base_price || 0,
       };
 
       if (editingProduct) {
         const res = await adminApi.updateProduct(editingProduct.id, payload);
         const savedItem = getProductFromResponse(res.data as ProductApiResponse) || ({ ...editingProduct, ...payload } as AdminProduct);
         setProducts((prev) => prev.map((p) => (p.id === editingProduct.id ? { ...p, ...savedItem } : p)));
-        toast.success("Product updated");
+        toast.success("Product updated successfully");
       } else {
         const res = await adminApi.createProduct(payload);
         const savedItem = getProductFromResponse(res.data as ProductApiResponse);
         if (savedItem && (savedItem.id || savedItem.slug)) {
           setProducts((prev) => [savedItem, ...prev]);
         }
-        toast.success("Product published");
+        toast.success("Product published successfully");
       }
       setIsModalOpen(false);
       await loadData();
@@ -689,7 +751,8 @@ export default function AdminProductsPage() {
   const updateVariant = (idx: number, patch: Partial<NonNullable<AdminProduct["variants"]>[number]>) => {
     const updated = [...(formData.variants || [])];
     updated[idx] = { ...updated[idx], ...patch };
-    setFormData({ ...formData, variants: updated });
+    const totalStock = updated.reduce((sum, v) => sum + (v.stock || 0), 0);
+    setFormData({ ...formData, variants: updated, total_stock: totalStock });
   };
 
   const addManualVariant = () => {
@@ -1115,7 +1178,14 @@ export default function AdminProductsPage() {
                         step="0.01"
                         required
                         value={formData.base_price ?? 0}
-                        onChange={(e) => setFormData({ ...formData, base_price: parseFloat(e.target.value) || 0 })}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          const currentVars = formData.variants || [];
+                          const vars = currentVars.length <= 1
+                            ? currentVars.map((v) => ({ ...v, price: val }))
+                            : currentVars.map((v, i) => (v.is_default || i === 0 ? { ...v, price: val } : v));
+                          setFormData({ ...formData, base_price: val, variants: vars });
+                        }}
                         style={inputStyle}
                       />
                     </div>
@@ -1138,7 +1208,14 @@ export default function AdminProductsPage() {
                         type="number"
                         required
                         value={formData.total_stock ?? 10}
-                        onChange={(e) => setFormData({ ...formData, total_stock: parseInt(e.target.value) || 0 })}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value) || 0;
+                          const currentVars = formData.variants || [];
+                          const vars = currentVars.length <= 1
+                            ? currentVars.map((v) => ({ ...v, stock: val }))
+                            : currentVars.map((v, i) => (v.is_default || i === 0 ? { ...v, stock: val } : v));
+                          setFormData({ ...formData, total_stock: val, variants: vars });
+                        }}
                         style={inputStyle}
                       />
                     </div>
