@@ -1,9 +1,11 @@
 import axios, { AxiosError, AxiosHeaders, InternalAxiosRequestConfig } from "axios";
 import { tokenStorage } from "./tokenStorage";
 
-export const API_BASE_URL =
-  (process.env.NEXT_PUBLIC_API_URL || process.env.API_URL)?.replace(/\/+$/, "") ||
-  "http://localhost:8000/api";
+const rawApiUrl = (process.env.NEXT_PUBLIC_API_URL || process.env.API_URL)?.trim().replace(/\/+$/, "");
+
+export const API_BASE_URL = rawApiUrl
+  ? (rawApiUrl.endsWith("/api") ? rawApiUrl : `${rawApiUrl}/api`)
+  : "http://localhost:8000/api";
 
 /** Dispatched on `window` whenever the session is force-ended (refresh failed,
  * no refresh token available, etc). AuthContext listens for this to sync
@@ -20,6 +22,7 @@ function broadcastLogout() {
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
+  timeout: 45000, // 45 seconds to accommodate free tier cold-starts (Render spins down inactive instances)
 });
 
 // ---------------------------------------------------------------------------
