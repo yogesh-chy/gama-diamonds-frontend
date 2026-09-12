@@ -881,12 +881,17 @@ export default function AdminProductsPage() {
                 {products.map((prod) => {
                   const img = prod.images?.[0]?.url || prod.thumbnail;
                   const defaultVar = prod.variants?.find((v) => v.is_default || v.isDefault) || prod.variants?.[0];
-                  const rawPrice = defaultVar?.price ?? prod.base_price ?? prod.basePrice;
+                  const rawPrice =
+                    defaultVar?.price ??
+                    prod.base_price ??
+                    prod.basePrice ??
+                    (typeof prod.price === "object" ? prod.price?.min : prod.price) ??
+                    prod.pricing?.basePrice;
                   const priceNum = typeof rawPrice === "number" ? rawPrice : parseFloat(String(rawPrice || 0)) || 0;
                   const varCount = prod.variants?.length || 0;
                   const totalStockNum = varCount > 0
                     ? prod.variants?.reduce((sum, v) => sum + (v.stock || 0), 0) ?? 0
-                    : (prod.total_stock ?? prod.totalStock ?? 0);
+                    : (prod.total_stock ?? prod.totalStock ?? prod.inventory?.totalStock ?? 0);
 
                   return (
                     <tr key={prod.id} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.05)" }}>
