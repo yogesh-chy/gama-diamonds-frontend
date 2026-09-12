@@ -33,7 +33,7 @@ export default function StoreSection() {
           >
             <ImagePlaceholder
               height="380px"
-              label="Hatton Garden Store Exterior Image Placeholder"
+              label="Gama Jewels Store Exterior"
               style={{ borderRadius: "0px" }}
             />
           </motion.div>
@@ -56,7 +56,7 @@ export default function StoreSection() {
                 marginBottom: "16px",
               }}
             >
-              Gama Jewels Boutique Studio
+              Gama Jewels
             </h2>
             <p
               style={{
