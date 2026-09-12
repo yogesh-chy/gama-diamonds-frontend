@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import type { ProductPriceRange } from "./products";
 
 export interface AdminProduct {
   id: number;
@@ -14,8 +15,15 @@ export interface AdminProduct {
   discount_price: string | number | null;
   basePrice?: number;
   discountPrice?: number | null;
+  price?: number | ProductPriceRange;
+  pricing?: {
+    basePrice?: string | number;
+  };
   total_stock: number;
   totalStock?: number;
+  inventory?: {
+    totalStock?: number;
+  };
   metal_type?: string | null;
   metal_karat?: string | null;
   diamond_cut?: string | null;
