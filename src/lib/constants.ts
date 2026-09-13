@@ -361,20 +361,19 @@ export const footerLinks: FooterLinks = {
     { name: "Diamond Earrings", href: "/earrings" },
     { name: "Pendant Necklaces", href: "/necklace" },
     { name: "Tennis Bracelets", href: "/bracelets" },
-    { name: "Bespoke Service", href: "/bespoke" },
+    { name: "Bespoke Jewellery", href: "/bespoke" },
   ],
   explore: [
-    { name: "Hot Diamonds", href: "/hot-diamonds" },
-    { name: "Solitaire Studs", href: "/solitaire-studs" },
-    { name: "Fine Jewellery", href: "/jewellery" },
-    { name: "My Shopping Bag", href: "/cart" },
-    { name: "Client Account", href: "/login" },
+    { name: "About Gama Jewels", href: "/about" },
+    { name: "Bespoke Studio", href: "/bespoke" },
+    { name: "Jewellery Creator", href: "/jewellery-creator" },
+    { name: "Shopping Bag", href: "/cart" },
   ],
   policies: [
-    { name: "About Us", href: "/about" },
     { name: "Shipping & Delivery", href: "/shipping" },
-    { name: "Return & Refund Policy", href: "/return-policy" },
+    { name: "Return & Exchange Policy", href: "/return-policy" },
     { name: "Terms & Conditions", href: "/terms" },
+    { name: "Privacy Policy", href: "/privacy" },
   ],
 };
 

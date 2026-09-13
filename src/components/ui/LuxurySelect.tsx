@@ -78,9 +78,9 @@ export default function LuxurySelect({
           width: "100%",
           height: heightBySize,
           backgroundColor: "#0d0d0d",
-          border: open
-            ? "1px solid #c6a45f"
-            : "1px solid rgba(198, 164, 95, 0.35)",
+          borderWidth: "1px",
+          borderStyle: "solid",
+          borderColor: open ? "#c6a45f" : "rgba(198, 164, 95, 0.35)",
           borderRadius: "3px",
           color: selectedOption ? "#ffffff" : "#777777",
           fontSize: fontSizeBySize,

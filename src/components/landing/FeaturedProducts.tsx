@@ -116,29 +116,34 @@ export default function FeaturedProducts() {
             {productsToDisplay.map((product, idx) => {
               const isHovered = hoveredId === (product.id || idx);
               return (
-                <SwiperSlide key={product.id || idx}>
+                <SwiperSlide key={product.id || idx} style={{ height: "auto", paddingTop: "8px", paddingBottom: "12px" }}>
                   <Link
                     href={`/product/${product.id}`}
-                    style={{ display: "block", textDecoration: "none", color: "inherit" }}
+                    style={{ display: "block", textDecoration: "none", color: "inherit", height: "100%" }}
                     onMouseEnter={() => setHoveredId(product.id || idx)}
                     onMouseLeave={() => setHoveredId(null)}
                   >
-                    <div
+                    <motion.div
+                      whileHover={{ y: -6 }}
+                      transition={{ duration: 0.22, ease: "easeOut" }}
+                      className="product-card"
                       style={{
-                        background: "#0a0a0a",
+                        background: "#090909",
                         border: isHovered
                           ? "1px solid rgba(198, 164, 95, 0.55)"
                           : "1px solid rgba(255, 255, 255, 0.08)",
                         boxShadow: isHovered
-                          ? "0 14px 36px rgba(0, 0, 0, 0.85), 0 0 24px rgba(198, 164, 95, 0.12)"
+                          ? "0 16px 36px rgba(0, 0, 0, 0.85), 0 0 24px rgba(198, 164, 95, 0.14)"
                           : "none",
-                        transform: isHovered ? "translateY(-5px)" : "translateY(0)",
                         borderRadius: "0px",
                         overflow: "hidden",
                         paddingBottom: "16px",
-                        transition: "all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
                         cursor: "pointer",
                         position: "relative",
+                        display: "flex",
+                        flexDirection: "column",
+                        height: "100%",
+                        transition: "border-color 0.25s ease, box-shadow 0.25s ease",
                       }}
                     >
                       {/* Product Image Box */}
@@ -254,7 +259,7 @@ export default function FeaturedProducts() {
                           {formatPrice(product.price || 1200)}
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   </Link>
                 </SwiperSlide>
               );

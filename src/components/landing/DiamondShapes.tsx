@@ -63,55 +63,63 @@ export default function DiamondShapes() {
             style={{ paddingBottom: "36px" }}
           >
             {diamondShapes.map((item, idx) => (
-              <SwiperSlide key={idx}>
+              <SwiperSlide key={idx} style={{ height: "auto", paddingTop: "6px", paddingBottom: "10px" }}>
                 <Link
                   href={item.href}
-                  className="shape-card"
-                  style={{
-                    padding: "0",
-                    overflow: "hidden",
-                    borderRadius: "0px",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "stretch",
-                    justifyContent: "space-between",
-                    height: "100%",
-                  }}
+                  style={{ textDecoration: "none", display: "block", height: "100%" }}
                 >
-                  {item.image ? (
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      style={{
-                        width: "100%",
-                        aspectRatio: "1 / 1",
-                        objectFit: "cover",
-                        borderRadius: "0px",
-                        border: "none",
-                      }}
-                    />
-                  ) : (
-                    <ImagePlaceholder
-                      label={`${item.name}`}
-                      style={{
-                        aspectRatio: "1 / 1",
-                        height: "auto",
-                        borderRadius: "0px",
-                        border: "none",
-                      }}
-                    />
-                  )}
-                  <div
+                  <motion.div
+                    whileHover={{ y: -5 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="shape-card"
                     style={{
-                      padding: "10px 6px",
-                      background: "#0d0d0d",
-                      width: "100%",
-                      textAlign: "center",
-                      borderTop: "1px solid rgba(255,255,255,0.06)",
+                      padding: "0",
+                      overflow: "hidden",
+                      borderRadius: "0px",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "stretch",
+                      justifyContent: "space-between",
+                      height: "100%",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      transition: "border-color 0.25s ease, box-shadow 0.25s ease",
                     }}
                   >
-                    <span className="shape-name">{item.name}</span>
-                  </div>
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        style={{
+                          width: "100%",
+                          aspectRatio: "1 / 1",
+                          objectFit: "cover",
+                          borderRadius: "0px",
+                          border: "none",
+                        }}
+                      />
+                    ) : (
+                      <ImagePlaceholder
+                        label={`${item.name}`}
+                        style={{
+                          aspectRatio: "1 / 1",
+                          height: "auto",
+                          borderRadius: "0px",
+                          border: "none",
+                        }}
+                      />
+                    )}
+                    <div
+                      style={{
+                        padding: "10px 6px",
+                        background: "#0d0d0d",
+                        width: "100%",
+                        textAlign: "center",
+                        borderTop: "1px solid rgba(255,255,255,0.06)",
+                      }}
+                    >
+                      <span className="shape-name">{item.name}</span>
+                    </div>
+                  </motion.div>
                 </Link>
               </SwiperSlide>
             ))}

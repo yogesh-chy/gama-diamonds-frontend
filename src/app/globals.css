@@ -4503,6 +4503,24 @@ select option {
   gap: 24px;
 }
 
+.return-steps-5grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 1024px) {
+  .return-steps-5grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .return-steps-5grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .policy-step-card {
   position: relative;
   background: linear-gradient(145deg, #0e0e0e, #080808);

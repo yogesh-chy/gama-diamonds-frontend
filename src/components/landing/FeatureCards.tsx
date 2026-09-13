@@ -29,13 +29,16 @@ export default function FeatureCards() {
                 href={card.href}
                 style={{ display: "block", textDecoration: "none" }}
               >
-                <div
+                <motion.div
+                  whileHover={{ y: -6 }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
                   style={{
                     position: "relative",
                     height: "360px",
                     borderRadius: "0px",
                     overflow: "hidden",
                     border: "1px solid rgba(198,164,95,0.2)",
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
                   }}
                 >
                   {card.image ? (
@@ -102,7 +105,7 @@ export default function FeatureCards() {
                       Explore Now <ArrowRight size={12} />
                     </div>
                   </div>
-                </div>
+                </motion.div>
               </Link>
             </motion.div>
           ))}

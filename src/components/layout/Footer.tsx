@@ -51,6 +51,85 @@ function YoutubeIcon({ size = 15 }: { size?: number }) {
   );
 }
 
+function RazorpayBadge() {
+  return (
+    <svg width="86" height="25" viewBox="0 0 86 25" fill="none" xmlns="http://www.w3.org/2000/svg" className="payment-badge-svg" aria-label="Secured by Razorpay">
+      <title>Secured by Razorpay</title>
+      <rect width="86" height="25" rx="3.5" fill="#0C2340" stroke="rgba(255,255,255,0.15)" strokeWidth="0.8" />
+      <g transform="translate(7, 4.5)">
+        <path d="M5.5 1.5L0.5 15H4.2L5.8 11.2L9.2 11.2C11.3 11.2 12.6 10 13.1 8.2C13.6 6.3 12.7 5 10.5 5L6.3 5L5.5 1.5ZM7.3 6.8L9.3 6.8C10.1 6.8 10.6 7.2 10.4 7.9C10.2 8.6 9.6 9 8.8 9L6.4 9L7.3 6.8Z" fill="#3395FF"/>
+      </g>
+      <text x="26" y="16" fill="#FFFFFF" fontSize="10" fontWeight="700" fontFamily="'Poppins', sans-serif" letterSpacing="0.2">Razorpay</text>
+    </svg>
+  );
+}
+
+function VisaBadge() {
+  return (
+    <svg width="40" height="25" viewBox="0 0 40 25" fill="none" xmlns="http://www.w3.org/2000/svg" className="payment-badge-svg" aria-label="Visa">
+      <title>Visa</title>
+      <rect width="40" height="25" rx="3.5" fill="#1A1F71" />
+      <text x="20" y="16" fill="#FFFFFF" fontSize="11" fontWeight="900" fontStyle="italic" fontFamily="sans-serif" textAnchor="middle" letterSpacing="0.5">VISA</text>
+    </svg>
+  );
+}
+
+function MastercardBadge() {
+  return (
+    <svg width="40" height="25" viewBox="0 0 40 25" fill="none" xmlns="http://www.w3.org/2000/svg" className="payment-badge-svg" aria-label="Mastercard">
+      <title>Mastercard</title>
+      <rect width="40" height="25" rx="3.5" fill="#222222" stroke="rgba(255,255,255,0.15)" strokeWidth="0.8" />
+      <circle cx="16" cy="12.5" r="6.2" fill="#EB001B" />
+      <circle cx="24" cy="12.5" r="6.2" fill="#F79E1B" fillOpacity="0.95" />
+      <path d="M20 7.8C21.4 9 22.3 10.6 22.3 12.5C22.3 14.4 21.4 16 20 17.2C18.6 16 17.7 14.4 17.7 12.5C17.7 10.6 18.6 9 20 7.8Z" fill="#FF5F00" />
+    </svg>
+  );
+}
+
+function UpiBadge() {
+  return (
+    <svg width="40" height="25" viewBox="0 0 40 25" fill="none" xmlns="http://www.w3.org/2000/svg" className="payment-badge-svg" aria-label="UPI">
+      <title>UPI (Unified Payments Interface)</title>
+      <rect width="40" height="25" rx="3.5" fill="#FFFFFF" stroke="#E0E0E0" strokeWidth="0.8" />
+      <path d="M9 7L13.5 12.5L9 18H12.5L17 12.5L12.5 7H9Z" fill="#097939" />
+      <path d="M14 7L18.5 12.5L14 18H17.5L22 12.5L17.5 7H14Z" fill="#ED752E" />
+      <text x="28" y="15" fill="#282828" fontSize="8" fontWeight="900" fontFamily="sans-serif" textAnchor="middle">UPI</text>
+    </svg>
+  );
+}
+
+function AmexBadge() {
+  return (
+    <svg width="40" height="25" viewBox="0 0 40 25" fill="none" xmlns="http://www.w3.org/2000/svg" className="payment-badge-svg" aria-label="American Express">
+      <title>American Express</title>
+      <rect width="40" height="25" rx="3.5" fill="#006FCF" />
+      <text x="20" y="15" fill="#FFFFFF" fontSize="8.5" fontWeight="900" fontFamily="sans-serif" textAnchor="middle" letterSpacing="-0.5">AMEX</text>
+    </svg>
+  );
+}
+
+function RuPayBadge() {
+  return (
+    <svg width="44" height="25" viewBox="0 0 44 25" fill="none" xmlns="http://www.w3.org/2000/svg" className="payment-badge-svg" aria-label="RuPay">
+      <title>RuPay</title>
+      <rect width="44" height="25" rx="3.5" fill="#FFFFFF" stroke="#E0E0E0" strokeWidth="0.8" />
+      <text x="18" y="15" fill="#1C3F94" fontSize="8" fontWeight="900" fontStyle="italic" fontFamily="sans-serif">RuPay</text>
+      <path d="M37 8L39 12.5L37 17H39.5L41.5 12.5L39.5 8H37Z" fill="#F37021"/>
+    </svg>
+  );
+}
+
+function GiaBadge() {
+  return (
+    <svg width="58" height="25" viewBox="0 0 58 25" fill="none" xmlns="http://www.w3.org/2000/svg" className="payment-badge-svg" aria-label="GIA Graded Certified Diamonds">
+      <title>GIA Graded Certified Diamonds</title>
+      <rect width="58" height="25" rx="3.5" fill="#111111" stroke="#c6a45f" strokeWidth="0.8" />
+      <text x="29" y="11" fill="#c6a45f" fontSize="7.5" fontWeight="900" fontFamily="serif" textAnchor="middle" letterSpacing="0.8">✦ GIA ✦</text>
+      <text x="29" y="18" fill="#FFFFFF" fontSize="5.5" fontWeight="700" fontFamily="sans-serif" textAnchor="middle" letterSpacing="0.5">GRADED</text>
+    </svg>
+  );
+}
+
 const trustFeatures = [
   {
     icon: ShieldCheck,
@@ -72,14 +151,6 @@ const trustFeatures = [
     title: "Lifetime Warranty",
     desc: "Complimentary Cleaning & Servicing",
   },
-];
-
-const paymentBadges = [
-  "VISA",
-  "MASTERCARD",
-  "UPI",
-  "AMEX",
-  "GIA GRADED",
 ];
 
 const socialLinks = [
@@ -209,7 +280,7 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Fine Collections Column (Real Routes) */}
+            {/* Fine Collections Column */}
             <div>
               <h4 className="footer-col-heading">Collections</h4>
               <ul className="footer-link-list">
@@ -224,9 +295,9 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* Client Services Column (Real Routes) */}
+            {/* Client Care Column */}
             <div>
-              <h4 className="footer-col-heading">Explore</h4>
+              <h4 className="footer-col-heading">Client Care</h4>
               <ul className="footer-link-list">
                 {footerLinks.explore.map((link, i) => (
                   <li key={i} className="footer-link-item">
@@ -239,9 +310,9 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* Policies Column */}
+            {/* Legal & Policies Column */}
             <div>
-              <h4 className="footer-col-heading">Policies</h4>
+              <h4 className="footer-col-heading">Legal &amp; Policies</h4>
               <ul className="footer-link-list">
                 {footerLinks.policies.map((link, i) => (
                   <li key={i} className="footer-link-item">
@@ -290,6 +361,34 @@ export default function Footer() {
               </div>
             </div>
 
+          </div>
+
+          {/* ── Footer Bottom Copyright Strip ── */}
+          <div
+            style={{
+              marginTop: "40px",
+              paddingTop: "24px",
+              borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "16px",
+            }}
+          >
+            <div style={{ fontFamily: "'Poppins', sans-serif", fontSize: "11.5px", color: "#777777" }}>
+              © {new Date().getFullYear()} <strong style={{ color: "#c6a45f" }}>Gama Jewels</strong>. All rights reserved. Handcrafted in Mumbai • 100% Conflict-Free Certified Diamonds.
+            </div>
+
+            <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+              <RazorpayBadge />
+              <VisaBadge />
+              <MastercardBadge />
+              <UpiBadge />
+              <AmexBadge />
+              <RuPayBadge />
+              <GiaBadge />
+            </div>
           </div>
 
         </div>

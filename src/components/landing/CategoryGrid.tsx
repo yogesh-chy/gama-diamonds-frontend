@@ -50,13 +50,14 @@ export default function CategoryGrid() {
                 href={cat.href}
                 style={{ display: "block", textDecoration: "none" }}
               >
-                <div
+                <motion.div
+                  whileHover={{ y: -6 }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
                   style={{
                     position: "relative",
                     borderRadius: "0px",
                     overflow: "hidden",
                     border: "1px solid rgba(255,255,255,0.08)",
-                    transition: "all 0.3s ease",
                     background: "#0c0c0c",
                   }}
                   className="cat-card-hover-box"
@@ -102,7 +103,7 @@ export default function CategoryGrid() {
                       {cat.name}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               </Link>
             </motion.div>
           ))}
