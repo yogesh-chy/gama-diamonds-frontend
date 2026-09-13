@@ -78,8 +78,8 @@ export default function JewelleryBespokeSketchBanner() {
               }}
             >
               As custom jewellery specialists, we handcraft bespoke pieces to celebrate
-              life&apos;s most precious milestones. Collaborate directly with our Hatton
-              Garden craftsmen to design your dream piece.
+              life&apos;s most precious milestones. Collaborate directly with our Mumbai
+              atelier craftsmen to design your dream piece.
             </p>
 
             <Link

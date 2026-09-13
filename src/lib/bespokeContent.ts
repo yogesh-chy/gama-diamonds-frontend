@@ -118,7 +118,7 @@ export const bespokeReviews: BespokeReview[] = [
   },
   {
     author: "Sophie L.",
-    text: "They brought my sketch to life with incredible precision. The craftsmanship in Hatton Garden is unmatched.",
+    text: "They brought my sketch to life with incredible precision. The craftsmanship in Mumbai is unmatched.",
     rating: 5,
   },
   {

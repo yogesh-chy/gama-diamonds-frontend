@@ -70,7 +70,7 @@ export default function JewelleryShowroomSection() {
                 marginBottom: "12px",
               }}
             >
-              HATTON GARDEN SHOWROOM
+              MUMBAI SHOWROOM
             </span>
 
             <h3

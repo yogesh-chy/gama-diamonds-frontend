@@ -31,7 +31,7 @@ export default function EngagementRingsPage() {
       {/* Header */}
       <Header />
 
-      {/* Section 1: 2-Column Split Hero (Hatton Garden London / A Promise of Forever) */}
+      {/* Section 1: 2-Column Split Hero (Mumbai Atelier / A Promise of Forever) */}
       <RingsHero />
 
       {/* Section 2: 3x2 Category Grid (Solitaire, Trilogy, Under Halo, Halo, Diamond Shoulder, Eternity) */}

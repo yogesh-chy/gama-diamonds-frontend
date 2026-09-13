@@ -186,7 +186,7 @@ export async function generateMetadata({ params }: PageProps) {
   };
   return {
     title: `${config.title} | Gama Jewels – Fine Jewellery`,
-    description: `Explore our collection of handcrafted ${config.title.toLowerCase()} made by master goldsmiths in Hatton Garden, London.`,
+    description: `Explore our collection of handcrafted ${config.title.toLowerCase()} made by master goldsmiths in our Mumbai atelier.`,
   };
 }
 

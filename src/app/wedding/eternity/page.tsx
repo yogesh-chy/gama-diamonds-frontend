@@ -7,7 +7,7 @@ import CertificationBar from "@/components/landing/CertificationBar";
 export const metadata = {
   title: "Eternity Rings | Gama Jewels – Fine Jewellery",
   description:
-    "Explore our handcrafted diamond & gemstone eternity rings. Crafted by master goldsmiths in Hatton Garden, London.",
+    "Explore our handcrafted diamond & gemstone eternity rings. Crafted by master goldsmiths in our Mumbai atelier.",
 };
 
 const WEDDING_ETERNITY_METALS = [

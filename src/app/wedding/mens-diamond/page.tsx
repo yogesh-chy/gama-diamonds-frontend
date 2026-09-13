@@ -7,7 +7,7 @@ import CertificationBar from "@/components/landing/CertificationBar";
 export const metadata = {
   title: "Men's Diamond Wedding Rings | Gama Jewels – Fine Jewellery",
   description:
-    "Explore our collection of men's diamond wedding rings handcrafted by master goldsmiths in Hatton Garden, London.",
+    "Explore our collection of men's diamond wedding rings handcrafted by master goldsmiths in our Mumbai atelier.",
 };
 
 const MENS_DIAMOND_PRODUCTS: ProductItem[] = [

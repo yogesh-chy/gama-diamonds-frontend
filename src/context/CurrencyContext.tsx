@@ -45,6 +45,17 @@ const DEFAULT_RATES: Record<string, number> = {
   CAD: 1.73,
   SGD: 1.71,
   JPY: 191.0,
+  RUB: 112.0,
+  BHD: 0.48,
+  KES: 165.0,
+  KWD: 0.39,
+  MYR: 5.95,
+  NZD: 2.10,
+  OMR: 0.49,
+  QAR: 4.62,
+  RON: 5.82,
+  SAR: 4.76,
+  ZAR: 23.0,
   PKR: 350.0,
   BDT: 150.0,
   NPR: 170.0,
@@ -225,6 +236,7 @@ async function detectCountryByIP(): Promise<string | null> {
     if (tz.includes("Colombo")) return "LK";
     // Europe
     if (tz.includes("London") || tz.includes("Belfast")) return "GB";
+    if (tz.includes("Moscow") || tz.includes("Kaliningrad") || tz.includes("Yekaterinburg") || tz.includes("Novosibirsk")) return "RU";
     if (tz.includes("Paris") || tz.includes("Berlin") || tz.includes("Rome") || tz.includes("Madrid") || tz.includes("Amsterdam") || tz.includes("Brussels") || tz.includes("Vienna") || tz.includes("Dublin")) return "DE";
     if (tz.includes("Zurich")) return "CH";
     if (tz.includes("Stockholm")) return "SE";
@@ -257,12 +269,14 @@ async function detectCountryByIP(): Promise<string | null> {
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
   const ratesRef = useRef<Record<string, number>>(DEFAULT_RATES);
+  const [rates, setRates] = useState<Record<string, number>>(DEFAULT_RATES);
   const [state, setState] = useState(() => buildCurrencyState("GBP", DEFAULT_RATES));
 
   const fetchRates = useCallback(async () => {
     const cached = getCachedRates();
     if (cached) {
       ratesRef.current = { ...DEFAULT_RATES, ...cached };
+      setRates(ratesRef.current);
       const savedCurrency = getSavedCurrency() || "GBP";
       setState(buildCurrencyState(savedCurrency, ratesRef.current));
       return;
@@ -274,6 +288,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       if (data?.result === "success" && data?.rates) {
         const rates: Record<string, number> = { ...DEFAULT_RATES, ...data.rates };
         ratesRef.current = rates;
+        setRates(rates);
         setCachedRates(rates);
         
         // Update state with newly fetched live rates
@@ -291,12 +306,18 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
 
     if (savedCurrency) {
       // User has a saved preference — use it directly
-      if (cached) ratesRef.current = { ...DEFAULT_RATES, ...cached };
+      if (cached) {
+        ratesRef.current = { ...DEFAULT_RATES, ...cached };
+        setRates(ratesRef.current);
+      }
       setState(buildCurrencyState(savedCurrency, ratesRef.current));
       fetchRates();
     } else {
       // No saved preference — auto-detect country and set currency
-      if (cached) ratesRef.current = { ...DEFAULT_RATES, ...cached };
+      if (cached) {
+        ratesRef.current = { ...DEFAULT_RATES, ...cached };
+        setRates(ratesRef.current);
+      }
       fetchRates();
 
       detectCountryByIP().then((countryCode) => {
@@ -322,7 +343,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   );
 
   const formatPrice = computeFormatPrice(state);
-  const freeDeliveryThreshold = formatPrice(40000 / (ratesRef.current["INR"] || 106.5));
+  const freeDeliveryThreshold = formatPrice(40000 / (rates["INR"] || 106.5));
 
   return (
     <CurrencyContext.Provider

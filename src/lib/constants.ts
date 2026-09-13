@@ -146,7 +146,7 @@ export const featureCards: FeatureCard[] = [
   },
   {
     title: "Oval Cut Solitaire",
-    subtitle: "Handcrafted in Hatton Garden",
+    subtitle: "Handcrafted in our Mumbai atelier",
     href: "/rings?shape=oval",
     image: "/oval_cut_solitier.png",
   },
@@ -187,7 +187,7 @@ export const googleReviews: Review[] = [
   {
     author: "Sophie L.",
     date: "1 week ago",
-    text: "From consultation in Hatton Garden to delivery, the experience was first-class. The diamond's clarity is unmatched.",
+    text: "From our Mumbai consultation to delivery, the experience was first-class. The diamond's clarity is unmatched.",
     rating: 5,
   },
   {

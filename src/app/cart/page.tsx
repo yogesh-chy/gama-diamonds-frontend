@@ -227,12 +227,12 @@ export default function CartPage() {
       if (addrList.length === 0) {
         const newAddrRes = await authApi.createAddress({
           full_name: user?.email ? user.email.split("@")[0] : "Valued Customer",
-          phone_number: user?.phone_number || "+44 20 7946 0912",
-          street_address: "12 Hatton Garden",
-          city: "London",
-          state: "Greater London",
-          postal_code: "EC1N 8NX",
-          country: "United Kingdom",
+          phone_number: user?.phone_number || "+91 9869800084",
+          street_address: "SHOP NO.08, TOP COOL SERVICES, MAROL, ANDHERI(E.)",
+          city: "Mumbai",
+          state: "Maharashtra",
+          postal_code: "400059",
+          country: "India",
           is_default: true,
         });
         addressId = newAddrRes.data.id;
@@ -391,7 +391,7 @@ export default function CartPage() {
                   marginBottom: "32px",
                 }}
               >
-                Explore our master-crafted Hatton Garden collections of bespoke
+                Explore our master-crafted Mumbai collections of bespoke
                 engagement rings, wedding bands, and fine solitaire diamond jewellery.
               </p>
               <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
@@ -754,7 +754,7 @@ export default function CartPage() {
                               color: "#ffffff",
                             }}
                           >
-                            Include Complimentary Hatton Garden Ring Gauge Sizer
+                            Include Complimentary Ring Gauge Sizer
                           </div>
                           <div
                             style={{

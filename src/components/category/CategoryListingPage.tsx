@@ -825,7 +825,7 @@ export default function CategoryListingPage({
         </div>
       </section>
 
-      {/* Hatton Garden Craftsmanship Callout */}
+      {/* Mumbai Craftsmanship Callout */}
       <section
         style={{
           background: "linear-gradient(180deg, #050505 0%, #0c0b08 100%)",

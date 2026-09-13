@@ -33,7 +33,7 @@ export default function JewelleryPage() {
         {/* Section 5: Brand Brilliance Text Banner */}
         <JewelleryBrillianceSection />
 
-        {/* Section 6: Hatton Garden Showroom Store Banner */}
+        {/* Section 6: Mumbai Showroom Store Banner */}
         <JewelleryShowroomSection />
 
         {/* Section 7: Trust Badges & Certification Bar */}

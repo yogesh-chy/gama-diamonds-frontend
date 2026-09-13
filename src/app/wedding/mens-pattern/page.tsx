@@ -7,7 +7,7 @@ import CertificationBar from "@/components/landing/CertificationBar";
 export const metadata = {
   title: "Men's Patterned Wedding Rings | Gama Jewels – Fine Jewellery",
   description:
-    "Explore our collection of men's patterned & textured wedding rings handcrafted by master goldsmiths in Hatton Garden, London.",
+    "Explore our collection of men's patterned & textured wedding rings handcrafted by master goldsmiths in our Mumbai atelier.",
 };
 
 const MENS_PATTERN_PRODUCTS: ProductItem[] = [

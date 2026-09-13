@@ -41,6 +41,7 @@ const CURRENCY_MAP: Record<string, CurrencyInfo> = {
 
   // Non-euro Europe
   CH: { currency: 'CHF', symbol: 'Fr', locale: 'de-CH', flag: '🇨🇭', name: 'Switzerland' },
+  RU: { currency: 'RUB', symbol: '₽', locale: 'ru-RU', flag: '🇷🇺', name: 'Russia' },
   SE: { currency: 'SEK', symbol: 'kr', locale: 'sv-SE', flag: '🇸🇪', name: 'Sweden' },
   NO: { currency: 'NOK', symbol: 'kr', locale: 'nb-NO', flag: '🇳🇴', name: 'Norway' },
   DK: { currency: 'DKK', symbol: 'kr', locale: 'da-DK', flag: '🇩🇰', name: 'Denmark' },
@@ -124,18 +125,25 @@ export const POPULAR_CURRENCIES: PopularCurrency[] = [
   { code: 'GBP', symbol: '£', flag: '🇬🇧', name: 'GBP – British Pound' },
   { code: 'EUR', symbol: '€', flag: '🇪🇺', name: 'EUR – Euro' },
   { code: 'INR', symbol: '₹', flag: '🇮🇳', name: 'INR – Indian Rupee' },
-  { code: 'NPR', symbol: 'रू', flag: '🇳🇵', name: 'NPR – Nepalese Rupee' },
   { code: 'USD', symbol: '$', flag: '🇺🇸', name: 'USD – US Dollar' },
-  { code: 'CHF', symbol: 'Fr', flag: '🇨🇭', name: 'CHF – Swiss Franc' },
-  { code: 'SEK', symbol: 'kr', flag: '🇸🇪', name: 'SEK – Swedish Krona' },
-  { code: 'NOK', symbol: 'kr', flag: '🇳🇴', name: 'NOK – Norwegian Krone' },
-  { code: 'DKK', symbol: 'kr', flag: '🇩🇰', name: 'DKK – Danish Krone' },
-  { code: 'PLN', symbol: 'zł', flag: '🇵🇱', name: 'PLN – Polish Zloty' },
-  { code: 'AED', symbol: 'AED', flag: '🇦🇪', name: 'AED – UAE Dirham' },
+  { code: 'RUB', symbol: '₽', flag: '🇷🇺', name: 'RUB – Russian Ruble' },
   { code: 'AUD', symbol: 'A$', flag: '🇦🇺', name: 'AUD – Australian Dollar' },
+  { code: 'BHD', symbol: 'BD', flag: '🇧🇭', name: 'BHD – Bahraini Dinar' },
   { code: 'CAD', symbol: 'CA$', flag: '🇨🇦', name: 'CAD – Canadian Dollar' },
+  { code: 'KES', symbol: 'KSh', flag: '🇰🇪', name: 'KES – Kenyan Shilling' },
+  { code: 'KWD', symbol: 'KD', flag: '🇰🇼', name: 'KWD – Kuwaiti Dinar' },
+  { code: 'MYR', symbol: 'RM', flag: '🇲🇾', name: 'MYR – Malaysian Ringgit' },
+  { code: 'NZD', symbol: 'NZ$', flag: '🇳🇿', name: 'NZD – New Zealand Dollar' },
+  { code: 'OMR', symbol: 'OMR', flag: '🇴🇲', name: 'OMR – Omani Rial' },
+  { code: 'QAR', symbol: 'QR', flag: '🇶🇦', name: 'QAR – Qatari Riyal' },
+  { code: 'RON', symbol: 'lei', flag: '🇷🇴', name: 'RON – Romanian Leu' },
+  { code: 'SAR', symbol: 'SR', flag: '🇸🇦', name: 'SAR – Saudi Riyal' },
   { code: 'SGD', symbol: 'S$', flag: '🇸🇬', name: 'SGD – Singapore Dollar' },
+  { code: 'ZAR', symbol: 'R', flag: '🇿🇦', name: 'ZAR – South African Rand' },
+  { code: 'AED', symbol: 'AED', flag: '🇦🇪', name: 'AED – Dirham' },
+  { code: 'CHF', symbol: 'Fr', flag: '🇨🇭', name: 'CHF – Swiss Franc' },
   { code: 'JPY', symbol: '¥', flag: '🇯🇵', name: 'JPY – Japanese Yen' },
+  { code: 'NPR', symbol: 'रू', flag: '🇳🇵', name: 'NPR – Nepalese Rupee' },
 ];
 
 export const CURRENCY_LOCALE_MAP: Record<string, string> = {
@@ -148,7 +156,8 @@ export const CURRENCY_LOCALE_MAP: Record<string, string> = {
   PKR: 'en-PK', BDT: 'bn-BD', NPR: 'ne-NP',
   TWD: 'zh-TW', PHP: 'fil-PH', VND: 'vi-VN', IDR: 'id-ID',
   TRY: 'tr-TR', ILS: 'he-IL', MXN: 'es-MX', CZK: 'cs-CZ',
-  HUF: 'hu-HU', RON: 'ro-RO',
+  HUF: 'hu-HU', RON: 'ro-RO', RUB: 'ru-RU', BHD: 'ar-BH',
+  KES: 'en-KE', KWD: 'ar-KW', OMR: 'ar-OM',
 };
 
 export default CURRENCY_MAP;
