@@ -31,105 +31,59 @@ import { adminApi, AdminProduct, AdminCategory, AdminSubcategory, AdminTaxonomyI
 
 const CATEGORY_OPTIONS = [
   { value: "engagement-rings", label: "Engagement Rings" },
-  { value: "wedding-bands", label: "Wedding Bands" },
-  { value: "eternity-bands", label: "Eternity Bands" },
-  { value: "rings", label: "Rings & Fashion Rings" },
+  { value: "wedding-bands", label: "Wedding Rings" },
+  { value: "eternity-bands", label: "Eternity Rings" },
   { value: "earrings", label: "Earrings" },
-  { value: "necklaces", label: "Necklaces" },
-  { value: "pendants", label: "Pendants" },
+  { value: "necklaces", label: "Necklace" },
   { value: "bracelets", label: "Bracelets" },
-  { value: "bangles", label: "Bangles" },
-  { value: "other", label: "Other Jewellery" },
+  { value: "jewellery", label: "Jewellery" },
 ];
 
 const SUBCATEGORIES_BY_CATEGORY: Record<string, { value: string; label: string }[]> = {
   "engagement-rings": [
+    // Shapes
+    { value: "Round Brilliant", label: "Round Brilliant" },
+    { value: "Princess", label: "Princess" },
+    { value: "Cushion", label: "Cushion" },
+    { value: "Oval", label: "Oval" },
+    { value: "Pear", label: "Pear" },
+    { value: "Emerald", label: "Emerald Cut" },
+    { value: "Marquise", label: "Marquise" },
+    { value: "Radiant", label: "Radiant" },
+    { value: "Asscher", label: "Asscher" },
+    // Styles
     { value: "Solitaire", label: "Solitaire" },
     { value: "Halo", label: "Halo" },
-    { value: "Hidden Halo", label: "Hidden Halo" },
-    { value: "Trilogy", label: "Trilogy / Three Stone" },
-    { value: "Diamond Shoulder", label: "Diamond Shoulder / Side Stones" },
-    { value: "Vintage", label: "Vintage / Art Deco" },
-    { value: "Bezel", label: "Bezel Set" },
-    { value: "Tension", label: "Tension Set" },
-    { value: "Cluster", label: "Cluster" },
-    { value: "Toi et Moi", label: "Toi et Moi" },
+    { value: "Under Halo", label: "Under Halo" },
+    { value: "Diamond Shoulder", label: "Diamond Shoulder" },
+    { value: "Trilogy Three Stone", label: "Trilogy Three Stone" },
+    { value: "Matching Set", label: "Matching Set" },
   ],
   "wedding-bands": [
-    { value: "Men's Plain Bands", label: "Men's Plain Bands" },
-    { value: "Women's Plain Bands", label: "Women's Plain Bands" },
-    { value: "Men's Diamond Bands", label: "Men's Diamond Bands" },
-    { value: "Women's Diamond Bands", label: "Women's Diamond Bands" },
-    { value: "Men's Patterned Bands", label: "Men's Patterned Bands" },
-    { value: "Eternity Bands", label: "Eternity Bands" },
-    { value: "Shaped & Curved Bands", label: "Shaped & Curved Bands" },
+    { value: "Women's Plain", label: "Women's Plain" },
+    { value: "Eternity Rings", label: "Eternity Rings" },
+    { value: "Men's Plain", label: "Men's Plain" },
+    { value: "Men's Diamond", label: "Men's Diamond" },
+    { value: "Men's Pattern", label: "Men's Pattern" },
     { value: "Traditional Court", label: "Traditional Court" },
     { value: "Flat Court", label: "Flat Court" },
-    { value: "D-Shape", label: "D-Shape" },
+    { value: "Soft Court", label: "Soft Court" },
   ],
-  "eternity-bands": [
-    { value: "Full Eternity", label: "Full Eternity" },
-    { value: "Half Eternity", label: "Half Eternity" },
-    { value: "Prong Set", label: "Claw / Prong Set" },
-    { value: "Channel Set", label: "Channel Set" },
-    { value: "Bezel Set", label: "Bezel Set" },
-    { value: "Micro-Pavé", label: "Micro-Pavé" },
-    { value: "Baguette Eternity", label: "Baguette Eternity" },
-  ],
-  "rings": [
-    { value: "Solitaire Ring", label: "Solitaire Ring" },
-    { value: "Cocktail & Statement", label: "Cocktail & Statement" },
-    { value: "Stacking Rings", label: "Stacking Rings" },
-    { value: "Signet Ring", label: "Signet Ring" },
-    { value: "Band Ring", label: "Band Ring" },
-    { value: "Cluster Ring", label: "Cluster Ring" },
-  ],
-  "earrings": [
-    { value: "Solitaire Studs", label: "Solitaire Studs" },
-    { value: "Diamond Studs", label: "Diamond Studs" },
-    { value: "Hoop Earrings", label: "Hoop Earrings" },
-    { value: "Huggies", label: "Huggies" },
-    { value: "Drop Earrings", label: "Drop & Dangle Earrings" },
-    { value: "Climbers", label: "Climbers & Crawlers" },
-    { value: "Chandelier", label: "Chandelier Earrings" },
-  ],
-  "necklaces": [
-    { value: "Solitaire Pendants", label: "Solitaire Pendants" },
-    { value: "Heart Pendants", label: "Heart Pendants" },
-    { value: "Cross Pendants", label: "Cross Pendants" },
-    { value: "Halo Pendants", label: "Halo Pendants" },
-    { value: "Tennis Necklaces", label: "Tennis Necklaces" },
-    { value: "Diamond Necklaces", label: "Diamond Necklaces" },
-    { value: "Chains", label: "Chains" },
-    { value: "Chokers", label: "Chokers" },
-  ],
-  "pendants": [
-    { value: "Solitaire Pendants", label: "Solitaire Pendants" },
-    { value: "Heart Pendants", label: "Heart Pendants" },
-    { value: "Cross Pendants", label: "Cross Pendants" },
-    { value: "Halo Pendants", label: "Halo Pendants" },
-    { value: "Diamond Pendants", label: "Diamond Pendants" },
-    { value: "Locket Pendants", label: "Locket Pendants" },
-  ],
-  "bracelets": [
+  "jewellery": [
+    { value: "Earrings", label: "Earrings" },
+    { value: "Necklace", label: "Necklace" },
+    { value: "Statement Rings", label: "Statement Rings" },
+    { value: "Pendants", label: "Pendants" },
+    { value: "Bracelets & Bangles", label: "Bracelets & Bangles" },
+    { value: "Gold Colour", label: "Gold Colour" },
+    { value: "Silver Colour", label: "Silver Colour" },
+    { value: "Rose Gold", label: "Rose Gold" },
     { value: "Tennis Bracelets", label: "Tennis Bracelets" },
-    { value: "Diamond Bangles", label: "Diamond Bangles" },
-    { value: "Chain Bracelets", label: "Chain Bracelets" },
-    { value: "Cuffs", label: "Cuffs" },
-    { value: "Charm Bracelets", label: "Charm Bracelets" },
-  ],
-  "bangles": [
-    { value: "Diamond Bangles", label: "Diamond Bangles" },
-    { value: "Solid Plain Bangles", label: "Solid Plain Bangles" },
-    { value: "Hinged Bangles", label: "Hinged Bangles" },
-    { value: "Stackable Bangles", label: "Stackable Bangles" },
-  ],
-  "other": [
-    { value: "Gold Colour", label: "Gold Colour Jewellery" },
-    { value: "Rose Gold", label: "Rose Gold Jewellery" },
-    { value: "Silver Colour", label: "Silver Colour Jewellery" },
+    { value: "Solitaire Studs", label: "Solitaire Studs" },
+    { value: "Heart Pendants", label: "Heart Pendants" },
+    { value: "Cross Pendants", label: "Cross Pendants" },
+    { value: "Hoop Earrings", label: "Hoop Earrings" },
     { value: "Hot Diamonds", label: "Hot Diamonds" },
-    { value: "Bespoke", label: "Bespoke Creations" },
   ],
 };
 
@@ -1354,8 +1308,12 @@ export default function AdminProductsPage() {
                           setFormData({
                             ...formData,
                             category: val,
-                            ring_type: ["engagement-rings", "wedding-bands", "eternity-bands", "rings"].includes(val) ? firstSub : formData.ring_type,
-                            subcategory: firstSub || formData.subcategory,
+                            ring_type: firstSub,
+                            ring_style: firstSub,
+                            earring_type: firstSub,
+                            necklace_style: firstSub,
+                            bracelet_type: firstSub,
+                            subcategory: firstSub,
                           });
                         }}
                         size="sm"
@@ -1548,39 +1506,52 @@ export default function AdminProductsPage() {
               {/* TAB 2: CATEGORY SPECIFICATIONS */}
               {activeTab === "specs" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                  {/* Category-Driven Dynamic Subcategory / Ring Type Dropdown */}
+                  {/* Category-Driven Dynamic Subcategory Dropdown (Only for Engagement Rings, Wedding Rings, and Jewellery) */}
                   {(() => {
-                    const activeCategoryKey = formData.category || "engagement-rings";
-                    const defaultSubcategoryOptions = SUBCATEGORIES_BY_CATEGORY[activeCategoryKey] || [];
-                    const matchedDbSubs = subcategories
-                      .filter((sub) => {
-                        const parentCat = categories.find((c) => c.id === (typeof sub.category === "object" ? (sub.category as any).id : sub.category));
-                        return parentCat?.slug === activeCategoryKey || parentCat?.name?.toLowerCase().includes(activeCategoryKey.replace("-", " "));
-                      })
-                      .map((sub) => ({ value: sub.name, label: sub.name }));
+                    const activeCat = formData.category || "engagement-rings";
+                    const normalizedCatKey =
+                      activeCat === "rings"
+                        ? "engagement-rings"
+                        : activeCat === "wedding"
+                        ? "wedding-bands"
+                        : activeCat === "eternity"
+                        ? "eternity-bands"
+                        : activeCat === "necklace" || activeCat === "pendants"
+                        ? "necklaces"
+                        : activeCat;
 
-                    const combinedSubcategories = [
-                      ...defaultSubcategoryOptions,
-                      ...matchedDbSubs.filter((ms) => !defaultSubcategoryOptions.some((ds) => ds.value.toLowerCase() === ms.value.toLowerCase())),
-                    ];
+                    const hasSubcategories = ["engagement-rings", "wedding-bands", "jewellery"].includes(normalizedCatKey);
+                    const subcategoryOptions = SUBCATEGORIES_BY_CATEGORY[normalizedCatKey] || [];
 
-                    const fieldTitle = activeCategoryKey === "engagement-rings"
-                      ? "Engagement Ring Type / Subcategory"
-                      : activeCategoryKey === "wedding-bands"
-                      ? "Wedding Band Type / Subcategory"
-                      : activeCategoryKey === "eternity-bands"
-                      ? "Eternity Band Type / Subcategory"
-                      : activeCategoryKey === "rings"
-                      ? "Ring Type / Subcategory"
-                      : activeCategoryKey === "earrings"
-                      ? "Earring Type / Subcategory"
-                      : activeCategoryKey === "necklaces" || activeCategoryKey === "pendants"
-                      ? "Necklace & Pendant Subcategory"
-                      : activeCategoryKey === "bracelets" || activeCategoryKey === "bangles"
-                      ? "Bracelet & Bangle Subcategory"
-                      : "Jewellery Subcategory";
+                    if (!hasSubcategories) {
+                      return (
+                        <div style={{ padding: "14px 16px", backgroundColor: "rgba(255, 255, 255, 0.02)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "4px" }}>
+                          <p style={{ margin: 0, fontSize: "11px", color: "#c6a45f", fontWeight: 600 }}>
+                            Direct Category Listing
+                          </p>
+                          <p style={{ margin: "4px 0 0", fontSize: "10.5px", color: "#888888" }}>
+                            <strong style={{ color: "#ffffff", textTransform: "capitalize" }}>{activeCat.replace("-", " ")}</strong> does not have subcategory dropdowns. Products in this category are published directly to their dedicated collection page.
+                          </p>
+                        </div>
+                      );
+                    }
 
-                    const currentSubValue = formData.ring_type || formData.subcategory || combinedSubcategories[0]?.value || "";
+                    const fieldTitle =
+                      normalizedCatKey === "engagement-rings"
+                        ? "Engagement Ring Subcategory (Shape / Style)"
+                        : normalizedCatKey === "wedding-bands"
+                        ? "Wedding Ring Subcategory (Collection / Style)"
+                        : "Jewellery Subcategory";
+
+                    const currentSubValue =
+                      formData.subcategory ||
+                      formData.ring_type ||
+                      formData.ring_style ||
+                      formData.earring_type ||
+                      formData.necklace_style ||
+                      formData.bracelet_type ||
+                      subcategoryOptions[0]?.value ||
+                      "";
 
                     return (
                       <div style={{ padding: "12px 14px", backgroundColor: "#000000", border: "1px solid rgba(198, 164, 95, 0.35)", borderRadius: "4px", display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -1589,7 +1560,7 @@ export default function AdminProductsPage() {
                             {fieldTitle} *
                           </label>
                           <span style={{ fontSize: "9.5px", color: "#888888" }}>
-                            Subcategory for <strong style={{ color: "#ffffff", textTransform: "capitalize" }}>{activeCategoryKey.replace("-", " ")}</strong>
+                            Navbar dropdown items for <strong style={{ color: "#ffffff", textTransform: "capitalize" }}>{activeCat.replace("-", " ")}</strong>
                           </span>
                         </div>
                         <LuxurySelect
@@ -1597,13 +1568,16 @@ export default function AdminProductsPage() {
                           onChange={(val) => {
                             setFormData({
                               ...formData,
+                              subcategory: val,
                               ring_type: val,
                               ring_style: val,
-                              subcategory: val,
+                              earring_type: val,
+                              necklace_style: val,
+                              bracelet_type: val,
                             });
                           }}
                           size="sm"
-                          options={combinedSubcategories.map((opt) => ({ value: opt.value, label: opt.label }))}
+                          options={subcategoryOptions.map((opt) => ({ value: opt.value, label: opt.label }))}
                         />
                       </div>
                     );
