@@ -275,13 +275,20 @@ function SearchContent() {
             className="search-input-field"
             style={{
               flex: 1,
+              background: "transparent",
               backgroundColor: "transparent",
               border: "none",
+              borderWidth: 0,
               outline: "none",
               boxShadow: "none",
+              borderRadius: "0px",
+              appearance: "none",
+              WebkitAppearance: "none",
               color: "#ffffff",
               fontFamily: "'Poppins', sans-serif",
               fontSize: "13px",
+              padding: 0,
+              margin: 0,
             }}
           />
           <button

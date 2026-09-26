@@ -392,12 +392,19 @@ export default function Header() {
                           style={{
                             width: "100%",
                             background: "transparent",
+                            backgroundColor: "transparent",
                             border: "none",
+                            borderWidth: 0,
                             outline: "none",
                             boxShadow: "none",
+                            borderRadius: "0px",
+                            appearance: "none",
+                            WebkitAppearance: "none",
                             color: "#ffffff",
                             fontFamily: "'Poppins', sans-serif",
                             fontSize: "12px",
+                            padding: 0,
+                            margin: 0,
                           }}
                         />
                         {isSearchingBackend && (

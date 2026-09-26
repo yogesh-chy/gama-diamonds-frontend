@@ -5150,15 +5150,31 @@ select option:checked {
 ═══════════════════════════════════════════════════════════════ */
 .search-input-field,
 .search-input-field:focus,
+.search-input-field:hover,
 .search-input-field:active,
-.search-input-field:focus-visible {
-  border: none !important;
-  outline: none !important;
+.search-input-field:focus-visible,
+.search-input-field:focus-within {
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  outline: 0 !important;
+  outline-style: none !important;
+  outline-color: transparent !important;
+  outline-width: 0 !important;
   box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
   --tw-ring-shadow: 0 0 #0000 !important;
   --tw-ring-offset-shadow: 0 0 #0000 !important;
   ring: none !important;
 }
+
 
 
 
