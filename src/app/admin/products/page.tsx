@@ -42,6 +42,97 @@ const CATEGORY_OPTIONS = [
   { value: "other", label: "Other Jewellery" },
 ];
 
+const SUBCATEGORIES_BY_CATEGORY: Record<string, { value: string; label: string }[]> = {
+  "engagement-rings": [
+    { value: "Solitaire", label: "Solitaire" },
+    { value: "Halo", label: "Halo" },
+    { value: "Hidden Halo", label: "Hidden Halo" },
+    { value: "Trilogy", label: "Trilogy / Three Stone" },
+    { value: "Diamond Shoulder", label: "Diamond Shoulder / Side Stones" },
+    { value: "Vintage", label: "Vintage / Art Deco" },
+    { value: "Bezel", label: "Bezel Set" },
+    { value: "Tension", label: "Tension Set" },
+    { value: "Cluster", label: "Cluster" },
+    { value: "Toi et Moi", label: "Toi et Moi" },
+  ],
+  "wedding-bands": [
+    { value: "Men's Plain Bands", label: "Men's Plain Bands" },
+    { value: "Women's Plain Bands", label: "Women's Plain Bands" },
+    { value: "Men's Diamond Bands", label: "Men's Diamond Bands" },
+    { value: "Women's Diamond Bands", label: "Women's Diamond Bands" },
+    { value: "Men's Patterned Bands", label: "Men's Patterned Bands" },
+    { value: "Eternity Bands", label: "Eternity Bands" },
+    { value: "Shaped & Curved Bands", label: "Shaped & Curved Bands" },
+    { value: "Traditional Court", label: "Traditional Court" },
+    { value: "Flat Court", label: "Flat Court" },
+    { value: "D-Shape", label: "D-Shape" },
+  ],
+  "eternity-bands": [
+    { value: "Full Eternity", label: "Full Eternity" },
+    { value: "Half Eternity", label: "Half Eternity" },
+    { value: "Prong Set", label: "Claw / Prong Set" },
+    { value: "Channel Set", label: "Channel Set" },
+    { value: "Bezel Set", label: "Bezel Set" },
+    { value: "Micro-Pavé", label: "Micro-Pavé" },
+    { value: "Baguette Eternity", label: "Baguette Eternity" },
+  ],
+  "rings": [
+    { value: "Solitaire Ring", label: "Solitaire Ring" },
+    { value: "Cocktail & Statement", label: "Cocktail & Statement" },
+    { value: "Stacking Rings", label: "Stacking Rings" },
+    { value: "Signet Ring", label: "Signet Ring" },
+    { value: "Band Ring", label: "Band Ring" },
+    { value: "Cluster Ring", label: "Cluster Ring" },
+  ],
+  "earrings": [
+    { value: "Solitaire Studs", label: "Solitaire Studs" },
+    { value: "Diamond Studs", label: "Diamond Studs" },
+    { value: "Hoop Earrings", label: "Hoop Earrings" },
+    { value: "Huggies", label: "Huggies" },
+    { value: "Drop Earrings", label: "Drop & Dangle Earrings" },
+    { value: "Climbers", label: "Climbers & Crawlers" },
+    { value: "Chandelier", label: "Chandelier Earrings" },
+  ],
+  "necklaces": [
+    { value: "Solitaire Pendants", label: "Solitaire Pendants" },
+    { value: "Heart Pendants", label: "Heart Pendants" },
+    { value: "Cross Pendants", label: "Cross Pendants" },
+    { value: "Halo Pendants", label: "Halo Pendants" },
+    { value: "Tennis Necklaces", label: "Tennis Necklaces" },
+    { value: "Diamond Necklaces", label: "Diamond Necklaces" },
+    { value: "Chains", label: "Chains" },
+    { value: "Chokers", label: "Chokers" },
+  ],
+  "pendants": [
+    { value: "Solitaire Pendants", label: "Solitaire Pendants" },
+    { value: "Heart Pendants", label: "Heart Pendants" },
+    { value: "Cross Pendants", label: "Cross Pendants" },
+    { value: "Halo Pendants", label: "Halo Pendants" },
+    { value: "Diamond Pendants", label: "Diamond Pendants" },
+    { value: "Locket Pendants", label: "Locket Pendants" },
+  ],
+  "bracelets": [
+    { value: "Tennis Bracelets", label: "Tennis Bracelets" },
+    { value: "Diamond Bangles", label: "Diamond Bangles" },
+    { value: "Chain Bracelets", label: "Chain Bracelets" },
+    { value: "Cuffs", label: "Cuffs" },
+    { value: "Charm Bracelets", label: "Charm Bracelets" },
+  ],
+  "bangles": [
+    { value: "Diamond Bangles", label: "Diamond Bangles" },
+    { value: "Solid Plain Bangles", label: "Solid Plain Bangles" },
+    { value: "Hinged Bangles", label: "Hinged Bangles" },
+    { value: "Stackable Bangles", label: "Stackable Bangles" },
+  ],
+  "other": [
+    { value: "Gold Colour", label: "Gold Colour Jewellery" },
+    { value: "Rose Gold", label: "Rose Gold Jewellery" },
+    { value: "Silver Colour", label: "Silver Colour Jewellery" },
+    { value: "Hot Diamonds", label: "Hot Diamonds" },
+    { value: "Bespoke", label: "Bespoke Creations" },
+  ],
+};
+
 const METAL_VARIANT_OPTIONS = [
   { code: "SL925", label: "Silver", metal_type: "silver", metal_karat: "925Ag", defaultWeight: "1.70" },
   { code: "YG9", label: "9K Yellow Gold", metal_type: "yellow-gold", metal_karat: "9K", defaultWeight: "1.90" },
@@ -1214,7 +1305,16 @@ export default function AdminProductsPage() {
                       <label style={labelStyle}>Category *</label>
                       <LuxurySelect
                         value={formData.category || "engagement-rings"}
-                        onChange={(val) => setFormData({ ...formData, category: val })}
+                        onChange={(val) => {
+                          const subOpts = SUBCATEGORIES_BY_CATEGORY[val] || [];
+                          const firstSub = subOpts[0]?.value || "";
+                          setFormData({
+                            ...formData,
+                            category: val,
+                            ring_type: ["engagement-rings", "wedding-bands", "eternity-bands", "rings"].includes(val) ? firstSub : formData.ring_type,
+                            subcategory: firstSub || formData.subcategory,
+                          });
+                        }}
                         size="sm"
                         options={CATEGORY_OPTIONS.map((cat) => ({ value: cat.value, label: cat.label }))}
                       />
@@ -1405,6 +1505,67 @@ export default function AdminProductsPage() {
               {/* TAB 2: CATEGORY SPECIFICATIONS */}
               {activeTab === "specs" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  {/* Category-Driven Dynamic Subcategory / Ring Type Dropdown */}
+                  {(() => {
+                    const activeCategoryKey = formData.category || "engagement-rings";
+                    const defaultSubcategoryOptions = SUBCATEGORIES_BY_CATEGORY[activeCategoryKey] || [];
+                    const matchedDbSubs = subcategories
+                      .filter((sub) => {
+                        const parentCat = categories.find((c) => c.id === (typeof sub.category === "object" ? (sub.category as any).id : sub.category));
+                        return parentCat?.slug === activeCategoryKey || parentCat?.name?.toLowerCase().includes(activeCategoryKey.replace("-", " "));
+                      })
+                      .map((sub) => ({ value: sub.name, label: sub.name }));
+
+                    const combinedSubcategories = [
+                      ...defaultSubcategoryOptions,
+                      ...matchedDbSubs.filter((ms) => !defaultSubcategoryOptions.some((ds) => ds.value.toLowerCase() === ms.value.toLowerCase())),
+                    ];
+
+                    const fieldTitle = activeCategoryKey === "engagement-rings"
+                      ? "Engagement Ring Type / Subcategory"
+                      : activeCategoryKey === "wedding-bands"
+                      ? "Wedding Band Type / Subcategory"
+                      : activeCategoryKey === "eternity-bands"
+                      ? "Eternity Band Type / Subcategory"
+                      : activeCategoryKey === "rings"
+                      ? "Ring Type / Subcategory"
+                      : activeCategoryKey === "earrings"
+                      ? "Earring Type / Subcategory"
+                      : activeCategoryKey === "necklaces" || activeCategoryKey === "pendants"
+                      ? "Necklace & Pendant Subcategory"
+                      : activeCategoryKey === "bracelets" || activeCategoryKey === "bangles"
+                      ? "Bracelet & Bangle Subcategory"
+                      : "Jewellery Subcategory";
+
+                    const currentSubValue = formData.ring_type || formData.subcategory || combinedSubcategories[0]?.value || "";
+
+                    return (
+                      <div style={{ padding: "12px 14px", backgroundColor: "#000000", border: "1px solid rgba(198, 164, 95, 0.35)", borderRadius: "4px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <label style={{ ...labelStyle, color: "#c6a45f", fontSize: "11px", fontWeight: 700, margin: 0 }}>
+                            {fieldTitle} *
+                          </label>
+                          <span style={{ fontSize: "9.5px", color: "#888888" }}>
+                            Subcategory for <strong style={{ color: "#ffffff", textTransform: "capitalize" }}>{activeCategoryKey.replace("-", " ")}</strong>
+                          </span>
+                        </div>
+                        <LuxurySelect
+                          value={currentSubValue}
+                          onChange={(val) => {
+                            setFormData({
+                              ...formData,
+                              ring_type: val,
+                              ring_style: val,
+                              subcategory: val,
+                            });
+                          }}
+                          size="sm"
+                          options={combinedSubcategories.map((opt) => ({ value: opt.value, label: opt.label }))}
+                        />
+                      </div>
+                    );
+                  })()}
+
                   {/* Ring Fields */}
                   {isRingCategory && (
                     <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>

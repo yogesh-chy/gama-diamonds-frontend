@@ -75,12 +75,7 @@ export default function WeddingProductGrid({
         });
 
         const primaryList = primaryRes.data?.data || [];
-        let list = primaryList.filter((item: any) => item?.is_active !== false);
-
-        if (!list.length) {
-          const fallbackRes = await productsApi.getProducts({ status: "active", limit: 200 });
-          list = (fallbackRes.data?.data || []).filter((item: any) => item?.is_active !== false);
-        }
+        const list = primaryList.filter((item: any) => item?.is_active !== false);
 
         const filteredWeddingProducts = list.filter((item: any) => isWeddingProduct(item));
 

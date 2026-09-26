@@ -67,11 +67,14 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
     setLoading(true);
     async function loadStyleData() {
       try {
-        const res = await productsApi.getProducts({ style: styleSlug, status: "active" });
+        const res = await productsApi.getProducts({ category: "engagement-rings", style: styleSlug, status: "active" });
         let apiData = res.data?.data || [];
         if (apiData.length === 0) {
-          const fallback = await productsApi.getProducts({ status: "active", limit: 12 });
-          apiData = fallback.data?.data || [];
+          const retry = await productsApi.getProducts({ style: styleSlug, status: "active" });
+          apiData = (retry.data?.data || []).filter((p: any) => {
+            const cat = String(p.category || "").toLowerCase();
+            return cat === "rings" || cat === "engagement-rings" || cat === "wedding-bands" || cat === "eternity-bands";
+          });
         }
         if (cancelled) return;
         if (Array.isArray(apiData)) {
