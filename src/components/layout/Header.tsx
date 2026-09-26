@@ -13,6 +13,7 @@ import {
 } from "@/lib/constants";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useAuth } from "@/context/AuthContext";
+import { isStaffUser } from "@/lib/api/auth";
 import { POPULAR_CURRENCIES } from "@/lib/currencyConfig";
 import { adminApi, type AdminProduct } from "@/lib/api/admin";
 import type { MegaMenuData, MegaMenuSection, MegaMenuImage, NavItem } from "@/types";
@@ -124,7 +125,8 @@ export default function Header() {
 
   const { freeDeliveryThreshold, isLoaded, formatPrice } = useCurrency();
   const { user, isAuthenticated } = useAuth();
-  const accountHref = isAuthenticated ? (user?.is_staff ? "/admin" : "/account") : "/login";
+  const isAdmin = isAuthenticated && isStaffUser(user);
+  const accountHref = isAuthenticated ? (isAdmin ? "/admin" : "/account") : "/login";
 
   useEffect(() => {
     if (searchOpen) {
@@ -284,10 +286,10 @@ export default function Header() {
   };
 
   const annItems = [
-    `✦  Free Delivery on Orders Over ${freeDeliveryThreshold}`,
-    "✦  1 Year Warranty on All Pieces",
-    "✦  0% APR Finance Available",
-    "✦  30 Day Exchange Policy",
+    `✦  Free Insured Delivery on Orders Over ${freeDeliveryThreshold}`,
+    "✦  Lifetime Warranty on All Pieces",
+    "✦  GIA & IGI Certified Diamonds",
+    "✦  14-Day Exchange Policy",
     "✦  Ethically Sourced Diamonds",
     "✦  Crafted with Precision & Love",
   ];
@@ -608,7 +610,8 @@ export default function Header() {
               <Link
                 href={accountHref}
                 className="header-icon-btn hide-mobile"
-                aria-label={isAuthenticated ? "Account" : "Sign in"}
+                aria-label={isAuthenticated ? (isAdmin ? "Admin Dashboard" : "Account") : "Sign in"}
+                title={isAuthenticated ? (isAdmin ? "Admin Dashboard" : "My Account") : "Sign In"}
               >
                 <User size={18} strokeWidth={1.5} />
               </Link>
@@ -846,7 +849,7 @@ export default function Header() {
                   onClick={() => setMobileOpen(false)}
                   className="mobile-bottom-link"
                 >
-                  <User size={16} /> {isAuthenticated ? "My Account" : "Customer Account"}
+                  <User size={16} /> {isAuthenticated ? (isAdmin ? "Admin Dashboard" : "My Account") : "Customer Account"}
                 </Link>
                 <Link
                   href="/cart"

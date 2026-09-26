@@ -34,7 +34,7 @@ export default function WeddingPage() {
         {/* Section 4: Feature Banner 2 - "WEDDING RING BESPOKE" */}
         <WeddingBespokeBanner />
 
-        {/* Section 5: NAJ, Goldsmiths, GIA Certification Bar */}
+        {/* Section 5: BIS, RJC, GIA Certification Bar */}
         <CertificationBar />
       </main>
 

@@ -234,7 +234,7 @@ export default function BespokePersonalisedDesigns() {
           </div>
 
           <div style={{ minHeight: "340px" }}>
-            <CollagePhoto src="/bespoke/bespoke_step5.png" alt="Hallmarked UK Masterpiece in Presentation Box" minHeight="340px" />
+            <CollagePhoto src="/bespoke/bespoke_step5.png" alt="Certified Diamond Masterpiece in Presentation Box" minHeight="340px" />
           </div>
         </div>
 

@@ -9,6 +9,11 @@ export interface AuthUser {
   created_at: string;
 }
 
+export function isStaffUser(user: AuthUser | null | undefined): boolean {
+  if (!user) return false;
+  return Boolean(user.is_staff);
+}
+
 export interface VerifyOtpResponse {
   access: string;
   refresh: string;

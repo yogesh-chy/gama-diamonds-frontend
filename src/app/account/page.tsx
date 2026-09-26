@@ -21,7 +21,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useCurrency } from "@/context/CurrencyContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import LuxurySelect from "@/components/ui/LuxurySelect";
-import { authApi } from "@/lib/api/auth";
+import { authApi, isStaffUser } from "@/lib/api/auth";
 import { ordersApi } from "@/lib/api/orders";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import type { Order, OrderItem } from "@/lib/api/orders";
@@ -62,6 +62,13 @@ function AccountDashboardContent() {
   const { formatPrice } = useCurrency();
   const router = useRouter();
   const displayName = displayNameFromEmail(user?.email);
+
+  // If user is admin/staff, route directly to admin console
+  useEffect(() => {
+    if (isStaffUser(user)) {
+      router.replace("/admin");
+    }
+  }, [user, router]);
 
   const [activeTab, setActiveTab] = useState<"orders" | "profile">("orders");
   const [isLoggingOut, setIsLoggingOut] = useState(false);

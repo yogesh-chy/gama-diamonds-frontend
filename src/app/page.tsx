@@ -41,12 +41,12 @@ export default function Home() {
           {
             question: "Do you offer free delivery?",
             answer:
-              "Yes, we offer free insured delivery on all orders over £376. All shipments are fully insured and sent via discreet, secure courier service worldwide.",
+              "Yes, we offer complimentary insured delivery on all domestic orders across India. International orders are shipped via UPS. All shipments are fully insured and sent via discreet, secure courier service.",
           },
           {
             question: "What is your return policy?",
             answer:
-              "We offer a 30-day exchange policy on all our jewellery pieces. Each piece also comes with a 1-year warranty and complimentary annual servicing.",
+              "We offer a 14-day exchange policy at 100% full value (no making charge deductions) on all jewellery purchased from www.gamajewels.com. Each piece also comes with a lifetime warranty, complimentary cleaning, and annual servicing.",
           },
           {
             question: "Where is Gama Jewels located?",

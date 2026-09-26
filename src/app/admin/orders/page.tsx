@@ -168,7 +168,7 @@ export default function AdminOrdersPage() {
                       </span>
                     </td>
                     <td className="admin-font-semibold admin-text-gold">
-                      ₹{parseFloat(order.total_amount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      ${parseFloat(order.total_amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                     </td>
                     <td className="admin-text-muted">
                       {new Date(order.created_at).toLocaleDateString("en-US", {
@@ -269,9 +269,9 @@ export default function AdminOrdersPage() {
                       </p>
                     </div>
                     <div className="admin-text-right">
-                      <p className="admin-text-gold admin-font-semibold">₹{parseFloat(item.line_total).toLocaleString()}</p>
+                      <p className="admin-text-gold admin-font-semibold">${parseFloat(item.line_total).toLocaleString("en-US", { minimumFractionDigits: 2 })}</p>
                       <p className="admin-text-muted admin-text-xs">
-                        {item.quantity} x ₹{parseFloat(item.product_price).toLocaleString()}
+                        {item.quantity} x ${parseFloat(item.product_price).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                       </p>
                     </div>
                   </div>
@@ -284,7 +284,7 @@ export default function AdminOrdersPage() {
             <div className="admin-flex-between">
               <span className="admin-text-muted">Total Order Amount</span>
               <span className="admin-text-2xl admin-font-bold font-playfair admin-text-gold">
-                ₹{parseFloat(selectedOrder.total_amount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                ${parseFloat(selectedOrder.total_amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}
               </span>
             </div>
           </div>

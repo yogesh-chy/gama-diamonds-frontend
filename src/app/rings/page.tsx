@@ -12,7 +12,7 @@ import CertificationBar from "@/components/landing/CertificationBar";
 export const metadata = {
   title: "Diamond Engagement Rings | Solitaire, Halo & Bespoke Designs",
   description:
-    "Discover our exquisite collection of diamond engagement rings — solitaire, halo, trilogy & under-halo styles. GIA certified natural & lab-grown diamonds, handcrafted by master goldsmiths. Free UK delivery.",
+    "Discover our exquisite collection of diamond engagement rings — solitaire, halo, trilogy & under-halo styles. GIA certified natural & lab-grown diamonds, handcrafted by master goldsmiths. Free insured delivery.",
   alternates: {
     canonical: "https://www.gamajewels.com/rings",
   },
@@ -52,7 +52,7 @@ export default function EngagementRingsPage() {
       {/* Section 7: Recently Viewed 4-Card Carousel with Prices & Badges */}
       <RingsRecentlyViewed />
 
-      {/* Section 8: NAJ, Goldsmiths, GIA, IGI, Stop Blood Diamonds Certification Bar */}
+      {/* Section 8: BIS, RJC, GIA, IGI, Stop Blood Diamonds Certification Bar */}
       <CertificationBar />
 
       {/* Footer */}

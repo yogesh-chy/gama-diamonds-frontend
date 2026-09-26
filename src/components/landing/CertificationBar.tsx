@@ -2,8 +2,8 @@
 
 export default function CertificationBar() {
   const partners = [
-    { title: "NAJ", subtitle: "National Association of Jewellers" },
-    { title: "Goldsmiths", subtitle: "Hallmark of The Goldsmiths' Company" },
+    { title: "BIS", subtitle: "Bureau of Indian Standards Hallmark" },
+    { title: "RJC", subtitle: "Responsible Jewellery Council" },
     { title: "GIA", subtitle: "Gemological Institute of America" },
     { title: "IGI", subtitle: "International Gemological Institute" },
     { title: "Stop Blood Diamonds", subtitle: "Conflict-Free Sourcing" },

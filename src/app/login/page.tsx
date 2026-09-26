@@ -18,6 +18,7 @@ import {
   User,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { isStaffUser } from "@/lib/api/auth";
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
@@ -25,6 +26,7 @@ function LoginPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next") || "/account";
+  const isAdminDestination = nextPath.startsWith("/admin");
   const {
     user,
     requestOtp,
@@ -35,7 +37,9 @@ function LoginPageInner() {
   } = useAuth();
 
   // ── Mode State ──
-  const [mode, setMode] = useState<"customer" | "admin">("customer");
+  const [mode, setMode] = useState<"customer" | "admin">(
+    isAdminDestination ? "admin" : "customer"
+  );
 
   // ── Customer OTP State ──
   const [email, setEmail] = useState("");
@@ -83,26 +87,25 @@ function LoginPageInner() {
     return validateEmail(adminEmail);
   }, [adminEmail, adminEmailTouched, validateEmail]);
 
-  // Already signed in? Skip the form:
-  // Admin / Staff users go to /admin; normal customers go to /account (or nextPath if not /admin)
+  // Already signed in?
   useEffect(() => {
     if (!isSessionLoading && isAuthenticated) {
-      if (mode === "admin" || user?.is_staff) {
+      if (isStaffUser(user)) {
         router.replace("/admin");
-      } else {
-        const dest = nextPath.startsWith("/admin") ? "/account" : nextPath;
+      } else if (!isAdminDestination && mode !== "admin") {
+        const dest = nextPath;
         router.replace(dest);
       }
     }
-  }, [isSessionLoading, isAuthenticated, user, nextPath, router, mode]);
+  }, [isSessionLoading, isAuthenticated, user, nextPath, router, isAdminDestination, mode]);
 
   // Auto-advance to the dashboard a beat after showing the success state.
   useEffect(() => {
     if (step !== "success") return;
-    const dest = mode === "admin" || user?.is_staff ? "/admin" : (nextPath.startsWith("/admin") ? "/account" : nextPath);
-    const timer = setTimeout(() => router.push(dest), 1800);
+    const dest = mode === "admin" || isStaffUser(user) ? "/admin" : (isAdminDestination ? "/account" : nextPath);
+    const timer = setTimeout(() => router.replace(dest), 1200);
     return () => clearTimeout(timer);
-  }, [step, nextPath, router, mode, user]);
+  }, [step, nextPath, router, user, isAdminDestination, mode]);
 
   const sendOtp = useCallback(
     async (targetEmail: string) => {
@@ -190,8 +193,15 @@ function LoginPageInner() {
 
     setIsVerifying(true);
     try {
-      await verifyOtp(email, code);
+      const loggedUser = await verifyOtp(email, code);
       setStep("success");
+      setTimeout(() => {
+        if (isStaffUser(loggedUser)) {
+          router.replace("/admin");
+        } else {
+          router.replace(isAdminDestination ? "/account" : nextPath);
+        }
+      }, 1000);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "That code didn't work.");
       setOtp(["", "", "", "", "", ""]);
@@ -216,9 +226,12 @@ function LoginPageInner() {
 
     setIsAdminSubmitting(true);
     try {
-      await adminLogin(adminEmail, adminPassword);
+      const loggedUser = await adminLogin(adminEmail, adminPassword);
       setEmail(adminEmail);
       setStep("success");
+      setTimeout(() => {
+        router.replace("/admin");
+      }, 1000);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Admin login failed.");
     } finally {
@@ -941,7 +954,7 @@ function LoginPageInner() {
                 Signed in as <span style={{ color: "#c6a45f" }}>{successEmail}</span>
               </p>
               <Link
-                href={mode === "admin" || user?.is_staff ? "/admin" : (nextPath.startsWith("/admin") ? "/account" : nextPath)}
+                href={mode === "admin" || isStaffUser(user) ? "/admin" : (nextPath.startsWith("/admin") ? "/account" : nextPath)}
                 style={{
                   height: "46px",
                   padding: "0 28px",

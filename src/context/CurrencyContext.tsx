@@ -17,70 +17,70 @@ export interface CurrencyContextType {
   rate: number;
   isLoaded: boolean;
   setCurrency: (currencyCode: string) => void;
-  formatPrice: (amountGBP: number | null | undefined) => string;
+  formatPrice: (amountUSD: number | null | undefined) => string;
   freeDeliveryThreshold: string;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | null>(null);
 
-const CURRENCY_PREF_KEY = "gama_currency_v1";
-const RATES_CACHE_KEY = "gama_exchange_rates_v1";
-const GEO_CACHE_KEY = "gama_geo_country_v1";
+const CURRENCY_PREF_KEY = "gama_currency_v2";
+const RATES_CACHE_KEY = "gama_exchange_rates_v2";
+const GEO_CACHE_KEY = "gama_geo_country_v2";
 const RATES_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 const GEO_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-// Default fallback exchange rates against GBP (base 1 GBP)
+// Default fallback exchange rates against USD (base 1 USD)
 const DEFAULT_RATES: Record<string, number> = {
-  GBP: 1,
-  EUR: 1.17,
-  INR: 106.5,
-  USD: 1.27,
-  CHF: 1.13,
-  SEK: 13.75,
-  NOK: 13.95,
-  DKK: 8.70,
-  PLN: 5.10,
-  AED: 4.67,
-  AUD: 1.94,
-  CAD: 1.73,
-  SGD: 1.71,
-  JPY: 191.0,
-  RUB: 112.0,
-  BHD: 0.48,
-  KES: 165.0,
-  KWD: 0.39,
-  MYR: 5.95,
-  NZD: 2.10,
-  OMR: 0.49,
-  QAR: 4.62,
-  RON: 5.82,
-  SAR: 4.76,
-  ZAR: 23.0,
-  PKR: 350.0,
-  BDT: 150.0,
-  NPR: 170.0,
+  USD: 1,
+  GBP: 0.79,
+  EUR: 0.92,
+  INR: 87.0,
+  CHF: 0.89,
+  SEK: 10.8,
+  NOK: 11.0,
+  DKK: 6.9,
+  PLN: 4.0,
+  AED: 3.67,
+  AUD: 1.53,
+  CAD: 1.36,
+  SGD: 1.34,
+  JPY: 153.0,
+  RUB: 92.0,
+  BHD: 0.38,
+  KES: 130.0,
+  KWD: 0.31,
+  MYR: 4.45,
+  NZD: 1.68,
+  OMR: 0.38,
+  QAR: 3.64,
+  RON: 4.60,
+  SAR: 3.75,
+  ZAR: 18.2,
+  PKR: 278.0,
+  BDT: 120.0,
+  NPR: 139.0,
 };
 
-const EXCHANGE_RATE_API = "https://open.er-api.com/v6/latest/GBP";
+const EXCHANGE_RATE_API = "https://open.er-api.com/v6/latest/USD";
 
 const DEFAULT_STATE = {
-  currency: "GBP",
-  symbol: "£",
-  locale: "en-GB",
-  flag: "🇬🇧",
-  countryName: "United Kingdom",
+  currency: "USD",
+  symbol: "$",
+  locale: "en-US",
+  flag: "🇺🇸",
+  countryName: "United States",
   rate: 1,
   isLoaded: true,
 };
 
 function buildCurrencyState(currencyCode: string, rates: Record<string, number>) {
   const popular = POPULAR_CURRENCIES.find((c) => c.code === currencyCode);
-  const rate = currencyCode === "GBP" ? 1 : (rates[currencyCode] ?? DEFAULT_RATES[currencyCode] ?? 1);
-  const locale = CURRENCY_LOCALE_MAP[currencyCode] || "en-GB";
+  const rate = currencyCode === "USD" ? 1 : (rates[currencyCode] ?? DEFAULT_RATES[currencyCode] ?? 1);
+  const locale = CURRENCY_LOCALE_MAP[currencyCode] || "en-US";
 
   return {
     currency: currencyCode,
-    symbol: popular?.symbol || (currencyCode === "GBP" ? "£" : currencyCode),
+    symbol: popular?.symbol || (currencyCode === "USD" ? "$" : currencyCode),
     locale,
     flag: popular?.flag || "🌐",
     countryName: popular?.name?.split(" – ")[1] || currencyCode,
@@ -90,9 +90,9 @@ function buildCurrencyState(currencyCode: string, rates: Record<string, number>)
 }
 
 function computeFormatPrice(state: typeof DEFAULT_STATE) {
-  return function formatPrice(amountGBP: number | null | undefined): string {
-    if (amountGBP === null || amountGBP === undefined || isNaN(amountGBP)) return "";
-    const converted = Math.round(amountGBP * state.rate);
+  return function formatPrice(amountUSD: number | null | undefined): string {
+    if (amountUSD === null || amountUSD === undefined || isNaN(amountUSD)) return "";
+    const converted = Math.round(amountUSD * state.rate);
 
     if (state.currency === "INR") {
       return `₹${formatIndianNumber(converted)}`;
@@ -270,14 +270,14 @@ async function detectCountryByIP(): Promise<string | null> {
 export function CurrencyProvider({ children }: { children: ReactNode }) {
   const ratesRef = useRef<Record<string, number>>(DEFAULT_RATES);
   const [rates, setRates] = useState<Record<string, number>>(DEFAULT_RATES);
-  const [state, setState] = useState(() => buildCurrencyState("GBP", DEFAULT_RATES));
+  const [state, setState] = useState(() => buildCurrencyState("USD", DEFAULT_RATES));
 
   const fetchRates = useCallback(async () => {
     const cached = getCachedRates();
     if (cached) {
       ratesRef.current = { ...DEFAULT_RATES, ...cached };
       setRates(ratesRef.current);
-      const savedCurrency = getSavedCurrency() || "GBP";
+      const savedCurrency = getSavedCurrency() || "USD";
       setState(buildCurrencyState(savedCurrency, ratesRef.current));
       return;
     }
@@ -292,7 +292,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
         setCachedRates(rates);
         
         // Update state with newly fetched live rates
-        const savedCurrency = getSavedCurrency() || "GBP";
+        const savedCurrency = getSavedCurrency() || "USD";
         setState(buildCurrencyState(savedCurrency, rates));
       }
     } catch {
@@ -343,7 +343,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   );
 
   const formatPrice = computeFormatPrice(state);
-  const freeDeliveryThreshold = formatPrice(40000 / (rates["INR"] || 106.5));
+  const freeDeliveryThreshold = formatPrice(500);
 
   return (
     <CurrencyContext.Provider

@@ -15,7 +15,7 @@ const styles = [
     name: "Trilogy Three Stone Ring Box",
     href: "/rings?style=three-stone",
     label: "SHOP TRILOGY THREE STONE RINGS",
-    imageSrc: "/oval_cut_solitier.png",
+    imageSrc: "/three_stone_ring.jpg",
   },
   {
     name: "Under Halo Ring Box",
@@ -33,13 +33,13 @@ const styles = [
     name: "Diamond Shoulder Ring Box",
     href: "/rings?style=diamond-shoulder",
     label: "SHOP DIAMOND SHOULDER RINGS",
-    imageSrc: "/eternity_ring.png",
+    imageSrc: "/eternity_styles_guide.jpg",
   },
   {
     name: "Eternity Ring Box",
     href: "/eternity",
     label: "SHOP ETERNITY RINGS",
-    imageSrc: "/shopbycategory/engement_ring.png",
+    imageSrc: "/eternity_rings_banner.jpg",
   },
 ];
 

@@ -99,11 +99,11 @@ const CURRENCY_MAP: Record<string, CurrencyInfo> = {
 
 // Fallback when country is unknown
 export const DEFAULT_CURRENCY: CurrencyInfo = {
-  currency: 'GBP',
-  symbol: '£',
-  locale: 'en-GB',
-  flag: '🇬🇧',
-  name: 'United Kingdom',
+  currency: 'USD',
+  symbol: '$',
+  locale: 'en-US',
+  flag: '🇺🇸',
+  name: 'United States',
 };
 
 export function getCurrencyByCountry(countryCode?: string | null): CurrencyInfo {

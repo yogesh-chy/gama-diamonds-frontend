@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { isStaffUser } from "@/lib/api/auth";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { Loader2 } from "lucide-react";
@@ -24,15 +25,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
+  const isStaff = isStaffUser(user);
+
   // Guard: Redirect to /login if unauthenticated or not a staff/admin user
   useEffect(() => {
     if (!isLoading) {
-      if (!isAuthenticated || !user?.is_staff) {
+      if (!isAuthenticated || !isStaff) {
         const next = typeof window !== "undefined" ? window.location.pathname : "/admin";
         router.replace(`/login?next=${encodeURIComponent(next)}`);
       }
     }
-  }, [isLoading, isAuthenticated, user, router, pathname]);
+  }, [isLoading, isAuthenticated, isStaff, router, pathname]);
 
   // Keyboard shortcut (Ctrl + \) or (Cmd + \) to toggle sidebar
   useEffect(() => {
@@ -63,7 +66,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   // Render luxury loading state while checking session
-  if (isLoading || !isAuthenticated || !user?.is_staff) {
+  if (isLoading || !isAuthenticated || !isStaff) {
     return (
       <div
         style={{

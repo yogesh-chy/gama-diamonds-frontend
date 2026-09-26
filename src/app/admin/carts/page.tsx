@@ -92,7 +92,7 @@ export default function AdminCartsPage() {
 
                 <div className="admin-text-right">
                   <span className="admin-text-xl admin-font-bold font-playfair admin-text-gold block">
-                    ₹{parseFloat(cart.total_amount || "0").toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                    ${parseFloat(cart.total_amount || "0").toLocaleString("en-US", { minimumFractionDigits: 2 })}
                   </span>
                   <span className="admin-text-muted admin-text-xs">
                     {cart.total_items} items
@@ -130,7 +130,7 @@ export default function AdminCartsPage() {
                         </div>
 
                         <div className="admin-text-right shrink-0">
-                          <p className="admin-text-gold admin-font-semibold">₹{parseFloat(item.line_total).toLocaleString()}</p>
+                          <p className="admin-text-gold admin-font-semibold">${parseFloat(item.line_total).toLocaleString("en-US", { minimumFractionDigits: 2 })}</p>
                           <p className="admin-text-muted admin-text-xs">{item.quantity} Qty</p>
                         </div>
                       </div>

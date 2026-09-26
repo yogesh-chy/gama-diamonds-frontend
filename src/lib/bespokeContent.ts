@@ -69,9 +69,9 @@ export const bespokeProcessRows: BespokeProcessRow[] = [
     imageSrc: "/bespoke/bespoke_step3.png",
   },
   {
-    title: "5. Hallmarking & Final Presentation",
+    title: "5. Quality Assurance & Final Presentation",
     description:
-      "Every finished piece is officially hallmarked in the UK, undergoes rigorous multi-point quality control, and is presented in a handcrafted luxury wooden presentation box complete with GIA/IGI certification and a lifetime warranty.",
+      "Every finished piece undergoes rigorous multi-point quality control and is presented in a handcrafted luxury wooden presentation box complete with GIA/IGI certification and a lifetime warranty.",
     imageLabel: "Final Presentation",
     imageSrc: "/bespoke/bespoke_step5.png",
   },

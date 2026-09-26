@@ -110,9 +110,9 @@ export default function AdminProductsPage() {
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [variantUploadingIdx, setVariantUploadingIdx] = useState<number | null>(null);
 
-  // Variant Matrix Generator Selection
-  const [selectedVariantMetals, setSelectedVariantMetals] = useState<string[]>(["YG9", "YG10", "YG14", "YG18", "PT950"]);
-  const [selectedVariantSizes, setSelectedVariantSizes] = useState<string[]>(["6", "7", "8"]);
+  // Variant Matrix Generator Selection (starts empty so only user-chosen variants are generated)
+  const [selectedVariantMetals, setSelectedVariantMetals] = useState<string[]>([]);
+  const [selectedVariantSizes, setSelectedVariantSizes] = useState<string[]>([]);
 
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -379,8 +379,12 @@ export default function AdminProductsPage() {
     const metals = METAL_VARIANT_OPTIONS.filter((metal) => selectedVariantMetals.includes(metal.code));
     const dimensions = isEarringCategory ? [""] : selectedVariantSizes;
 
-    if (metals.length === 0 || (dimensions.length === 0 && !isEarringCategory)) {
-      toast.error("Select metal and dimension combinations");
+    if (metals.length === 0) {
+      toast.error("Please choose at least one metal option");
+      return;
+    }
+    if (!isEarringCategory && dimensions.length === 0) {
+      toast.error("Please choose at least one size/length option");
       return;
     }
 
@@ -556,8 +560,8 @@ export default function AdminProductsPage() {
       ],
       video_url: "",
     });
-    setSelectedVariantMetals(["YG9", "YG10", "YG14", "YG18", "PT950"]);
-    setSelectedVariantSizes(["6", "7", "8"]);
+    setSelectedVariantMetals([]);
+    setSelectedVariantSizes([]);
     setActiveTab("basic");
     setIsModalOpen(true);
   };
@@ -605,6 +609,8 @@ export default function AdminProductsPage() {
       variants: prod.variants || [],
       video_url: prod.video_url || prod.videoUrl || "",
     });
+    setSelectedVariantMetals([]);
+    setSelectedVariantSizes([]);
     setActiveTab("basic");
     setIsModalOpen(true);
   };
@@ -709,10 +715,13 @@ export default function AdminProductsPage() {
         images: v.images || [],
       }));
 
+      const defaultVar = cleanedVariants.find((v) => v.is_default) || cleanedVariants[0];
       const payload: Partial<AdminProduct> = {
         ...formData,
         sku: formData.sku || generateAutoSku(formData.category, formData.name),
-        base_price: targetPrice,
+        metal_type: defaultVar?.metal_type || formData.metal_type || "yellow-gold",
+        metal_karat: defaultVar?.metal_karat || formData.metal_karat || "18K",
+        base_price: defaultVar?.price !== undefined ? defaultVar.price : targetPrice,
         total_stock: targetStock,
         tax_percentage: parseNumOrNull(formData.tax_percentage) || 0,
         low_stock_threshold: formData.low_stock_threshold ?? 5,
@@ -753,7 +762,17 @@ export default function AdminProductsPage() {
     const updated = [...(formData.variants || [])];
     updated[idx] = { ...updated[idx], ...patch };
     const totalStock = updated.reduce((sum, v) => sum + (v.stock || 0), 0);
-    setFormData({ ...formData, variants: updated, total_stock: totalStock });
+    const isDef = updated[idx]?.is_default || idx === 0 || updated.length === 1;
+    const syncedPatch: Partial<AdminProduct> = {
+      variants: updated,
+      total_stock: totalStock,
+    };
+    if (isDef) {
+      if (patch.metal_type) syncedPatch.metal_type = patch.metal_type;
+      if (patch.metal_karat) syncedPatch.metal_karat = patch.metal_karat;
+      if (patch.price !== undefined && patch.price !== null) syncedPatch.base_price = patch.price;
+    }
+    setFormData((prev) => ({ ...prev, ...syncedPatch }));
   };
 
   const addManualVariant = () => {
@@ -988,7 +1007,7 @@ export default function AdminProductsPage() {
                       </td>
 
                       <td style={{ padding: "12px 14px", fontWeight: 600, color: "#c6a45f" }}>
-                        £{priceNum.toLocaleString("en-GB", { minimumFractionDigits: 2 })}
+                        ${priceNum.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                       </td>
 
                       <td style={{ padding: "12px 14px", color: "#aaaaaa" }}>
@@ -1174,7 +1193,7 @@ export default function AdminProductsPage() {
                     </div>
 
                     <div style={fieldGroupStyle}>
-                      <label style={labelStyle}>Base Price (£/$) *</label>
+                      <label style={labelStyle}>Base Price ($ USD) *</label>
                       <input
                         type="number"
                         step="0.01"
@@ -1193,13 +1212,13 @@ export default function AdminProductsPage() {
                     </div>
 
                     <div style={fieldGroupStyle}>
-                      <label style={labelStyle}>Discount Price (£/$)</label>
+                      <label style={labelStyle}>Discount Price ($ USD)</label>
                       <input
                         type="number"
                         step="0.01"
                         value={formData.discount_price ?? ""}
                         onChange={(e) => setFormData({ ...formData, discount_price: e.target.value ? parseFloat(e.target.value) : null })}
-                        placeholder="Discount Price"
+                        placeholder="Discount Price ($)"
                         style={inputStyle}
                       />
                     </div>
@@ -1776,7 +1795,26 @@ export default function AdminProductsPage() {
 
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "14px" }}>
                       <div>
-                        <label style={{ ...labelStyle, marginBottom: "6px" }}>Metals:</label>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                          <label style={{ ...labelStyle, margin: 0 }}>Metals ({selectedVariantMetals.length} selected):</label>
+                          <div style={{ display: "flex", gap: "6px" }}>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedVariantMetals(METAL_VARIANT_OPTIONS.map((m) => m.code))}
+                              style={{ background: "none", border: "none", color: "#c6a45f", fontSize: "9px", cursor: "pointer", textDecoration: "underline", padding: 0 }}
+                            >
+                              Select All
+                            </button>
+                            <span style={{ color: "#555", fontSize: "9px" }}>|</span>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedVariantMetals([])}
+                              style={{ background: "none", border: "none", color: "#888", fontSize: "9px", cursor: "pointer", textDecoration: "underline", padding: 0 }}
+                            >
+                              Clear
+                            </button>
+                          </div>
+                        </div>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                           {METAL_VARIANT_OPTIONS.map((metal) => {
                             const isChecked = selectedVariantMetals.includes(metal.code);
@@ -1807,9 +1845,28 @@ export default function AdminProductsPage() {
 
                       {!isEarringCategory && (
                         <div>
-                          <label style={{ ...labelStyle, marginBottom: "6px" }}>
-                            Size / Length / Bangle Size:
-                          </label>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                            <label style={{ ...labelStyle, margin: 0 }}>
+                              Size / Length ({selectedVariantSizes.length} selected):
+                            </label>
+                            <div style={{ display: "flex", gap: "6px" }}>
+                              <button
+                                type="button"
+                                onClick={() => setSelectedVariantSizes(getDimensionOptions())}
+                                style={{ background: "none", border: "none", color: "#c6a45f", fontSize: "9px", cursor: "pointer", textDecoration: "underline", padding: 0 }}
+                              >
+                                Select All
+                              </button>
+                              <span style={{ color: "#555", fontSize: "9px" }}>|</span>
+                              <button
+                                type="button"
+                                onClick={() => setSelectedVariantSizes([])}
+                                style={{ background: "none", border: "none", color: "#888", fontSize: "9px", cursor: "pointer", textDecoration: "underline", padding: 0 }}
+                              >
+                                Clear
+                              </button>
+                            </div>
+                          </div>
                           <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                             {getDimensionOptions().map((dim) => {
                               const isChecked = selectedVariantSizes.includes(dim);
@@ -1870,7 +1927,7 @@ export default function AdminProductsPage() {
                               <th style={{ padding: "8px" }}>Karat</th>
                               {!isEarringCategory && <th style={{ padding: "8px" }}>Size / Length / Bangle Size</th>}
                               <th style={{ padding: "8px" }}>Weight (g)</th>
-                              <th style={{ padding: "8px" }}>Price (£/$)</th>
+                              <th style={{ padding: "8px" }}>Price ($ USD)</th>
                               <th style={{ padding: "8px" }}>Stock</th>
                               <th style={{ padding: "8px" }}>Variant Image</th>
                               <th style={{ padding: "8px", textAlign: "right" }}>Action</th>

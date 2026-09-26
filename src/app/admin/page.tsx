@@ -85,7 +85,7 @@ export default function AdminOverviewPage() {
           </div>
           <div className="admin-metric-body">
             <p className="admin-metric-value" style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.4rem", fontWeight: 600, color: "#ffffff", margin: "0 0 4px" }}>
-              ₹{totalRevenue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ${totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
             <p className="admin-metric-sub green" style={{ fontSize: "10px", color: "#4ade80", display: "flex", alignItems: "center", gap: "4px", margin: 0 }}>
               <TrendingUp size={12} />
@@ -196,7 +196,7 @@ export default function AdminOverviewPage() {
                   </div>
 
                   <div style={{ textAlign: "right" }}>
-                    <span style={{ fontWeight: 600, color: "#c6a45f", fontSize: "12px", display: "block" }}>₹{parseFloat(order.total_amount).toLocaleString()}</span>
+                    <span style={{ fontWeight: 600, color: "#c6a45f", fontSize: "12px", display: "block" }}>${parseFloat(order.total_amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     <span style={{ color: "#888888", fontSize: "10px" }}>{order.items?.length || 0} items</span>
                   </div>
 

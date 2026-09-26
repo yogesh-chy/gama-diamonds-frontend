@@ -249,8 +249,8 @@ export default function Footer() {
                 </div>
                 <div className="footer-contact-item">
                   <Mail size={15} className="footer-contact-icon" />
-                  <a href="mailto:gama.diamond10@gmail.com" style={{ fontSize: "12px", color: "#c6a45f", textDecoration: "none" }}>
-                    gama.diamond10@gmail.com
+                  <a href="mailto:info@gamajewels.com" style={{ fontSize: "12px", color: "#c6a45f", textDecoration: "none" }}>
+                    info@gamajewels.com
                   </a>
                 </div>
                 <div className="footer-contact-item" style={{ alignItems: "flex-start", marginTop: "4px" }}>

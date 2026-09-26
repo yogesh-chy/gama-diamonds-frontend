@@ -122,14 +122,17 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
 
         let initialMetal = "18ct Yellow Gold";
         if (initialVar) {
-          const mType = initialVar.metal_type || initialVar.metalType;
-          if (mType) {
-            initialMetal = mType.replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
-          }
+          const mType = (initialVar.metal_type || initialVar.metalType || "").replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
+          const mKarat = initialVar.metal_karat || initialVar.metalKarat || "";
+          initialMetal = [mKarat, mType].filter(Boolean).join(" ");
+          if (!initialMetal && mType) initialMetal = mType;
+          if (!initialMetal) initialMetal = "18ct Yellow Gold";
           const sVal = initialVar.size || initialVar.length || initialVar.bangle_size || initialVar.bangleSize;
           if (sVal) setSelectedSize(sVal);
         } else if (p.metal_type) {
-          initialMetal = p.metal_type.replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
+          const mType = (p.metal_type || "").replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
+          const mKarat = p.metal_karat || "";
+          initialMetal = [mKarat, mType].filter(Boolean).join(" ") || "18ct Yellow Gold";
         }
         setSelectedMetal(initialMetal);
 
@@ -192,9 +195,11 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     const found = variants.find((v) => v.id === varId);
     if (found) {
       setSelectedVariant(found);
-      const mType = found.metal_type || found.metalType;
-      if (mType) {
-        setSelectedMetal(mType.replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase()));
+      const mType = (found.metal_type || found.metalType || "").replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
+      const mKarat = found.metal_karat || found.metalKarat || "";
+      const metalStr = [mKarat, mType].filter(Boolean).join(" ");
+      if (metalStr) {
+        setSelectedMetal(metalStr);
       }
       const sVal = found.size || found.length || found.bangle_size || found.bangleSize;
       if (sVal) setSelectedSize(sVal);
@@ -217,6 +222,10 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     if (!product) return;
     try {
       const variantId = selectedVariant?.id;
+      const mType = (selectedVariant?.metal_type || selectedVariant?.metalType || "").replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
+      const mKarat = selectedVariant?.metal_karat || selectedVariant?.metalKarat || "";
+      const currentMetal = [mKarat, mType].filter(Boolean).join(" ") || selectedMetal;
+
       if (isAuthenticated && numericId) {
         await cartApi.addItem(numericId, selectedSize, quantity, variantId);
       }
@@ -225,11 +234,12 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
       existingCart.push({
         id: numericId || product.id,
         variant_id: variantId,
-        title: `${product.title} (${selectedMetal}${selectedVariant?.metal_karat ? " " + selectedVariant.metal_karat : ""})`,
+        title: product.title,
         price: dynamicPrice,
-        metal: selectedMetal,
+        metal: currentMetal,
         size: selectedSize,
         quantity,
+        image: galleryImages[0] || undefined,
       });
       localStorage.setItem("gama_cart", JSON.stringify(existingCart));
       window.dispatchEvent(new Event("cartUpdated"));
@@ -802,8 +812,6 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
               </h1>
               <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "11px", color: "#666666" }}>
                 <span>SKU: <strong style={{ color: "#999999", fontWeight: "500" }}>{selectedVariant?.sku || product.sku}</strong></span>
-                <span>•</span>
-                <span style={{ color: "#888888" }}>Hallmarked in UK</span>
               </div>
             </div>
 
@@ -919,7 +927,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                     Ring Size
                   </label>
                   <span style={{ fontSize: "10.5px", color: "#888888", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                    <HelpCircle size={12} color="#c6a45f" /> Free 30-Day Resizing
+                    <HelpCircle size={12} color="#c6a45f" /> Complimentary Resizing within 15 Days
                   </span>
                 </div>
                 <LuxurySelect
@@ -997,7 +1005,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "10.5px", color: "#999999" }}>
-                <Shield size={14} color="#c6a45f" /> 1 Year Free Warranty
+                <Shield size={14} color="#c6a45f" /> 6-Month Warranty
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "10.5px", color: "#999999" }}>
                 <Truck size={14} color="#c6a45f" /> Insured Delivery
@@ -1006,7 +1014,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                 <Award size={14} color="#c6a45f" /> Certified Diamonds
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "10.5px", color: "#999999" }}>
-                <RefreshCw size={14} color="#c6a45f" /> 30-Day Exchange
+                <RefreshCw size={14} color="#c6a45f" /> 14-Day Exchange
               </div>
             </div>
 
@@ -1045,7 +1053,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                   </p>
                   <ul style={{ paddingLeft: "14px", display: "flex", flexDirection: "column", gap: "4px", color: "#8e8e8e" }}>
                     <li>Handset certified natural diamonds for maximum brilliance</li>
-                    <li>Solid hallmarked precious metal composition</li>
+                    <li>Solid precious metal composition</li>
                     <li>Includes signature presentation box and certificate</li>
                   </ul>
                 </div>
@@ -1083,10 +1091,13 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
               {activeTab === "shipping" && (
                 <div style={{ fontSize: "11.5px", lineHeight: "1.7", color: "#a5a5a5" }}>
                   <p style={{ marginBottom: "6px" }}>
-                    <strong style={{ color: "#ffffff" }}>Complimentary Insured Shipping:</strong> Delivered in discreet, high-security packaging with full transit insurance.
+                    <strong style={{ color: "#ffffff" }}>Complimentary Insured Delivery:</strong> Free insured domestic delivery across India. International shipping via UPS. Delivered within 12 working days in discreet, high-security packaging.
+                  </p>
+                  <p style={{ marginBottom: "6px" }}>
+                    <strong style={{ color: "#ffffff" }}>14-Day Return & Exchange:</strong> Exchange at 100% full value (no making charge deductions) within 14 days of delivery. Returns accepted for manufacturing defects with full refund within 10 business days.
                   </p>
                   <p>
-                    <strong style={{ color: "#ffffff" }}>Complimentary Resizing:</strong> We offer one free ring resize within 30 days of receiving your order.
+                    <strong style={{ color: "#ffffff" }}>6-Month Warranty:</strong> Every piece includes 6-month warranty coverage with complimentary cleaning, inspection, and dedicated customer support. Complimentary resizing is available within 15 days of delivery.
                   </p>
                 </div>
               )}

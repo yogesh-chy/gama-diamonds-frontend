@@ -88,7 +88,7 @@ export default function CartPage() {
                   const numId = typeof rawId === "number" ? rawId : parseInt(String(rawId), 10);
                   const validProductId = !isNaN(numId) ? numId : 1;
                   try {
-                    await cartApi.addItem(validProductId, item.size || "M", item.quantity || 1);
+                    await cartApi.addItem(validProductId, item.size || "M", item.quantity || 1, (item as any).variant_id);
                   } catch {
                     /* ignore */
                   }
@@ -99,14 +99,21 @@ export default function CartPage() {
           }
 
           if (res.data?.items && res.data.items.length > 0) {
-            const mapped: CartItem[] = res.data.items.map((item) => ({
-              id: item.id,
-              title: item.product_detail?.name || `Product #${item.product}`,
-              price: parseFloat(item.unit_price || "0"),
-              size: item.size,
-              quantity: item.quantity,
-              image: item.product_detail?.image_url || "/bespoke_pear_solitaire.png",
-            }));
+            const mapped: CartItem[] = res.data.items.map((item) => {
+              const v = item.variant_detail;
+              const metalStr = v
+                ? [v.metal_karat, v.metal_type?.replace(/-/g, " ")].filter(Boolean).map((s) => s?.replace(/\b\w/g, (l) => l.toUpperCase())).join(" ")
+                : undefined;
+              return {
+                id: item.id,
+                title: item.product_detail?.name || `Product #${item.product}`,
+                price: parseFloat(item.unit_price || "0"),
+                metal: metalStr || undefined,
+                size: item.size,
+                quantity: item.quantity,
+                image: item.product_detail?.image_url || "/bespoke_pear_solitaire.png",
+              };
+            });
             setCartItems(mapped);
             setLoading(false);
             return;
@@ -320,7 +327,6 @@ export default function CartPage() {
   );
   const discountAmount = Math.round(subtotal * (discountPercent / 100));
   const finalTotal = subtotal - discountAmount;
-  const klarnaInstallment = Math.round(finalTotal / 3);
 
   return (
     <div style={{ background: "#040404", minHeight: "100vh", color: "#ffffff" }}>
@@ -841,7 +847,7 @@ export default function CartPage() {
                     </div>
 
                     <div style={{ display: "flex", justifyContent: "space-between", color: "#a0a0a0" }}>
-                      <span>UK VAT (20%)</span>
+                      <span>Applicable Taxes</span>
                       <span style={{ color: "#ffffff" }}>Included</span>
                     </div>
                   </div>
@@ -927,7 +933,7 @@ export default function CartPage() {
                     </span>
                   </div>
 
-                  {/* Klarna Installment Banner */}
+                  {/* Payment Security & Options Banner */}
                   <div
                     style={{
                       background: "rgba(198, 164, 95, 0.08)",
@@ -949,7 +955,7 @@ export default function CartPage() {
                         lineHeight: "1.4",
                       }}
                     >
-                      Pay <strong>3 instalments of {formatPrice(klarnaInstallment)}</strong> with 0% APR via Klarna.
+                      Secure checkout supporting <strong>Cards, UPI, Netbanking & EMI options</strong>.
                     </div>
                   </div>
 
@@ -1016,11 +1022,11 @@ export default function CartPage() {
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <ShieldCheck size={13} style={{ color: "#c6a45f" }} />
-                      <span>30-Day Money Back Guarantee</span>
+                      <span>14-Day Return & Exchange Guarantee</span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <Truck size={13} style={{ color: "#c6a45f" }} />
-                      <span>Fully Insured Royal Mail Special Delivery</span>
+                      <span>Fully Insured Secure Courier Delivery</span>
                     </div>
                   </div>
                 </div>
