@@ -86,7 +86,7 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
               title: p.name,
               diamondType: p.diamond_spec?.diamond_origin === "natural" ? "Natural Diamond" : "Lab Grown Diamond",
               style: styleName,
-              shape: p.diamond_cut || "Round Brilliant",
+              shape: p.diamond_cut || p.diamond_spec?.diamond_shape || "Round Brilliant",
               metal: p.metal_type || "Fine Precious Metal",
               price: minPrice,
               badge: p.is_featured ? "FEATURED" : undefined,

@@ -41,17 +41,6 @@ const CATEGORY_OPTIONS = [
 
 const SUBCATEGORIES_BY_CATEGORY: Record<string, { value: string; label: string }[]> = {
   "engagement-rings": [
-    // Shapes
-    { value: "Round Brilliant", label: "Round Brilliant" },
-    { value: "Princess", label: "Princess" },
-    { value: "Cushion", label: "Cushion" },
-    { value: "Oval", label: "Oval" },
-    { value: "Pear", label: "Pear" },
-    { value: "Emerald", label: "Emerald Cut" },
-    { value: "Marquise", label: "Marquise" },
-    { value: "Radiant", label: "Radiant" },
-    { value: "Asscher", label: "Asscher" },
-    // Styles
     { value: "Solitaire", label: "Solitaire" },
     { value: "Halo", label: "Halo" },
     { value: "Under Halo", label: "Under Halo" },
@@ -75,9 +64,6 @@ const SUBCATEGORIES_BY_CATEGORY: Record<string, { value: string; label: string }
     { value: "Statement Rings", label: "Statement Rings" },
     { value: "Pendants", label: "Pendants" },
     { value: "Bracelets & Bangles", label: "Bracelets & Bangles" },
-    { value: "Gold Colour", label: "Gold Colour" },
-    { value: "Silver Colour", label: "Silver Colour" },
-    { value: "Rose Gold", label: "Rose Gold" },
     { value: "Tennis Bracelets", label: "Tennis Bracelets" },
     { value: "Solitaire Studs", label: "Solitaire Studs" },
     { value: "Heart Pendants", label: "Heart Pendants" },
@@ -108,7 +94,16 @@ const COLOUR_GRADE_OPTIONS = ["D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
 const CLARITY_GRADE_OPTIONS = ["FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2", "I1", "I2"];
 const CERT_LAB_OPTIONS = ["GIA", "IGI", "HRD", "EGL", "none"];
 const DIAMOND_SHAPE_OPTIONS = [
-  "round", "princess", "cushion", "oval", "pear", "emerald-cut", "radiant", "marquise", "asscher", "heart"
+  { value: "round", label: "Round Brilliant" },
+  { value: "princess", label: "Princess" },
+  { value: "cushion", label: "Cushion" },
+  { value: "oval", label: "Oval" },
+  { value: "pear", label: "Pear" },
+  { value: "emerald-cut", label: "Emerald Cut" },
+  { value: "radiant", label: "Radiant" },
+  { value: "marquise", label: "Marquise" },
+  { value: "asscher", label: "Asscher" },
+  { value: "heart", label: "Heart" },
 ];
 
 type ProductApiResponse = AdminProduct | { data?: AdminProduct };
@@ -1321,6 +1316,99 @@ export default function AdminProductsPage() {
                       />
                     </div>
 
+                    {/* Dynamic Subcategory Dropdown in Basic Details */}
+                    {(() => {
+                      const activeCat = formData.category || "engagement-rings";
+                      const normalizedCatKey =
+                        activeCat === "rings"
+                          ? "engagement-rings"
+                          : activeCat === "wedding"
+                          ? "wedding-bands"
+                          : activeCat === "eternity"
+                          ? "eternity-bands"
+                          : activeCat === "necklace" || activeCat === "pendants"
+                          ? "necklaces"
+                          : activeCat;
+
+                      const subcategoryOptions = SUBCATEGORIES_BY_CATEGORY[normalizedCatKey];
+                      if (!subcategoryOptions || subcategoryOptions.length === 0) return null;
+
+                      const subTitle =
+                        normalizedCatKey === "engagement-rings"
+                          ? "Subcategory (Style) *"
+                          : normalizedCatKey === "wedding-bands"
+                          ? "Subcategory (Collection / Style) *"
+                          : "Subcategory *";
+
+                      const currentSub =
+                        formData.subcategory ||
+                        formData.ring_type ||
+                        formData.ring_style ||
+                        formData.earring_type ||
+                        formData.necklace_style ||
+                        formData.bracelet_type ||
+                        subcategoryOptions[0]?.value ||
+                        "";
+
+                      return (
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>{subTitle}</label>
+                          <LuxurySelect
+                            value={currentSub}
+                            onChange={(val) => {
+                              let newGender = formData.gender;
+                              if (normalizedCatKey === "wedding-bands") {
+                                if (val.startsWith("Men")) newGender = "men";
+                                else if (val.startsWith("Women") || val === "Eternity Rings") newGender = "women";
+                              }
+                              setFormData({
+                                ...formData,
+                                subcategory: val,
+                                ring_type: val,
+                                ring_style: val,
+                                earring_type: val,
+                                necklace_style: val,
+                                bracelet_type: val,
+                                gender: newGender ?? formData.gender,
+                              });
+                            }}
+                            size="sm"
+                            options={subcategoryOptions.map((opt) => ({ value: opt.value, label: opt.label }))}
+                          />
+                        </div>
+                      );
+                    })()}
+
+                    {/* Diamond Shape Selector in Basic Details for Engagement Rings */}
+                    {(() => {
+                      const activeCat = formData.category || "engagement-rings";
+                      const isEng = activeCat === "engagement-rings" || activeCat === "rings";
+                      if (!isEng) return null;
+
+                      const currentShape = formData.diamond_cut || formData.diamond_spec?.diamond_shape || "round";
+
+                      return (
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Diamond Shape (Shop by Shape) *</label>
+                          <LuxurySelect
+                            value={currentShape}
+                            onChange={(val) => {
+                              setFormData({
+                                ...formData,
+                                diamond_cut: val,
+                                diamond_spec: {
+                                  ...(formData.diamond_spec || {}),
+                                  diamond_shape: val,
+                                },
+                              });
+                            }}
+                            size="sm"
+                            options={DIAMOND_SHAPE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))}
+                          />
+                        </div>
+                      );
+                    })()}
+
                     <div style={fieldGroupStyle}>
                       <label style={labelStyle}>Base Price ($ USD) *</label>
                       <input
@@ -1506,7 +1594,7 @@ export default function AdminProductsPage() {
               {/* TAB 2: CATEGORY SPECIFICATIONS */}
               {activeTab === "specs" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                  {/* Category-Driven Dynamic Subcategory Dropdown (Only for Engagement Rings, Wedding Rings, and Jewellery) */}
+                  {/* Category-Driven Dynamic Subcategory & Shape Dropdowns */}
                   {(() => {
                     const activeCat = formData.category || "engagement-rings";
                     const normalizedCatKey =
@@ -1527,21 +1615,14 @@ export default function AdminProductsPage() {
                       return (
                         <div style={{ padding: "14px 16px", backgroundColor: "rgba(255, 255, 255, 0.02)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "4px" }}>
                           <p style={{ margin: 0, fontSize: "11px", color: "#c6a45f", fontWeight: 600 }}>
-                            Direct Category Listing
+                            Direct Category Collection
                           </p>
                           <p style={{ margin: "4px 0 0", fontSize: "10.5px", color: "#888888" }}>
-                            <strong style={{ color: "#ffffff", textTransform: "capitalize" }}>{activeCat.replace("-", " ")}</strong> does not have subcategory dropdowns. Products in this category are published directly to their dedicated collection page.
+                            <strong style={{ color: "#ffffff", textTransform: "capitalize" }}>{activeCat.replace("-", " ")}</strong> does not require subcategories. Products in this category are published directly to their dedicated collection page.
                           </p>
                         </div>
                       );
                     }
-
-                    const fieldTitle =
-                      normalizedCatKey === "engagement-rings"
-                        ? "Engagement Ring Subcategory (Shape / Style)"
-                        : normalizedCatKey === "wedding-bands"
-                        ? "Wedding Ring Subcategory (Collection / Style)"
-                        : "Jewellery Subcategory";
 
                     const currentSubValue =
                       formData.subcategory ||
@@ -1553,32 +1634,242 @@ export default function AdminProductsPage() {
                       subcategoryOptions[0]?.value ||
                       "";
 
+                    const currentShapeValue = formData.diamond_cut || formData.diamond_spec?.diamond_shape || "round";
+                    const selectedShapeOpt = DIAMOND_SHAPE_OPTIONS.find((s) => s.value === currentShapeValue) || DIAMOND_SHAPE_OPTIONS[0];
+
                     return (
-                      <div style={{ padding: "12px 14px", backgroundColor: "#000000", border: "1px solid rgba(198, 164, 95, 0.35)", borderRadius: "4px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                          <label style={{ ...labelStyle, color: "#c6a45f", fontSize: "11px", fontWeight: 700, margin: 0 }}>
-                            {fieldTitle} *
-                          </label>
-                          <span style={{ fontSize: "9.5px", color: "#888888" }}>
-                            Navbar dropdown items for <strong style={{ color: "#ffffff", textTransform: "capitalize" }}>{activeCat.replace("-", " ")}</strong>
-                          </span>
-                        </div>
-                        <LuxurySelect
-                          value={currentSubValue}
-                          onChange={(val) => {
-                            setFormData({
-                              ...formData,
-                              subcategory: val,
-                              ring_type: val,
-                              ring_style: val,
-                              earring_type: val,
-                              necklace_style: val,
-                              bracelet_type: val,
-                            });
-                          }}
-                          size="sm"
-                          options={subcategoryOptions.map((opt) => ({ value: opt.value, label: opt.label }))}
-                        />
+                      <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                        {/* Engagement Rings Dynamic Configuration */}
+                        {normalizedCatKey === "engagement-rings" && (
+                          <div style={{ padding: "16px", backgroundColor: "#080808", border: "1px solid rgba(198, 164, 95, 0.4)", borderRadius: "6px", display: "flex", flexDirection: "column", gap: "14px" }}>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                              <div>
+                                <h4 style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "#c6a45f", letterSpacing: "0.5px" }}>
+                                  Engagement Ring Classification (Navbar Dropdowns)
+                                </h4>
+                                <p style={{ margin: "2px 0 0", fontSize: "10px", color: "#888888" }}>
+                                  Select the Style and Diamond Shape. Customers can discover this product via <strong>Shop by Style</strong>, <strong>Shop by Shape</strong>, or <strong>All Engagement Rings</strong>.
+                                </p>
+                              </div>
+                              <span style={{ fontSize: "9px", padding: "3px 8px", backgroundColor: "rgba(198, 164, 95, 0.15)", color: "#c6a45f", border: "1px solid rgba(198, 164, 95, 0.3)", borderRadius: "3px", fontWeight: 600 }}>
+                                Dual-Listing Active
+                              </span>
+                            </div>
+
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "14px" }}>
+                              {/* Style Dropdown */}
+                              <div style={fieldGroupStyle}>
+                                <label style={{ ...labelStyle, color: "#ffffff", fontWeight: 600 }}>
+                                  Engagement Ring Style (Subcategory) *
+                                </label>
+                                <LuxurySelect
+                                  value={currentSubValue}
+                                  onChange={(val) => {
+                                    setFormData({
+                                      ...formData,
+                                      subcategory: val,
+                                      ring_type: val,
+                                      ring_style: val,
+                                    });
+                                  }}
+                                  size="sm"
+                                  options={subcategoryOptions.map((opt) => ({ value: opt.value, label: opt.label }))}
+                                />
+                                <span style={{ fontSize: "9.5px", color: "#888888" }}>
+                                  Under <em>Shop by Style</em> in the Engagement Rings menu
+                                </span>
+                              </div>
+
+                              {/* Shape Dropdown */}
+                              <div style={fieldGroupStyle}>
+                                <label style={{ ...labelStyle, color: "#ffffff", fontWeight: 600 }}>
+                                  Diamond Shape (Shop by Shape Filter) *
+                                </label>
+                                <LuxurySelect
+                                  value={currentShapeValue}
+                                  onChange={(val) => {
+                                    setFormData({
+                                      ...formData,
+                                      diamond_cut: val,
+                                      diamond_spec: {
+                                        ...(formData.diamond_spec || {}),
+                                        diamond_shape: val,
+                                      },
+                                    });
+                                  }}
+                                  size="sm"
+                                  options={DIAMOND_SHAPE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))}
+                                />
+                                <span style={{ fontSize: "9.5px", color: "#888888" }}>
+                                  Under <em>Shop by Shape</em> in the Engagement Rings menu
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Store Visibility Indicator */}
+                            <div style={{ padding: "10px 14px", backgroundColor: "rgba(198, 164, 95, 0.06)", border: "1px dashed rgba(198, 164, 95, 0.3)", borderRadius: "4px" }}>
+                              <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#c6a45f", marginBottom: "4px" }}>
+                                ✨ Customer Visibility Preview:
+                              </div>
+                              <div style={{ fontSize: "10px", color: "#cccccc", display: "flex", flexDirection: "column", gap: "3px" }}>
+                                <div>• <strong>Shop by Style:</strong> <span style={{ color: "#ffffff" }}>{currentSubValue || "Solitaire"}</span> <span style={{ color: "#777777" }}>(&quot;/rings/style/{String(currentSubValue || "solitaire").toLowerCase().replace(/\s+/g, "-")}&quot;)</span></div>
+                                <div>• <strong>Shop by Shape:</strong> <span style={{ color: "#ffffff" }}>{selectedShapeOpt?.label || "Round Brilliant"}</span> <span style={{ color: "#777777" }}>(&quot;/rings/{currentShapeValue}&quot;)</span></div>
+                                <div>• <strong>All Engagement Rings:</strong> <span style={{ color: "#ffffff" }}>Global Rings Catalog</span> <span style={{ color: "#777777" }}>(&quot;/rings&quot;)</span></div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Wedding Rings Dynamic Configuration */}
+                        {normalizedCatKey === "wedding-bands" && (
+                          <div style={{ padding: "16px", backgroundColor: "#080808", border: "1px solid rgba(198, 164, 95, 0.4)", borderRadius: "6px", display: "flex", flexDirection: "column", gap: "14px" }}>
+                            <div>
+                              <h4 style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "#c6a45f", letterSpacing: "0.5px" }}>
+                                Wedding Ring Subcategory &amp; Collection
+                              </h4>
+                              <p style={{ margin: "2px 0 0", fontSize: "10px", color: "#888888" }}>
+                                Select the navbar dropdown collection item and wedding band attributes.
+                              </p>
+                            </div>
+
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "14px" }}>
+                              <div style={fieldGroupStyle}>
+                                <label style={{ ...labelStyle, color: "#ffffff", fontWeight: 600 }}>
+                                  Wedding Ring Subcategory *
+                                </label>
+                                <LuxurySelect
+                                  value={currentSubValue}
+                                  onChange={(val) => {
+                                    let newGender = formData.gender || "women";
+                                    if (val.startsWith("Men")) newGender = "men";
+                                    else if (val.startsWith("Women") || val === "Eternity Rings") newGender = "women";
+
+                                    let newProfile = formData.ring_profile || "";
+                                    if (["Traditional Court", "Flat Court", "Soft Court"].includes(val)) {
+                                      newProfile = val;
+                                    }
+
+                                    setFormData({
+                                      ...formData,
+                                      subcategory: val,
+                                      ring_type: val,
+                                      ring_style: val,
+                                      gender: newGender,
+                                      ring_profile: newProfile || formData.ring_profile,
+                                    });
+                                  }}
+                                  size="sm"
+                                  options={subcategoryOptions.map((opt) => ({ value: opt.value, label: opt.label }))}
+                                />
+                              </div>
+
+                              <div style={fieldGroupStyle}>
+                                <label style={labelStyle}>Target Collection / Gender</label>
+                                <LuxurySelect
+                                  value={formData.gender || "women"}
+                                  onChange={(val) => setFormData({ ...formData, gender: val })}
+                                  size="sm"
+                                  options={[
+                                    { value: "women", label: "Women's Collection" },
+                                    { value: "men", label: "Men's Collection" },
+                                    { value: "unisex", label: "Unisex" },
+                                  ]}
+                                />
+                              </div>
+
+                              <div style={fieldGroupStyle}>
+                                <label style={labelStyle}>Diamond Shape (Optional / Diamond Bands)</label>
+                                <LuxurySelect
+                                  value={currentShapeValue}
+                                  onChange={(val) => {
+                                    setFormData({
+                                      ...formData,
+                                      diamond_cut: val,
+                                      diamond_spec: {
+                                        ...(formData.diamond_spec || {}),
+                                        diamond_shape: val,
+                                      },
+                                    });
+                                  }}
+                                  size="sm"
+                                  options={[
+                                    { value: "", label: "No Shape (Plain Band)" },
+                                    ...DIAMOND_SHAPE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label })),
+                                  ]}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Jewellery Dynamic Configuration */}
+                        {normalizedCatKey === "jewellery" && (
+                          <div style={{ padding: "16px", backgroundColor: "#080808", border: "1px solid rgba(198, 164, 95, 0.4)", borderRadius: "6px", display: "flex", flexDirection: "column", gap: "14px" }}>
+                            <div>
+                              <h4 style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "#c6a45f", letterSpacing: "0.5px" }}>
+                                Fine Jewellery Subcategory
+                              </h4>
+                              <p style={{ margin: "2px 0 0", fontSize: "10px", color: "#888888" }}>
+                                Select the jewellery item type corresponding to the navbar dropdown categories.
+                              </p>
+                            </div>
+
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "14px" }}>
+                              <div style={fieldGroupStyle}>
+                                <label style={{ ...labelStyle, color: "#ffffff", fontWeight: 600 }}>
+                                  Jewellery Subcategory *
+                                </label>
+                                <LuxurySelect
+                                  value={currentSubValue}
+                                  onChange={(val) => {
+                                    const updates: Partial<typeof formData> = {
+                                      subcategory: val,
+                                      ring_type: val,
+                                      ring_style: val,
+                                    };
+                                    if (["Earrings", "Solitaire Studs", "Hoop Earrings"].includes(val)) {
+                                      updates.earring_type = val.toLowerCase().includes("stud") ? "studs" : val.toLowerCase().includes("hoop") ? "hoops" : "studs";
+                                    }
+                                    if (["Necklace", "Pendants", "Heart Pendants", "Cross Pendants"].includes(val)) {
+                                      updates.necklace_style = val.toLowerCase().includes("pendant") ? "pendant" : "chain";
+                                    }
+                                    if (["Bracelets & Bangles", "Tennis Bracelets"].includes(val)) {
+                                      updates.bracelet_type = val.toLowerCase().includes("tennis") ? "tennis" : "bangle";
+                                    }
+                                    setFormData({
+                                      ...formData,
+                                      ...updates,
+                                    });
+                                  }}
+                                  size="sm"
+                                  options={subcategoryOptions.map((opt) => ({ value: opt.value, label: opt.label }))}
+                                />
+                              </div>
+
+                              <div style={fieldGroupStyle}>
+                                <label style={labelStyle}>Diamond Shape (Optional / Diamond Items)</label>
+                                <LuxurySelect
+                                  value={currentShapeValue}
+                                  onChange={(val) => {
+                                    setFormData({
+                                      ...formData,
+                                      diamond_cut: val,
+                                      diamond_spec: {
+                                        ...(formData.diamond_spec || {}),
+                                        diamond_shape: val,
+                                      },
+                                    });
+                                  }}
+                                  size="sm"
+                                  options={[
+                                    { value: "", label: "No Shape (Plain Metal)" },
+                                    ...DIAMOND_SHAPE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label })),
+                                  ]}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })()}
@@ -1856,9 +2147,9 @@ export default function AdminProductsPage() {
                               });
                             }}
                             size="sm"
-                            options={DIAMOND_SHAPE_OPTIONS.map((shape) => ({
-                              value: shape,
-                              label: shape.replace("-cut", "").replace(/\b\w/g, (l) => l.toUpperCase()),
+                            options={DIAMOND_SHAPE_OPTIONS.map((opt) => ({
+                              value: opt.value,
+                              label: opt.label,
                             }))}
                           />
                         </div>
