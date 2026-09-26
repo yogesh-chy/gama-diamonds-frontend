@@ -1293,214 +1293,164 @@ export default function AdminProductsPage() {
                   </div>
 
                   {/* Category, Subcategory, Diamond Shape & Gender Classification */}
-                  <div style={{ padding: "16px", backgroundColor: "#080808", border: "1px solid rgba(198, 164, 95, 0.35)", borderRadius: "6px", display: "flex", flexDirection: "column", gap: "14px" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <label style={{ ...labelStyle, color: "#c6a45f", fontSize: "11px", fontWeight: 700, margin: 0, textTransform: "uppercase", letterSpacing: "1px" }}>
-                        Store Categorization &amp; Navigation Placement
-                      </label>
-                      <span style={{ fontSize: "9.5px", color: "#888888" }}>
-                        Matches navbar menu and collection dropdowns
-                      </span>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "14px" }}>
+                    {/* Category */}
+                    <div style={fieldGroupStyle}>
+                      <label style={labelStyle}>Category *</label>
+                      <LuxurySelect
+                        value={formData.category || "engagement-rings"}
+                        onChange={(val) => {
+                          const subOpts = SUBCATEGORIES_BY_CATEGORY[val] || [];
+                          const firstSub = subOpts[0]?.value || "";
+                          let newGender = formData.gender;
+                          if (val === "wedding-bands") {
+                            if (firstSub.startsWith("Men")) newGender = "men";
+                            else if (firstSub.startsWith("Women") || firstSub === "Eternity Rings") newGender = "women";
+                          }
+                          setFormData({
+                            ...formData,
+                            category: val,
+                            ring_type: firstSub,
+                            ring_style: firstSub,
+                            earring_type: firstSub,
+                            necklace_style: firstSub,
+                            bracelet_type: firstSub,
+                            subcategory: firstSub,
+                            gender: newGender ?? formData.gender,
+                          });
+                        }}
+                        size="sm"
+                        options={CATEGORY_OPTIONS.map((cat) => ({ value: cat.value, label: cat.label }))}
+                      />
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
-                      {/* Category */}
-                      <div style={fieldGroupStyle}>
-                        <label style={labelStyle}>Category *</label>
-                        <LuxurySelect
-                          value={formData.category || "engagement-rings"}
-                          onChange={(val) => {
-                            const subOpts = SUBCATEGORIES_BY_CATEGORY[val] || [];
-                            const firstSub = subOpts[0]?.value || "";
-                            let newGender = formData.gender;
-                            if (val === "wedding-bands") {
-                              if (firstSub.startsWith("Men")) newGender = "men";
-                              else if (firstSub.startsWith("Women") || firstSub === "Eternity Rings") newGender = "women";
-                            }
-                            setFormData({
-                              ...formData,
-                              category: val,
-                              ring_type: firstSub,
-                              ring_style: firstSub,
-                              earring_type: firstSub,
-                              necklace_style: firstSub,
-                              bracelet_type: firstSub,
-                              subcategory: firstSub,
-                              gender: newGender ?? formData.gender,
-                            });
-                          }}
-                          size="sm"
-                          options={CATEGORY_OPTIONS.map((cat) => ({ value: cat.value, label: cat.label }))}
-                        />
-                      </div>
-
-                      {/* Subcategory */}
-                      {(() => {
-                        const activeCat = formData.category || "engagement-rings";
-                        const normalizedCatKey =
-                          activeCat === "rings"
-                            ? "engagement-rings"
-                            : activeCat === "wedding"
-                            ? "wedding-bands"
-                            : activeCat === "eternity"
-                            ? "eternity-bands"
-                            : activeCat === "necklace" || activeCat === "pendants"
-                            ? "necklaces"
-                            : activeCat;
-
-                        const subcategoryOptions = SUBCATEGORIES_BY_CATEGORY[normalizedCatKey];
-                        if (!subcategoryOptions || subcategoryOptions.length === 0) return null;
-
-                        const subTitle =
-                          normalizedCatKey === "engagement-rings"
-                            ? "Subcategory (Style) *"
-                            : normalizedCatKey === "wedding-bands"
-                            ? "Subcategory (Collection / Style) *"
-                            : "Subcategory (Item Type) *";
-
-                        const currentSub =
-                          formData.subcategory ||
-                          formData.ring_type ||
-                          formData.ring_style ||
-                          formData.earring_type ||
-                          formData.necklace_style ||
-                          formData.bracelet_type ||
-                          subcategoryOptions[0]?.value ||
-                          "";
-
-                        return (
-                          <div style={fieldGroupStyle}>
-                            <label style={labelStyle}>{subTitle}</label>
-                            <LuxurySelect
-                              value={currentSub}
-                              onChange={(val) => {
-                                let newGender = formData.gender;
-                                let newProfile = formData.ring_profile;
-                                if (normalizedCatKey === "wedding-bands") {
-                                  if (val.startsWith("Men")) newGender = "men";
-                                  else if (val.startsWith("Women") || val === "Eternity Rings") newGender = "women";
-                                  if (["Traditional Court", "Flat Court", "Soft Court"].includes(val)) {
-                                    newProfile = val;
-                                  }
-                                }
-                                const updates: Partial<typeof formData> = {
-                                  subcategory: val,
-                                  ring_type: val,
-                                  ring_style: val,
-                                  gender: newGender ?? formData.gender,
-                                  ring_profile: newProfile,
-                                };
-                                if (["Earrings", "Solitaire Studs", "Hoop Earrings"].includes(val)) {
-                                  updates.earring_type = val.toLowerCase().includes("stud") ? "studs" : val.toLowerCase().includes("hoop") ? "hoops" : "studs";
-                                }
-                                if (["Necklace", "Pendants", "Heart Pendants", "Cross Pendants"].includes(val)) {
-                                  updates.necklace_style = val.toLowerCase().includes("pendant") ? "pendant" : "chain";
-                                }
-                                if (["Bracelets & Bangles", "Tennis Bracelets"].includes(val)) {
-                                  updates.bracelet_type = val.toLowerCase().includes("tennis") ? "tennis" : "bangle";
-                                }
-                                setFormData({
-                                  ...formData,
-                                  ...updates,
-                                });
-                              }}
-                              size="sm"
-                              options={subcategoryOptions.map((opt) => ({ value: opt.value, label: opt.label }))}
-                            />
-                          </div>
-                        );
-                      })()}
-
-                      {/* Diamond Shape */}
-                      {(() => {
-                        const activeCat = formData.category || "engagement-rings";
-                        const isEng = activeCat === "engagement-rings" || activeCat === "rings";
-                        const isWedding = activeCat === "wedding-bands" || activeCat === "wedding";
-                        const isJewellery = activeCat === "jewellery";
-
-                        const currentShape = formData.diamond_cut || formData.diamond_spec?.diamond_shape || "round";
-
-                        if (!isEng && !isWedding && !isJewellery) return null;
-
-                        const shapeLabel = isEng
-                          ? "Diamond Shape (Shop by Shape) *"
-                          : "Diamond Shape (Optional)";
-
-                        return (
-                          <div style={fieldGroupStyle}>
-                            <label style={labelStyle}>{shapeLabel}</label>
-                            <LuxurySelect
-                              value={currentShape}
-                              onChange={(val) => {
-                                setFormData({
-                                  ...formData,
-                                  diamond_cut: val,
-                                  diamond_spec: {
-                                    ...(formData.diamond_spec || {}),
-                                    diamond_shape: val,
-                                  },
-                                });
-                              }}
-                              size="sm"
-                              options={
-                                isEng
-                                  ? DIAMOND_SHAPE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))
-                                  : [
-                                      { value: "", label: "No Shape / Plain Metal" },
-                                      ...DIAMOND_SHAPE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label })),
-                                    ]
-                              }
-                            />
-                          </div>
-                        );
-                      })()}
-
-                      {/* Target Gender / Collection */}
-                      <div style={fieldGroupStyle}>
-                        <label style={labelStyle}>Target Collection / Gender</label>
-                        <LuxurySelect
-                          value={formData.gender || "women"}
-                          onChange={(val) => setFormData({ ...formData, gender: val })}
-                          size="sm"
-                          options={[
-                            { value: "women", label: "Women's Collection" },
-                            { value: "men", label: "Men's Collection" },
-                            { value: "unisex", label: "Unisex / Universal" },
-                          ]}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Live Visibility Preview */}
+                    {/* Subcategory */}
                     {(() => {
                       const activeCat = formData.category || "engagement-rings";
-                      const isEng = activeCat === "engagement-rings" || activeCat === "rings";
-                      const currentSub = formData.subcategory || "Solitaire";
-                      const currentShape = formData.diamond_cut || formData.diamond_spec?.diamond_shape || "round";
-                      const shapeObj = DIAMOND_SHAPE_OPTIONS.find((s) => s.value === currentShape) || DIAMOND_SHAPE_OPTIONS[0];
+                      const normalizedCatKey =
+                        activeCat === "rings"
+                          ? "engagement-rings"
+                          : activeCat === "wedding"
+                          ? "wedding-bands"
+                          : activeCat === "eternity"
+                          ? "eternity-bands"
+                          : activeCat === "necklace" || activeCat === "pendants"
+                          ? "necklaces"
+                          : activeCat;
+
+                      const subcategoryOptions = SUBCATEGORIES_BY_CATEGORY[normalizedCatKey];
+                      if (!subcategoryOptions || subcategoryOptions.length === 0) return null;
+
+                      const currentSub =
+                        formData.subcategory ||
+                        formData.ring_type ||
+                        formData.ring_style ||
+                        formData.earring_type ||
+                        formData.necklace_style ||
+                        formData.bracelet_type ||
+                        subcategoryOptions[0]?.value ||
+                        "";
 
                       return (
-                        <div style={{ padding: "10px 14px", backgroundColor: "rgba(198, 164, 95, 0.06)", border: "1px dashed rgba(198, 164, 95, 0.3)", borderRadius: "4px" }}>
-                          <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#c6a45f", marginBottom: "4px" }}>
-                            ✨ Store Visibility Preview:
-                          </div>
-                          <div style={{ fontSize: "10px", color: "#cccccc", display: "flex", flexDirection: "column", gap: "3px" }}>
-                            {isEng ? (
-                              <>
-                                <div>• <strong>Shop by Style:</strong> <span style={{ color: "#ffffff" }}>{currentSub}</span> <span style={{ color: "#777777" }}>(&quot;/rings/style/{String(currentSub).toLowerCase().replace(/\s+/g, "-")}&quot;)</span></div>
-                                <div>• <strong>Shop by Shape:</strong> <span style={{ color: "#ffffff" }}>{shapeObj?.label || "Round Brilliant"}</span> <span style={{ color: "#777777" }}>(&quot;/rings/{currentShape}&quot;)</span></div>
-                                <div>• <strong>All Engagement Rings:</strong> <span style={{ color: "#ffffff" }}>Global Rings Catalog</span> <span style={{ color: "#777777" }}>(&quot;/rings&quot;)</span></div>
-                              </>
-                            ) : (
-                              <div>• <strong>Category &amp; Subcategory:</strong> <span style={{ color: "#ffffff" }}>{activeCat} → {formData.subcategory || "Direct Collection"}</span> ({formData.gender || "women"})</div>
-                            )}
-                          </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Subcategory *</label>
+                          <LuxurySelect
+                            value={currentSub}
+                            onChange={(val) => {
+                              let newGender = formData.gender;
+                              let newProfile = formData.ring_profile;
+                              if (normalizedCatKey === "wedding-bands") {
+                                if (val.startsWith("Men")) newGender = "men";
+                                else if (val.startsWith("Women") || val === "Eternity Rings") newGender = "women";
+                                if (["Traditional Court", "Flat Court", "Soft Court"].includes(val)) {
+                                  newProfile = val;
+                                }
+                              }
+                              const updates: Partial<typeof formData> = {
+                                subcategory: val,
+                                ring_type: val,
+                                ring_style: val,
+                                gender: newGender ?? formData.gender,
+                                ring_profile: newProfile,
+                              };
+                              if (["Earrings", "Solitaire Studs", "Hoop Earrings"].includes(val)) {
+                                updates.earring_type = val.toLowerCase().includes("stud") ? "studs" : val.toLowerCase().includes("hoop") ? "hoops" : "studs";
+                              }
+                              if (["Necklace", "Pendants", "Heart Pendants", "Cross Pendants"].includes(val)) {
+                                updates.necklace_style = val.toLowerCase().includes("pendant") ? "pendant" : "chain";
+                              }
+                              if (["Bracelets & Bangles", "Tennis Bracelets"].includes(val)) {
+                                updates.bracelet_type = val.toLowerCase().includes("tennis") ? "tennis" : "bangle";
+                              }
+                              setFormData({
+                                ...formData,
+                                ...updates,
+                              });
+                            }}
+                            size="sm"
+                            options={subcategoryOptions.map((opt) => ({ value: opt.value, label: opt.label }))}
+                          />
                         </div>
                       );
                     })()}
+
+                    {/* Diamond Shape */}
+                    {(() => {
+                      const activeCat = formData.category || "engagement-rings";
+                      const isEng = activeCat === "engagement-rings" || activeCat === "rings";
+                      const isWedding = activeCat === "wedding-bands" || activeCat === "wedding";
+                      const isJewellery = activeCat === "jewellery";
+
+                      const currentShape = formData.diamond_cut || formData.diamond_spec?.diamond_shape || "round";
+
+                      if (!isEng && !isWedding && !isJewellery) return null;
+
+                      return (
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>{isEng ? "Diamond Shape *" : "Diamond Shape"}</label>
+                          <LuxurySelect
+                            value={currentShape}
+                            onChange={(val) => {
+                              setFormData({
+                                ...formData,
+                                diamond_cut: val,
+                                diamond_spec: {
+                                  ...(formData.diamond_spec || {}),
+                                  diamond_shape: val,
+                                },
+                              });
+                            }}
+                            size="sm"
+                            options={
+                              isEng
+                                ? DIAMOND_SHAPE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))
+                                : [
+                                    { value: "", label: "None / Plain Metal" },
+                                    ...DIAMOND_SHAPE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label })),
+                                  ]
+                            }
+                          />
+                        </div>
+                      );
+                    })()}
+
+                    {/* Target Gender / Collection */}
+                    <div style={fieldGroupStyle}>
+                      <label style={labelStyle}>Gender / Collection</label>
+                      <LuxurySelect
+                        value={formData.gender || "women"}
+                        onChange={(val) => setFormData({ ...formData, gender: val })}
+                        size="sm"
+                        options={[
+                          { value: "women", label: "Women's Collection" },
+                          { value: "men", label: "Men's Collection" },
+                          { value: "unisex", label: "Unisex / Universal" },
+                        ]}
+                      />
+                    </div>
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
                     <div style={fieldGroupStyle}>
                       <label style={labelStyle}>Base Price ($ USD) *</label>
                       <input
@@ -1527,7 +1477,7 @@ export default function AdminProductsPage() {
                         step="0.01"
                         value={formData.discount_price ?? ""}
                         onChange={(e) => setFormData({ ...formData, discount_price: e.target.value ? parseFloat(e.target.value) : null })}
-                        placeholder="Discount Price ($)"
+                        placeholder="Optional sale price"
                         style={inputStyle}
                       />
                     </div>
@@ -1549,21 +1499,6 @@ export default function AdminProductsPage() {
                         style={inputStyle}
                       />
                     </div>
-                  </div>
-
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
-                    <div style={fieldGroupStyle}>
-                      <label style={labelStyle}>Diamond Type</label>
-                      <LuxurySelect
-                        value={formData.diamond_type || ""}
-                        onChange={(val) => setFormData({ ...formData, diamond_type: val ? parseInt(val) : null })}
-                        size="sm"
-                        options={[
-                          { value: "", label: "None / Not Applicable" },
-                          ...diamondTypesList.map((dt) => ({ value: dt.id, label: dt.name })),
-                        ]}
-                      />
-                    </div>
 
                     <div style={fieldGroupStyle}>
                       <label style={labelStyle}>Brand</label>
@@ -1574,20 +1509,6 @@ export default function AdminProductsPage() {
                         options={[
                           { value: "", label: "Gama Diamonds" },
                           ...brandsList.map((b) => ({ value: b.id, label: b.name })),
-                        ]}
-                      />
-                    </div>
-
-                    <div style={fieldGroupStyle}>
-                      <label style={labelStyle}>Target Gender</label>
-                      <LuxurySelect
-                        value={formData.gender || "women"}
-                        onChange={(val) => setFormData({ ...formData, gender: val })}
-                        size="sm"
-                        options={[
-                          { value: "women", label: "Women" },
-                          { value: "men", label: "Men" },
-                          { value: "unisex", label: "Unisex" },
                         ]}
                       />
                     </div>
@@ -1604,80 +1525,25 @@ export default function AdminProductsPage() {
                     />
                   </div>
 
-                  {/* Taxonomy Tagging: Styles & Collections */}
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "14px", paddingTop: "10px", borderTop: "1px solid rgba(255, 255, 255, 0.1)" }}>
-                    <div style={fieldGroupStyle}>
-                      <label style={labelStyle}>Styles</label>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", maxHeight: 110, overflowY: "auto", padding: "8px", backgroundColor: "#000000", border: "1px solid rgba(255, 255, 255, 0.15)" }}>
-                        {stylesList.map((st) => {
-                          const isSelected = (formData.styles || []).includes(st.id);
-                          return (
-                            <button
-                              key={st.id}
-                              type="button"
-                              onClick={() => toggleArrayItem(st.id, formData.styles, (items) => setFormData({ ...formData, styles: items }))}
-                              style={{
-                                padding: "3px 8px",
-                                fontSize: "10px",
-                                border: isSelected ? "1px solid #c6a45f" : "1px solid rgba(255, 255, 255, 0.15)",
-                                backgroundColor: isSelected ? "#c6a45f" : "rgba(255, 255, 255, 0.05)",
-                                color: isSelected ? "#000000" : "#cccccc",
-                                fontWeight: isSelected ? 600 : 400,
-                                cursor: "pointer",
-                              }}
-                            >
-                              {st.name}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div style={fieldGroupStyle}>
-                      <label style={labelStyle}>Collections</label>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", maxHeight: 110, overflowY: "auto", padding: "8px", backgroundColor: "#000000", border: "1px solid rgba(255, 255, 255, 0.15)" }}>
-                        {collectionsList.map((col) => {
-                          const isSelected = (formData.collections || []).includes(col.id);
-                          return (
-                            <button
-                              key={col.id}
-                              type="button"
-                              onClick={() => toggleArrayItem(col.id, formData.collections, (items) => setFormData({ ...formData, collections: items }))}
-                              style={{
-                                padding: "3px 8px",
-                                fontSize: "10px",
-                                border: isSelected ? "1px solid #c6a45f" : "1px solid rgba(255, 255, 255, 0.15)",
-                                backgroundColor: isSelected ? "#c6a45f" : "rgba(255, 255, 255, 0.05)",
-                                color: isSelected ? "#000000" : "#cccccc",
-                                fontWeight: isSelected ? 600 : 400,
-                                cursor: "pointer",
-                              }}
-                            >
-                              {col.name}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: "flex", alignItems: "center", gap: "20px", paddingTop: "4px" }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", color: "#dddddd", cursor: "pointer" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "24px", paddingTop: "6px" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "11px", color: "#dddddd", cursor: "pointer" }}>
                       <input
                         type="checkbox"
                         checked={formData.is_active ?? true}
                         onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                        style={{ accentColor: "#c6a45f", width: 15, height: 15 }}
                       />
-                      <span>Active Product</span>
+                      <span>Active (Visible on Store)</span>
                     </label>
 
-                    <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", color: "#dddddd", cursor: "pointer" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "11px", color: "#dddddd", cursor: "pointer" }}>
                       <input
                         type="checkbox"
                         checked={formData.is_featured ?? false}
                         onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
+                        style={{ accentColor: "#c6a45f", width: 15, height: 15 }}
                       />
-                      <span>Featured Product</span>
+                      <span>Featured (Homepage Showcase)</span>
                     </label>
                   </div>
                 </div>
