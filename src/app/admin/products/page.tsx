@@ -1615,16 +1615,6 @@ export default function AdminProductsPage() {
                       <h3 style={{ fontSize: "11px", fontWeight: 600, color: "#ffffff", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid rgba(255, 255, 255, 0.1)", paddingBottom: "6px", margin: 0 }}>Ring Attributes</h3>
                       
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
-                        <div style={fieldGroupStyle}>
-                          <label style={labelStyle}>Ring Style</label>
-                          <input
-                            type="text"
-                            value={formData.ring_style || ""}
-                            onChange={(e) => setFormData({ ...formData, ring_style: e.target.value })}
-                            placeholder="Ring Style"
-                            style={inputStyle}
-                          />
-                        </div>
 
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Band Fit</label>
