@@ -87,6 +87,11 @@ export interface ProductItem {
   sku: string;
   description: string;
   category: string;
+  category_ref?: number | { id: number; name: string; slug: string } | null;
+  subcategory_ref?: number | { id: number; name: string; slug: string } | null;
+  subcategory?: string | null;
+  ring_type?: string | null;
+  ring_style?: string | null;
   base_price: string | number;
   discount_price: string | number | null;
   basePrice?: number;

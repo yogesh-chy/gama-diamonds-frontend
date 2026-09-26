@@ -86,7 +86,7 @@ export default function CategoryListingPage({
             id: String(p.id),
             title: p.name,
             category: p.category || categoryTitle,
-            style: p.diamond_cut || p.earring_type || p.necklace_style || p.bracelet_type || "Classic",
+            style: p.subcategory || p.ring_type || p.ring_style || p.earring_type || p.necklace_style || p.bracelet_type || p.diamond_cut || "Classic",
             metal: p.metal_type || "18ct White Gold",
             gemstone: "White Diamond",
             price: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),

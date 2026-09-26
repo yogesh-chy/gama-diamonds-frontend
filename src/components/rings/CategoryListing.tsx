@@ -108,76 +108,74 @@ export default function CategoryListing({
     const titleLower = categoryTitle.toLowerCase().trim();
     const derivedSlug = titleLower.replace(/\s+rings?$/, "").replace(/\s+jewellery$/, "");
 
-    const SLUG_CANDIDATES_MAP: Record<string, string[]> = {
-      "eternity rings": ["eternity-bands", "eternity", "eternity-rings", "eternity-ring"],
-      "eternity ring": ["eternity-bands", "eternity", "eternity-rings", "eternity-ring"],
-      "eternity": ["eternity-bands", "eternity", "eternity-rings", "eternity-ring"],
-      "engagement rings": ["engagement-rings", "engagement", "rings"],
-      "engagement ring": ["engagement-rings", "engagement", "rings"],
-      "wedding bands": ["wedding-bands", "wedding", "wedding-rings"],
-      "wedding rings": ["wedding-bands", "wedding", "wedding-rings"],
-      "men's wedding rings": ["wedding-bands"],
-      "men's plain wedding rings": ["wedding-bands"],
-      "men's plain": ["wedding-bands"],
-      "women's wedding rings": ["wedding-bands"],
-      "women's plain wedding rings": ["wedding-bands"],
-      "women's plain": ["wedding-bands"],
-      "bracelets & bangles": ["bracelets", "bangles", "bracelet", "bangle", "tennis-bracelets"],
-      "tennis bracelets": ["tennis-bracelets", "bracelets", "bracelet"],
-      "pendants": ["pendants", "pendant", "cross-pendants", "heart-pendants", "necklaces"],
-      "cross pendants": ["cross-pendants", "pendants", "pendant", "necklaces"],
-      "heart pendants": ["heart-pendants", "pendants", "pendant", "necklaces"],
-      "necklace": ["necklaces", "necklace", "pendants", "pendant"],
-      "necklaces & pendants": ["necklaces", "necklace", "pendants", "pendant"],
-      "earrings": ["earrings", "earring", "hoop-earrings", "solitaire-studs"],
-      "hoop earrings": ["hoop-earrings", "earrings", "earring"],
-      "solitaire studs": ["solitaire-studs", "earrings", "earring"],
-      "hot diamonds": ["hot-diamonds", "other", "jewellery"],
-      "gold colour jewellery": ["jewellery", "other"],
-      "rose gold jewellery": ["jewellery", "other"],
-      "silver colour jewellery": ["jewellery", "other"],
+    const CATEGORY_CONFIG_MAP: Record<string, { category?: string; subcategory?: string; gender?: string; candidates: string[] }> = {
+      "eternity rings": { category: "eternity-bands", candidates: ["eternity-bands", "eternity", "eternity-rings"] },
+      "eternity ring": { category: "eternity-bands", candidates: ["eternity-bands", "eternity", "eternity-rings"] },
+      "eternity": { category: "eternity-bands", candidates: ["eternity-bands", "eternity", "eternity-rings"] },
+      "engagement rings": { category: "engagement-rings", candidates: ["engagement-rings"] },
+      "engagement ring": { category: "engagement-rings", candidates: ["engagement-rings"] },
+      "wedding bands": { category: "wedding-bands", candidates: ["wedding-bands"] },
+      "wedding rings": { category: "wedding-bands", candidates: ["wedding-bands"] },
+      "men's wedding rings": { category: "wedding-bands", gender: "men", candidates: ["wedding-bands"] },
+      "men's plain wedding rings": { category: "wedding-bands", gender: "men", subcategory: "plain", candidates: ["wedding-bands"] },
+      "men's plain": { category: "wedding-bands", gender: "men", subcategory: "plain", candidates: ["wedding-bands"] },
+      "women's wedding rings": { category: "wedding-bands", gender: "women", candidates: ["wedding-bands"] },
+      "women's plain wedding rings": { category: "wedding-bands", gender: "women", subcategory: "plain", candidates: ["wedding-bands"] },
+      "women's plain": { category: "wedding-bands", gender: "women", subcategory: "plain", candidates: ["wedding-bands"] },
+      "bracelets & bangles": { category: "bracelets", candidates: ["bracelets", "bangles"] },
+      "tennis bracelets": { category: "bracelets", subcategory: "tennis", candidates: ["tennis-bracelets", "bracelets"] },
+      "pendants": { category: "pendants", candidates: ["pendants"] },
+      "cross pendants": { category: "pendants", subcategory: "cross", candidates: ["cross-pendants", "pendants"] },
+      "heart pendants": { category: "pendants", subcategory: "heart", candidates: ["heart-pendants", "pendants"] },
+      "necklace": { category: "necklaces", candidates: ["necklaces", "necklace"] },
+      "necklaces & pendants": { category: "necklaces", candidates: ["necklaces", "pendants"] },
+      "earrings": { category: "earrings", candidates: ["earrings"] },
+      "hoop earrings": { category: "earrings", subcategory: "hoops", candidates: ["hoop-earrings", "earrings"] },
+      "solitaire studs": { category: "earrings", subcategory: "studs", candidates: ["solitaire-studs", "earrings"] },
+      "hot diamonds": { category: "other", candidates: ["hot-diamonds", "jewellery", "other"] },
+      "gold colour jewellery": { category: "other", candidates: ["jewellery", "other"] },
+      "rose gold jewellery": { category: "other", candidates: ["jewellery", "other"] },
+      "silver colour jewellery": { category: "other", candidates: ["jewellery", "other"] },
     };
 
-    const candidates = SLUG_CANDIDATES_MAP[titleLower] || [derivedSlug];
+    const config = CATEGORY_CONFIG_MAP[titleLower] || { category: derivedSlug, candidates: [derivedSlug] };
 
     async function loadCategoryProducts() {
       try {
         let apiData: any[] = [];
 
-        // Try candidate category slugs
-        for (const candidate of candidates) {
-          const res = await productsApi.getProducts({ category: candidate, status: "active", limit: 100 });
-          const items = res.data?.data || [];
-          if (Array.isArray(items) && items.length > 0) {
-            apiData = items;
-            break;
-          }
+        // Try primary query with subcategory and gender if specified
+        const queryParams: Record<string, any> = {
+          category: config.category || config.candidates[0] || derivedSlug,
+          status: "active",
+          limit: 100,
+        };
+        if (config.subcategory) queryParams.subcategory = config.subcategory;
+        if (config.gender) queryParams.gender = config.gender;
+
+        const res = await productsApi.getProducts(queryParams);
+        const items = res.data?.data || [];
+        if (Array.isArray(items) && items.length > 0) {
+          apiData = items;
         }
 
-        // Fallback: If still empty, fetch recent active products and filter by candidate category match
+        // Fallback: If still empty, fetch category items and filter strictly
         if (apiData.length === 0) {
-          const allRes = await productsApi.getProducts({ status: "active", limit: 100 });
-          const allItems = allRes.data?.data || [];
-          if (Array.isArray(allItems) && allItems.length > 0) {
-            const matched = allItems.filter((p: any) => {
-              const pCat = String(p.category || "").toLowerCase();
-              const pName = String(p.name || "").toLowerCase();
-              const pGender = String(p.gender || "").toLowerCase();
-              const titleWords = titleLower.split(/\s+/);
-
-              const categoryMatch = candidates.some((cand) => pCat.includes(cand) || cand.includes(pCat));
-              const titleGenderMatch =
-                (titleLower.includes("men") && pGender === "men") ||
-                (titleLower.includes("women") && pGender === "women");
-              const plainWeddingMatch =
-                (titleLower.includes("wedding") || titleLower.includes("band")) &&
-                (pName.includes("wedding") || pName.includes("band")) &&
-                (titleLower.includes("plain") ? pName.includes("plain") || pName.includes("court") : true);
-
-              return categoryMatch || titleGenderMatch || plainWeddingMatch;
-            });
-            if (matched.length > 0) {
-              apiData = matched;
+          for (const cand of config.candidates) {
+            const candRes = await productsApi.getProducts({ category: cand, status: "active", limit: 100 });
+            const candItems = candRes.data?.data || [];
+            if (Array.isArray(candItems) && candItems.length > 0) {
+              const matched = candItems.filter((p: any) => {
+                const pGender = String(p.gender || "").toLowerCase();
+                const pSub = String(p.subcategory || p.ring_type || p.ring_style || p.earring_type || p.necklace_style || p.bracelet_type || "").toLowerCase();
+                if (config.gender && pGender && pGender !== config.gender && pGender !== "unisex") return false;
+                if (config.subcategory && pSub && !pSub.includes(config.subcategory.toLowerCase())) return false;
+                return true;
+              });
+              if (matched.length > 0) {
+                apiData = matched;
+                break;
+              }
             }
           }
         }
