@@ -2550,19 +2550,20 @@ export default function AdminProductsPage() {
                 </div>
               )}
 
-              {/* Modal Footer Controls with Back, Next & Submit */}
+              {/* Modal Footer Controls with Back, Next & Publish/Save */}
               {(() => {
                 const MODAL_TABS_LIST: { id: ModalTab; label: string }[] = [
-                  { id: "basic", label: "Basic Info" },
-                  { id: "specs", label: "Specs & Categories" },
-                  { id: "diamonds", label: "Diamond Specs" },
-                  { id: "variants", label: "Variants Matrix" },
-                  { id: "media", label: "Images & Media" },
-                  { id: "extra", label: "SEO & Extra" },
+                  { id: "basic", label: "Basic Details" },
+                  { id: "specs", label: "Specifications" },
+                  { id: "diamonds", label: "Diamond & 4Cs" },
+                  { id: "variants", label: "Variant Matrix" },
+                  { id: "media", label: "Media Showcase" },
+                  { id: "extra", label: "Delivery & SEO" },
                 ];
                 const currentIdx = MODAL_TABS_LIST.findIndex((t) => t.id === activeTab);
                 const prevTab = currentIdx > 0 ? MODAL_TABS_LIST[currentIdx - 1] : null;
                 const nextTab = currentIdx < MODAL_TABS_LIST.length - 1 ? MODAL_TABS_LIST[currentIdx + 1] : null;
+                const isLastTab = !nextTab;
 
                 return (
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", backgroundColor: "#050505", borderTop: "1px solid rgba(255, 255, 255, 0.1)", margin: "0 -20px -20px -20px" }}>
@@ -2588,25 +2589,27 @@ export default function AdminProductsPage() {
                     </div>
 
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      {nextTab && (
+                      {!isLastTab && nextTab && (
                         <button
                           type="button"
                           onClick={() => setActiveTab(nextTab.id)}
-                          style={{ padding: "8px 18px", backgroundColor: "rgba(198, 164, 95, 0.15)", border: "1px solid #c6a45f", color: "#c6a45f", fontSize: "11px", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+                          style={{ padding: "8px 20px", backgroundColor: "#c6a45f", color: "#000000", border: "none", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
                         >
                           <span>Next: {nextTab.label}</span>
-                          <ChevronRight style={{ width: 13, height: 13 }} />
+                          <ChevronRight style={{ width: 14, height: 14 }} />
                         </button>
                       )}
 
-                      <button
-                        type="submit"
-                        disabled={saving}
-                        style={{ padding: "8px 24px", backgroundColor: "#c6a45f", color: "#000000", border: "none", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
-                      >
-                        {saving && <RefreshCw style={{ width: 13, height: 13, animation: "spin 1s linear infinite" }} />}
-                        <span>{editingProduct ? "Save Changes" : "Publish Product"}</span>
-                      </button>
+                      {isLastTab && (
+                        <button
+                          type="submit"
+                          disabled={saving}
+                          style={{ padding: "8px 26px", backgroundColor: "#c6a45f", color: "#000000", border: "none", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+                        >
+                          {saving && <RefreshCw style={{ width: 13, height: 13, animation: "spin 1s linear infinite" }} />}
+                          <span>{editingProduct ? "Save Changes" : "Publish Product"}</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
