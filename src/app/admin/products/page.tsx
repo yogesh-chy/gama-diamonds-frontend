@@ -799,8 +799,8 @@ export default function AdminProductsPage() {
       if (rawVariants.length === 0) {
         rawVariants = [{
           sku: formData.sku || generateAutoSku(formData.category, formData.name),
-          metal_type: formData.metal_type || "",
-          metal_karat: formData.metal_karat || "",
+          metal_type: formData.metal_type || "yellow-gold",
+          metal_karat: formData.metal_karat || "18K",
           size: "",
           price: targetPrice,
           stock: targetStock,
@@ -811,32 +811,75 @@ export default function AdminProductsPage() {
       } else if (rawVariants.length === 1) {
         rawVariants = [{
           ...rawVariants[0],
-          price: targetPrice,
-          stock: targetStock,
+          metal_type: rawVariants[0].metal_type || formData.metal_type || "yellow-gold",
+          metal_karat: rawVariants[0].metal_karat || formData.metal_karat || "18K",
+          price: typeof rawVariants[0].price === "number" ? rawVariants[0].price : targetPrice,
+          stock: typeof rawVariants[0].stock === "number" ? rawVariants[0].stock : targetStock,
           is_default: true,
         }];
       }
 
-      const cleanedVariants = rawVariants.map((v, i) => ({
-        ...v,
-        sku: v.sku || `${formData.sku || "PROD"}-${v.metal_karat || i + 1}`,
-        metal_weight_grams: parseNumOrNull(v.metal_weight_grams),
-        price: typeof v.price === "number" ? v.price : parseFloat(String(v.price || 0)) || targetPrice,
-        compare_at_price: parseNumOrNull(v.compare_at_price),
-        cost_price: parseNumOrNull(v.cost_price),
-        stock: v.stock !== undefined ? parseInt(String(v.stock)) || 0 : targetStock,
-        is_active: v.is_active ?? true,
-        is_default: v.is_default ?? (i === 0),
-        images: v.images || [],
-      }));
-
-      const defaultVar = cleanedVariants.find((v) => v.is_default) || cleanedVariants[0];
+      const defaultVar = rawVariants.find((v) => v.is_default) || rawVariants[0];
       const targetMetalType = defaultVar?.metal_type || formData.metal_type || "yellow-gold";
       const targetMetalKarat = defaultVar?.metal_karat || formData.metal_karat || "18K";
-      const targetBasePrice = defaultVar?.price !== undefined ? defaultVar.price : targetPrice;
+      const targetBasePrice = defaultVar?.price !== undefined ? (typeof defaultVar.price === "number" ? defaultVar.price : parseFloat(String(defaultVar.price || 0))) : targetPrice;
+
+      // Strip camelCase aliases to prevent DRF from overwriting snake_case values
+      // (DRF processes metalType after metal_type via source="metal_type", so the
+      // old camelCase value was silently overwriting the new snake_case value)
+      const cleanedVariants = rawVariants.map((v, i) => {
+        // Destructure out ALL camelCase aliases that DRF maps to snake_case sources
+        const {
+          metalType: _mt, metalKarat: _mk, metalWeightGrams: _mwg,
+          compareAtPrice: _cap, costPrice: _cp, bangleSize: _bs,
+          trackInventory: _ti, allowBackorder: _ab,
+          isActive: _ia, isDefault: _id2,
+          // Also strip read-only / computed fields the API returns
+          created_at: _ca, updated_at: _ua, display_price: _dp,
+          ...rest
+        } = v as Record<string, unknown>;
+
+        return {
+          ...rest,
+          id: v.id,
+          sku: v.sku || `${formData.sku || "PROD"}-${v.metal_karat || i + 1}`,
+          metal_type: v.metal_type || (v as any).metalType || targetMetalType,
+          metal_karat: v.metal_karat || (v as any).metalKarat || targetMetalKarat,
+          metal_weight_grams: parseNumOrNull(v.metal_weight_grams ?? (v as any).metalWeightGrams),
+          size: v.size || "",
+          length: v.length || "",
+          bangle_size: v.bangle_size || (v as any).bangleSize || "",
+          price: typeof v.price === "number" ? v.price : parseFloat(String(v.price || 0)) || targetPrice,
+          compare_at_price: parseNumOrNull(v.compare_at_price ?? (v as any).compareAtPrice),
+          cost_price: parseNumOrNull(v.cost_price ?? (v as any).costPrice),
+          stock: v.stock !== undefined ? parseInt(String(v.stock)) || 0 : targetStock,
+          track_inventory: v.track_inventory ?? (v as any).trackInventory ?? true,
+          allow_backorder: v.allow_backorder ?? (v as any).allowBackorder ?? false,
+          is_active: v.is_active ?? (v as any).isActive ?? true,
+          is_default: v.is_default ?? (v as any).isDefault ?? (i === 0),
+          images: v.images || [],
+        };
+      });
+
+      // Strip camelCase aliases from top-level payload to prevent same override issue
+      const {
+        metalType: _p_mt, metalKarat: _p_mk, diamondCut: _p_dc,
+        basePrice: _p_bp, discountPrice: _p_dp, totalStock: _p_ts,
+        isActive: _p_ia, isFeatured: _p_if,
+        earringType: _p_et, necklaceStyle: _p_ns, braceletType: _p_bt,
+        bandFit: _p_bf, customisationAvailable: _p_ca, engravingAvailable: _p_ea,
+        videoUrl: _p_vu, seoTitle: _p_st, seoDescription: _p_sd, seoKeywords: _p_sk,
+        // Strip computed / read-only fields from API responses
+        thumbnail: _p_th, secondaryImage: _p_si, price: _p_pr, pricing: _p_pri,
+        inventory: _p_inv, available: _p_av, options: _p_opt,
+        diamondTypeDetail: _p_dtd, brandDetail: _p_bd,
+        stylesDetail: _p_sld, collectionsDetail: _p_cld,
+        diamondSpec: _p_ds, created_at: _p_cra, updated_at: _p_upa,
+        ...cleanFormData
+      } = formData as Record<string, unknown>;
 
       const payload: Partial<AdminProduct> = {
-        ...formData,
+        ...cleanFormData,
         sku: formData.sku || generateAutoSku(formData.category, formData.name),
         metal_type: targetMetalType,
         metal_karat: targetMetalKarat,
@@ -851,7 +894,7 @@ export default function AdminProductsPage() {
         brand: mapId(formData.brand),
         diamond_spec: cleanedDiamondSpec,
         variants: cleanedVariants,
-      };
+      } as Partial<AdminProduct>;
 
       if (editingProduct) {
         const res = await adminApi.updateProduct(editingProduct.id, payload);
