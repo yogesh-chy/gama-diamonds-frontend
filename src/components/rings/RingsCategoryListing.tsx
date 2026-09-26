@@ -44,10 +44,17 @@ export default function RingsCategoryListing({ shapeSlug = "round-brilliant" }: 
       setLoading(true);
       try {
         const res = await productsApi.getProducts({ diamond_cut: shapeSlug, status: "active" });
-        const list = (res.data?.data || []).filter((item: any) => {
+        let list = (res.data?.data || []).filter((item: any) => {
           const cat = String(item.category || "").toLowerCase();
           return cat === "rings" || cat === "engagement-rings" || cat === "wedding-bands" || cat === "eternity-bands";
         });
+        if (list.length === 0) {
+          const retry = await productsApi.getProducts({ category: "engagement-rings", status: "active" });
+          list = (retry.data?.data || []).filter((item: any) => {
+            const cat = String(item.category || "").toLowerCase();
+            return cat === "rings" || cat === "engagement-rings" || cat === "wedding-bands" || cat === "eternity-bands";
+          });
+        }
         const mapped: Product[] = list.map((item: any) => {
           const rawPrice =
             typeof item.price === "object" && item.price?.min
