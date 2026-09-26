@@ -50,6 +50,11 @@ interface ProductData {
   clarity: string;
   color: string;
   certification: string;
+  diamond_origin: string;
+  diamond_origin_label: string;
+  diamond_origin_spec: string;
+  certificate_number?: string;
+  certificate_url?: string;
   badge: string;
   video_url: string | null;
   description: string;
@@ -137,6 +142,21 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
         }
         setSelectedMetal(initialMetal);
 
+        const rawOrigin = (
+          p.diamond_spec?.diamond_origin ||
+          p.diamond_spec?.diamondOrigin ||
+          p.diamond_origin ||
+          (p.diamondTypeDetail?.name?.toLowerCase().includes("natural") ? "natural" : "") ||
+          (p.diamondTypeDetail?.name?.toLowerCase().includes("lab") ? "lab_grown" : "") ||
+          "lab_grown"
+        ).toLowerCase();
+        const isNatural = rawOrigin === "natural";
+        const diamondOriginLabel = isNatural ? "Certified Natural Diamond" : "Certified Lab Diamond";
+        const diamondOriginSpec = isNatural ? "Natural Diamond" : "Lab Grown Diamond";
+
+        const certLab = String(p.diamond_spec?.certification_lab || p.diamond_spec?.certificationLab || "GIA").toUpperCase();
+        const certDisplay = certLab && certLab !== "NONE" ? `${certLab} Certified` : "Certified";
+
         const loadedProduct: ProductData = {
           id: String(p.id),
           title: p.name,
@@ -152,7 +172,12 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
           shape: p.diamond_cut || p.diamond_spec?.diamond_shape || "Round Cut",
           clarity: String(p.diamond_spec?.clarity_grade || p.diamond_spec?.clarityGrade || "VS1"),
           color: String(p.diamond_spec?.colour_grade || p.diamond_spec?.colourGrade || "F"),
-          certification: String(p.diamond_spec?.certification_lab || p.diamond_spec?.certificationLab || "GIA Certified"),
+          certification: certDisplay,
+          diamond_origin: rawOrigin,
+          diamond_origin_label: diamondOriginLabel,
+          diamond_origin_spec: diamondOriginSpec,
+          certificate_number: p.diamond_spec?.certificate_number || p.diamond_spec?.certificateNumber || "",
+          certificate_url: p.diamond_spec?.certificate_url || p.diamond_spec?.certificateUrl || "",
           badge: p.is_featured ? "FEATURED" : "SIGNATURE",
           description: p.description || "Meticulously crafted by master goldsmiths, featuring hand-selected certified diamonds handset into solid precious metal. Designed for everlasting brilliance.",
           video_url: p.video_url || p.videoUrl || null,
@@ -795,7 +820,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                 </span>
                 <span style={{ fontSize: "10px", color: "#555555" }}>•</span>
                 <span style={{ fontSize: "10px", color: "#888888", letterSpacing: "1px", textTransform: "uppercase" }}>
-                  Certified Natural Diamond
+                  {product.diamond_origin_label}
                 </span>
               </div>
               <h1
@@ -1053,7 +1078,9 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                     {product.description || "Each piece is meticulously crafted with the finest attention to detail, balancing timeless elegance with modern luxury craftsmanship."}
                   </p>
                   <ul style={{ paddingLeft: "14px", display: "flex", flexDirection: "column", gap: "4px", color: "#8e8e8e" }}>
-                    <li>Handset certified natural diamonds for maximum brilliance</li>
+                    <li>
+                      Handset {product.diamond_origin === "natural" ? "certified natural diamonds" : "certified lab-grown diamonds"} for maximum brilliance
+                    </li>
                     <li>Solid precious metal composition</li>
                     <li>Includes signature presentation box and certificate</li>
                   </ul>
@@ -1065,6 +1092,10 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                   <div style={{ padding: "6px 8px", backgroundColor: "#090909", borderRadius: "2px" }}>
                     <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Metal</span>
                     <strong style={{ color: "#ffffff" }}>{selectedMetal}</strong>
+                  </div>
+                  <div style={{ padding: "6px 8px", backgroundColor: "#090909", borderRadius: "2px" }}>
+                    <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Diamond Origin</span>
+                    <strong style={{ color: "#ffffff" }}>{product.diamond_origin_spec}</strong>
                   </div>
                   <div style={{ padding: "6px 8px", backgroundColor: "#090909", borderRadius: "2px" }}>
                     <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Diamond Cut</span>
@@ -1086,6 +1117,12 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                     <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Certification</span>
                     <strong style={{ color: "#ffffff" }}>{product.certification}</strong>
                   </div>
+                  {product.certificate_number && (
+                    <div style={{ padding: "6px 8px", backgroundColor: "#090909", borderRadius: "2px" }}>
+                      <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Certificate No.</span>
+                      <strong style={{ color: "#ffffff" }}>{product.certificate_number}</strong>
+                    </div>
+                  )}
                 </div>
               )}
 

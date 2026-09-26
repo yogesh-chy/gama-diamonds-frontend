@@ -54,6 +54,7 @@ export interface ProductSize {
 
 export interface DiamondSpec {
   diamond_shape?: string | null;
+  diamondShape?: string | null;
   carat_weight?: string | number;
   caratWeight?: string | number;
   center_carat_weight?: string | number | null;
@@ -63,6 +64,7 @@ export interface DiamondSpec {
   total_carat_weight?: string | number | null;
   totalCaratWeight?: string | number | null;
   diamond_origin?: string;
+  diamondOrigin?: string;
   diamond_value?: string | number | null;
   cut_grade?: string | null;
   cutGrade?: string | null;
@@ -74,6 +76,8 @@ export interface DiamondSpec {
   certificationLab?: string;
   certificate_number?: string;
   certificateNumber?: string;
+  certificate_url?: string;
+  certificateUrl?: string;
 }
 
 export interface ProductItem {
@@ -96,6 +100,10 @@ export interface ProductItem {
   metalKarat?: string | null;
   diamond_cut?: string | null;
   diamondCut?: string | null;
+  diamond_origin?: string;
+  diamondOrigin?: string;
+  diamond_type_name?: string;
+  diamondTypeDetail?: { id: number; name: string; slug: string } | null;
   earring_type?: string | null;
   earringType?: string | null;
   necklace_style?: string | null;
