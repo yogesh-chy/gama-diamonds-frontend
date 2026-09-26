@@ -61,6 +61,7 @@ const AVAILABLE_METALS = [
   "18ct White Gold",
   "18ct Rose Gold",
   "Platinum",
+  "Silver",
 ];
 
 const UK_RING_SIZES = [

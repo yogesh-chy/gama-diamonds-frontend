@@ -17,6 +17,7 @@ import {
   Tag,
   Check,
   ChevronRight,
+  ChevronLeft,
   SlidersHorizontal,
   Info,
   Layers,
@@ -606,7 +607,24 @@ export default function AdminProductsPage() {
         certification_lab: "GIA",
       },
       images: prod.images || [],
-      variants: prod.variants || [],
+      variants:
+        prod.variants && prod.variants.length > 0
+          ? prod.variants
+          : [
+              {
+                sku: prod.sku || "",
+                metal_type: prod.metal_type || "yellow-gold",
+                metal_karat: prod.metal_karat || "18K",
+                size: "",
+                length: "",
+                bangle_size: "",
+                price: typeof initialPrice === "number" ? initialPrice : 0,
+                stock: typeof initialStock === "number" ? initialStock : 10,
+                is_default: true,
+                is_active: true,
+                images: [],
+              },
+            ],
       video_url: prod.video_url || prod.videoUrl || "",
     });
     setSelectedVariantMetals([]);
@@ -716,12 +734,16 @@ export default function AdminProductsPage() {
       }));
 
       const defaultVar = cleanedVariants.find((v) => v.is_default) || cleanedVariants[0];
+      const targetMetalType = defaultVar?.metal_type || formData.metal_type || "yellow-gold";
+      const targetMetalKarat = defaultVar?.metal_karat || formData.metal_karat || "18K";
+      const targetBasePrice = defaultVar?.price !== undefined ? defaultVar.price : targetPrice;
+
       const payload: Partial<AdminProduct> = {
         ...formData,
         sku: formData.sku || generateAutoSku(formData.category, formData.name),
-        metal_type: defaultVar?.metal_type || formData.metal_type || "yellow-gold",
-        metal_karat: defaultVar?.metal_karat || formData.metal_karat || "18K",
-        base_price: defaultVar?.price !== undefined ? defaultVar.price : targetPrice,
+        metal_type: targetMetalType,
+        metal_karat: targetMetalKarat,
+        base_price: targetBasePrice,
         total_stock: targetStock,
         tax_percentage: parseNumOrNull(formData.tax_percentage) || 0,
         low_stock_threshold: formData.low_stock_threshold ?? 5,
@@ -2384,25 +2406,67 @@ export default function AdminProductsPage() {
                 </div>
               )}
 
-              {/* Modal Footer Controls */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", backgroundColor: "#050505", borderTop: "1px solid rgba(255, 255, 255, 0.1)", margin: "0 -20px -20px -20px" }}>
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  style={{ padding: "8px 16px", backgroundColor: "transparent", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#cccccc", fontSize: "11px", cursor: "pointer" }}
-                >
-                  Cancel
-                </button>
+              {/* Modal Footer Controls with Back, Next & Submit */}
+              {(() => {
+                const MODAL_TABS_LIST: { id: ModalTab; label: string }[] = [
+                  { id: "basic", label: "Basic Info" },
+                  { id: "specs", label: "Specs & Categories" },
+                  { id: "diamonds", label: "Diamond Specs" },
+                  { id: "variants", label: "Variants Matrix" },
+                  { id: "media", label: "Images & Media" },
+                  { id: "extra", label: "SEO & Extra" },
+                ];
+                const currentIdx = MODAL_TABS_LIST.findIndex((t) => t.id === activeTab);
+                const prevTab = currentIdx > 0 ? MODAL_TABS_LIST[currentIdx - 1] : null;
+                const nextTab = currentIdx < MODAL_TABS_LIST.length - 1 ? MODAL_TABS_LIST[currentIdx + 1] : null;
 
-                <button
-                  type="submit"
-                  disabled={saving}
-                  style={{ padding: "8px 24px", backgroundColor: "#c6a45f", color: "#000000", border: "none", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
-                >
-                  {saving && <RefreshCw style={{ width: 13, height: 13, animation: "spin 1s linear infinite" }} />}
-                  <span>{editingProduct ? "Save Changes" : "Publish Product"}</span>
-                </button>
-              </div>
+                return (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", backgroundColor: "#050505", borderTop: "1px solid rgba(255, 255, 255, 0.1)", margin: "0 -20px -20px -20px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <button
+                        type="button"
+                        onClick={() => setIsModalOpen(false)}
+                        style={{ padding: "8px 16px", backgroundColor: "transparent", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#cccccc", fontSize: "11px", cursor: "pointer" }}
+                      >
+                        Cancel
+                      </button>
+
+                      {prevTab && (
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab(prevTab.id)}
+                          style={{ padding: "8px 14px", backgroundColor: "rgba(255, 255, 255, 0.06)", border: "1px solid rgba(255, 255, 255, 0.18)", color: "#ffffff", fontSize: "11px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+                        >
+                          <ChevronLeft style={{ width: 13, height: 13 }} />
+                          <span>Back: {prevTab.label}</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      {nextTab && (
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab(nextTab.id)}
+                          style={{ padding: "8px 18px", backgroundColor: "rgba(198, 164, 95, 0.15)", border: "1px solid #c6a45f", color: "#c6a45f", fontSize: "11px", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+                        >
+                          <span>Next: {nextTab.label}</span>
+                          <ChevronRight style={{ width: 13, height: 13 }} />
+                        </button>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={saving}
+                        style={{ padding: "8px 24px", backgroundColor: "#c6a45f", color: "#000000", border: "none", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+                      >
+                        {saving && <RefreshCw style={{ width: 13, height: 13, animation: "spin 1s linear infinite" }} />}
+                        <span>{editingProduct ? "Save Changes" : "Publish Product"}</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
             </form>
           </div>
         </div>
