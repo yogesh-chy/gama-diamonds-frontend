@@ -355,14 +355,14 @@ export default function Header() {
                 <AnimatePresence>
                   {searchOpen && (
                     <motion.div
-                      initial={{ width: 0, opacity: 0, scaleX: 0.9 }}
-                      animate={{ width: "min(360px, calc(100vw - 32px))", opacity: 1, scaleX: 1 }}
-                      exit={{ width: 0, opacity: 0, scaleX: 0.9 }}
+                      initial={{ width: 0, opacity: 0, scaleX: 0.9, y: "-50%" }}
+                      animate={{ width: "min(360px, calc(100vw - 32px))", opacity: 1, scaleX: 1, y: "-50%" }}
+                      exit={{ width: 0, opacity: 0, scaleX: 0.9, y: "-50%" }}
                       transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
                       style={{
                         position: "absolute",
                         right: "0",
-                        top: "-20px",
+                        top: "50%",
                         transformOrigin: "right center",
                         zIndex: 30,
                       }}
@@ -374,10 +374,10 @@ export default function Header() {
                           alignItems: "center",
                           gap: "8px",
                           background: "rgba(10, 10, 10, 0.98)",
-                          border: "none",
+                          border: "1px solid rgba(198, 164, 95, 0.45)",
                           borderRadius: "0px",
                           padding: "8px 12px",
-                          boxShadow: "none",
+                          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.8)",
                           whiteSpace: "nowrap",
                         }}
                       >
@@ -388,11 +388,13 @@ export default function Header() {
                           placeholder="Search engagement rings, diamonds..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
+                          className="search-input-field"
                           style={{
                             width: "100%",
                             background: "transparent",
                             border: "none",
                             outline: "none",
+                            boxShadow: "none",
                             color: "#ffffff",
                             fontFamily: "'Poppins', sans-serif",
                             fontSize: "12px",

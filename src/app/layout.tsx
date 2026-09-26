@@ -107,13 +107,25 @@ export default function RootLayout({
           </CurrencyProvider>
         </AuthProvider>
         <Toaster
-          position="top-right"
-          richColors
+          position="bottom-right"
+          closeButton
+          expand={false}
+          duration={3500}
+          offset="24px"
+          gap={8}
+          theme="dark"
           toastOptions={{
             style: {
-              background: "#141414",
-              border: "1px solid rgba(198,164,95,0.3)",
+              background: "rgba(14, 14, 14, 0.96)",
+              backdropFilter: "blur(16px)",
+              WebkitBackdropFilter: "blur(16px)",
+              border: "1px solid rgba(198, 164, 95, 0.35)",
               color: "#ffffff",
+              fontFamily: "'Poppins', sans-serif",
+              fontSize: "13px",
+              boxShadow: "0 12px 32px rgba(0, 0, 0, 0.8), 0 0 16px rgba(198, 164, 95, 0.08)",
+              borderRadius: "0px",
+              padding: "12px 16px",
             },
           }}
         />

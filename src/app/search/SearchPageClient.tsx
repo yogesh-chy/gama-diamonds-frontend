@@ -260,10 +260,10 @@ function SearchContent() {
             display: "flex",
             alignItems: "center",
             backgroundColor: "#0a0a0a",
-            border: "none",
+            border: "1px solid rgba(198, 164, 95, 0.45)",
             borderRadius: "0px",
             padding: "4px 6px 4px 16px",
-            boxShadow: "none",
+            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.5)",
           }}
         >
           <Search size={16} color="#c6a45f" style={{ flexShrink: 0, marginRight: "10px" }} />
@@ -272,11 +272,13 @@ function SearchContent() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by ring style, metal, shape, diamond type, SKU..."
+            className="search-input-field"
             style={{
               flex: 1,
               backgroundColor: "transparent",
               border: "none",
               outline: "none",
+              boxShadow: "none",
               color: "#ffffff",
               fontFamily: "'Poppins', sans-serif",
               fontSize: "13px",
