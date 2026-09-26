@@ -65,13 +65,13 @@ export const categoryGridItems: CategoryItem[] = [
   {
     name: "New Arrivals",
     tag: "Latest Collections",
-    href: "/rings?shape=oval",
+    href: "/rings/oval",
     image: "/shopbycategory/new_arrival.png",
   },
   {
     name: "Next Day Dispatch",
     tag: "Ready To Ship",
-    href: "/rings?type=coloured",
+    href: "/rings/round-brilliant",
     image: "/shopbycategory/next_day.png",
   },
 ];
@@ -80,7 +80,7 @@ export const categoryGridItems: CategoryItem[] = [
 export const diamondShapes: DiamondShape[] = [
   {
     name: "Round Cut",
-    href: "/rings/round",
+    href: "/rings/round-brilliant",
     image: "/DiamondShape/round.png",
   },
   {
@@ -135,19 +135,19 @@ export const featureCards: FeatureCard[] = [
   {
     title: "Bespoke Pear Solitaire",
     subtitle: "Custom Engagement Rings",
-    href: "/rings?shape=pear",
+    href: "/rings/pear",
     image: "/bespoke_pear_solitaire.png",
   },
   {
     title: "Loose Fancy Diamonds",
     subtitle: "Ethically Sourced Gems",
-    href: "/rings?type=coloured",
+    href: "/rings/round-brilliant",
     image: "/loose_fancy_diamonds.png",
   },
   {
     title: "Oval Cut Solitaire",
     subtitle: "Handcrafted in our Mumbai atelier",
-    href: "/rings?shape=oval",
+    href: "/rings/oval",
     image: "/oval_cut_solitier.png",
   },
 ];
@@ -223,7 +223,7 @@ export const FALLBACK_RINGS_MENU: MegaMenuData = {
     {
       heading: "ALL ENGAGEMENT RINGS",
       items: [
-        { label: "Explore All Engagement Rings", href: "/rings" },
+        { label: "Explore All Engagement Rings", href: "/rings/round-brilliant" },
       ],
     },
     {
@@ -243,12 +243,12 @@ export const FALLBACK_RINGS_MENU: MegaMenuData = {
     {
       heading: "SHOP BY STYLE",
       items: [
-        { label: "Solitaire", href: "/collections/solitaire" },
-        { label: "Halo", href: "/collections/halo" },
-        { label: "Under Halo", href: "/collections/under-halo" },
-        { label: "Diamond Shoulder", href: "/collections/diamond-shoulder" },
-        { label: "Trilogy Three Stone", href: "/collections/three-stone" },
-        { label: "Matching Set", href: "/collections/matching-set" },
+        { label: "Solitaire", href: "/rings/style/solitaire" },
+        { label: "Halo", href: "/rings/style/halo" },
+        { label: "Under Halo", href: "/rings/style/under-halo" },
+        { label: "Diamond Shoulder", href: "/rings/style/diamond-shoulder" },
+        { label: "Trilogy Three Stone", href: "/rings/style/three-stone" },
+        { label: "Matching Set", href: "/rings/style/matching-set" },
       ],
     },
   ],
@@ -256,12 +256,12 @@ export const FALLBACK_RINGS_MENU: MegaMenuData = {
     {
       src: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=300&h=240&fit=crop",
       caption: "Round Brilliant Solitaire",
-      href: "/rings?shape=round",
+      href: "/rings/round-brilliant",
     },
     {
       src: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=300&h=240&fit=crop",
       caption: "Cushion Halo Engagement",
-      href: "/rings?style=halo",
+      href: "/rings/style/halo",
     },
   ],
 };

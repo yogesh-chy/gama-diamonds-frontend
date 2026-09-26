@@ -87,7 +87,7 @@ export default function RingsHero() {
             {/* CTA Link */}
             <div>
               <Link
-                href="/rings"
+                href="/rings/round-brilliant"
                 className="btn-outline-gold"
                 style={{
                   fontSize: "10.5px",

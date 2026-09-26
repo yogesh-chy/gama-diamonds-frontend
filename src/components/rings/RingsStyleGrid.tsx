@@ -7,31 +7,31 @@ import { motion } from "framer-motion";
 const styles = [
   {
     name: "Solitaire Engagement Ring Box",
-    href: "/rings?style=solitaire",
+    href: "/rings/style/solitaire",
     label: "SHOP SOLITAIRE RINGS",
     imageSrc: "/shopbycategory/engement_ring.png",
   },
   {
     name: "Trilogy Three Stone Ring Box",
-    href: "/rings?style=three-stone",
+    href: "/rings/style/three-stone",
     label: "SHOP TRILOGY THREE STONE RINGS",
     imageSrc: "/three_stone_ring.jpg",
   },
   {
     name: "Under Halo Ring Box",
-    href: "/rings?style=under-halo",
+    href: "/rings/style/under-halo",
     label: "SHOP UNDER HALO RINGS",
     imageSrc: "/1hero.png",
   },
   {
     name: "Halo Engagement Ring Box",
-    href: "/rings?style=halo",
+    href: "/rings/style/halo",
     label: "SHOP HALO RINGS",
     imageSrc: "/2hero.png",
   },
   {
     name: "Diamond Shoulder Ring Box",
-    href: "/rings?style=diamond-shoulder",
+    href: "/rings/style/diamond-shoulder",
     label: "SHOP DIAMOND SHOULDER RINGS",
     imageSrc: "/eternity_styles_guide.jpg",
   },

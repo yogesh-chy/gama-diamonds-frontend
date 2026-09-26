@@ -13,7 +13,7 @@ const recentDesigns = [
   {
     title: "Solitaire Oval Cut Engagement Ring",
     category: "ENGAGEMENT RINGS",
-    href: "/rings?shape=oval",
+    href: "/rings/oval",
     image: "/oval_cut_solitier.png",
   },
   {

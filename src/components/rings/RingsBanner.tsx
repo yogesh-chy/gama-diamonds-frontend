@@ -41,7 +41,7 @@ export default function RingsBanner() {
             }}
           >
             <Link
-              href="/rings"
+              href="/rings/round-brilliant"
               style={{
                 display: "inline-block",
                 background: "#c6a45f",
