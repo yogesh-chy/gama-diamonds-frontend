@@ -374,10 +374,11 @@ export default function Header() {
                           alignItems: "center",
                           gap: "8px",
                           background: "rgba(10, 10, 10, 0.98)",
-                          border: "1px solid #c6a45f",
+                          border: "none",
+                          borderBottom: "1px solid rgba(198, 164, 95, 0.25)",
                           borderRadius: "0px",
                           padding: "8px 12px",
-                          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.8)",
+                          boxShadow: "none",
                           whiteSpace: "nowrap",
                         }}
                       >

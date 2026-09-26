@@ -260,10 +260,11 @@ function SearchContent() {
             display: "flex",
             alignItems: "center",
             backgroundColor: "#0a0a0a",
-            border: "1px solid rgba(198, 164, 95, 0.4)",
+            border: "none",
+            borderBottom: "1px solid rgba(198, 164, 95, 0.25)",
             borderRadius: "0px",
             padding: "4px 6px 4px 16px",
-            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.5)",
+            boxShadow: "none",
           }}
         >
           <Search size={16} color="#c6a45f" style={{ flexShrink: 0, marginRight: "10px" }} />
