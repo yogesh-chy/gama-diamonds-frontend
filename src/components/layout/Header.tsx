@@ -375,7 +375,6 @@ export default function Header() {
                           gap: "8px",
                           background: "rgba(10, 10, 10, 0.98)",
                           border: "none",
-                          borderBottom: "1px solid rgba(198, 164, 95, 0.25)",
                           borderRadius: "0px",
                           padding: "8px 12px",
                           boxShadow: "none",

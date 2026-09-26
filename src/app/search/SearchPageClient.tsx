@@ -261,7 +261,6 @@ function SearchContent() {
             alignItems: "center",
             backgroundColor: "#0a0a0a",
             border: "none",
-            borderBottom: "1px solid rgba(198, 164, 95, 0.25)",
             borderRadius: "0px",
             padding: "4px 6px 4px 16px",
             boxShadow: "none",
