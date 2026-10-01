@@ -10,6 +10,8 @@ export interface AdminProduct {
   product_code?: string;
   internal_reference?: string;
   category: string;
+  category_ref?: number | null;
+  subcategory_ref?: number | null;
   subcategory?: string | null;
   base_price: string | number;
   discount_price: string | number | null;

@@ -29,50 +29,6 @@ import { toast } from "sonner";
 import LuxurySelect from "@/components/ui/LuxurySelect";
 import { adminApi, AdminProduct, AdminCategory, AdminSubcategory, AdminTaxonomyItem } from "@/lib/api/admin";
 
-const CATEGORY_OPTIONS = [
-  { value: "engagement-rings", label: "Engagement Rings" },
-  { value: "wedding-bands", label: "Wedding Rings" },
-  { value: "eternity-bands", label: "Eternity Rings" },
-  { value: "earrings", label: "Earrings" },
-  { value: "necklaces", label: "Necklace" },
-  { value: "bracelets", label: "Bracelets" },
-  { value: "jewellery", label: "Jewellery" },
-];
-
-const SUBCATEGORIES_BY_CATEGORY: Record<string, { value: string; label: string }[]> = {
-  "engagement-rings": [
-    { value: "Solitaire", label: "Solitaire" },
-    { value: "Halo", label: "Halo" },
-    { value: "Under Halo", label: "Under Halo" },
-    { value: "Diamond Shoulder", label: "Diamond Shoulder" },
-    { value: "Trilogy Three Stone", label: "Trilogy Three Stone" },
-    { value: "Matching Set", label: "Matching Set" },
-  ],
-  "wedding-bands": [
-    { value: "Women's Plain", label: "Women's Plain" },
-    { value: "Eternity Rings", label: "Eternity Rings" },
-    { value: "Men's Plain", label: "Men's Plain" },
-    { value: "Men's Diamond", label: "Men's Diamond" },
-    { value: "Men's Pattern", label: "Men's Pattern" },
-    { value: "Traditional Court", label: "Traditional Court" },
-    { value: "Flat Court", label: "Flat Court" },
-    { value: "Soft Court", label: "Soft Court" },
-  ],
-  "jewellery": [
-    { value: "Earrings", label: "Earrings" },
-    { value: "Necklace", label: "Necklace" },
-    { value: "Statement Rings", label: "Statement Rings" },
-    { value: "Pendants", label: "Pendants" },
-    { value: "Bracelets & Bangles", label: "Bracelets & Bangles" },
-    { value: "Tennis Bracelets", label: "Tennis Bracelets" },
-    { value: "Solitaire Studs", label: "Solitaire Studs" },
-    { value: "Heart Pendants", label: "Heart Pendants" },
-    { value: "Cross Pendants", label: "Cross Pendants" },
-    { value: "Hoop Earrings", label: "Hoop Earrings" },
-    { value: "Hot Diamonds", label: "Hot Diamonds" },
-  ],
-};
-
 const METAL_VARIANT_OPTIONS = [
   { code: "SL925", label: "Silver", metal_type: "silver", metal_karat: "925Ag", defaultWeight: "1.70" },
   { code: "YG9", label: "9K Yellow Gold", metal_type: "yellow-gold", metal_karat: "9K", defaultWeight: "1.90" },
@@ -463,7 +419,9 @@ export default function AdminProductsPage() {
 
   const openAddModal = () => {
     setEditingProduct(null);
-    const defaultSku = generateAutoSku("engagement-rings", "Solitaire Ring");
+    const defaultCategory = categories.find((category) => category.slug === "engagement-rings") || categories[0];
+    const defaultSubcategory = subcategories.find((subcategory) => subcategory.category === defaultCategory?.id);
+    const defaultSku = generateAutoSku(defaultCategory?.slug || "engagement-rings", "Solitaire Ring");
     setFormData({
       name: "",
       slug: "",
@@ -471,8 +429,10 @@ export default function AdminProductsPage() {
       product_code: "",
       internal_reference: "",
       description: "",
-      category: "engagement-rings",
-      subcategory: "",
+      category: defaultCategory?.slug || "engagement-rings",
+      category_ref: defaultCategory?.id ?? null,
+      subcategory: defaultSubcategory?.name || "",
+      subcategory_ref: defaultSubcategory?.id ?? null,
       base_price: 1500,
       discount_price: null,
       total_stock: 10,
@@ -830,6 +790,8 @@ export default function AdminProductsPage() {
       const payload: Partial<AdminProduct> = {
         ...cleanFormData,
         sku: formData.sku || generateAutoSku(formData.category, formData.name),
+        category_ref: formData.category_ref ?? null,
+        subcategory_ref: formData.subcategory_ref ?? null,
         metal_type: targetMetalType,
         metal_karat: targetMetalKarat,
         base_price: targetBasePrice,
@@ -1028,7 +990,7 @@ export default function AdminProductsPage() {
               size="sm"
               options={[
                 { value: "", label: "All Categories" },
-                ...CATEGORY_OPTIONS.map((c) => ({ value: c.value, label: c.label })),
+                ...categories.map((category) => ({ value: category.slug, label: category.name })),
               ]}
             />
           </div>
@@ -1114,7 +1076,7 @@ export default function AdminProductsPage() {
                       <td style={{ padding: "12px 14px", fontFamily: "monospace", color: "#aaaaaa" }}>{prod.sku}</td>
 
                       <td style={{ padding: "12px 14px", textTransform: "capitalize", color: "#aaaaaa" }}>
-                        {CATEGORY_OPTIONS.find((c) => c.value === prod.category)?.label || prod.category}
+                        {categories.find((category) => category.id === prod.category_ref || category.slug === prod.category)?.name || prod.category}
                       </td>
 
                       <td style={{ padding: "12px 14px", fontWeight: 600, color: "#c6a45f" }}>
@@ -1298,97 +1260,105 @@ export default function AdminProductsPage() {
                     <div style={fieldGroupStyle}>
                       <label style={labelStyle}>Category *</label>
                       <LuxurySelect
-                        value={formData.category || "engagement-rings"}
+                        value={
+                          categories.find((category) => category.id === Number(formData.category_ref))?.id.toString() ||
+                          categories.find((category) => category.slug === formData.category)?.id.toString() ||
+                          ""
+                        }
                         onChange={(val) => {
-                          const subOpts = SUBCATEGORIES_BY_CATEGORY[val] || [];
-                          const firstSub = subOpts[0]?.value || "";
+                          const selectedCategory = categories.find((category) => category.id === Number(val));
+                          const firstSubcategory = subcategories.find((subcategory) => subcategory.category === selectedCategory?.id);
+                          const firstSub = firstSubcategory?.name || "";
+                          const categoryKey = `${selectedCategory?.slug || ""} ${selectedCategory?.name || ""}`.toLowerCase();
+                          const isRingCategory = /ring|wedding|eternity/.test(categoryKey);
+                          const earringType = ["Earrings", "Solitaire Studs", "Hoop Earrings"].includes(firstSub)
+                            ? firstSub.toLowerCase().includes("hoop") ? "hoops" : "studs"
+                            : categoryKey.includes("earring") ? "studs" : null;
+                          const necklaceStyle = ["Necklace", "Pendants", "Heart Pendants", "Cross Pendants"].includes(firstSub)
+                            ? firstSub.toLowerCase().includes("pendant") ? "pendant" : "chain"
+                            : categoryKey.includes("necklace") ? "pendant" : null;
+                          const braceletType = ["Bracelets & Bangles", "Tennis Bracelets"].includes(firstSub)
+                            ? firstSub.toLowerCase().includes("tennis") ? "tennis" : "bangle"
+                            : categoryKey.includes("bracelet") ? "tennis" : null;
                           let newGender = formData.gender;
-                          if (val === "wedding-bands") {
+                          if (categoryKey.includes("wedding")) {
                             if (firstSub.startsWith("Men")) newGender = "men";
                             else if (firstSub.startsWith("Women") || firstSub === "Eternity Rings") newGender = "women";
                           }
                           setFormData({
                             ...formData,
-                            category: val,
-                            ring_type: firstSub,
-                            ring_style: firstSub,
-                            earring_type: firstSub,
-                            necklace_style: firstSub,
-                            bracelet_type: firstSub,
+                            category: selectedCategory?.slug || "",
+                            category_ref: selectedCategory?.id ?? null,
+                            ring_type: isRingCategory ? firstSub : "",
+                            ring_style: isRingCategory ? firstSub : "",
+                            earring_type: earringType,
+                            necklace_style: necklaceStyle,
+                            bracelet_type: braceletType,
                             subcategory: firstSub,
+                            subcategory_ref: firstSubcategory?.id ?? null,
                             gender: newGender ?? formData.gender,
                           });
                         }}
                         size="sm"
-                        options={CATEGORY_OPTIONS.map((cat) => ({ value: cat.value, label: cat.label }))}
+                        options={categories.map((category) => ({ value: String(category.id), label: category.name }))}
                       />
                     </div>
 
                     {/* Subcategory */}
                     {(() => {
-                      const activeCat = formData.category || "engagement-rings";
-                      const normalizedCatKey =
-                        activeCat === "rings"
-                          ? "engagement-rings"
-                          : activeCat === "wedding"
-                          ? "wedding-bands"
-                          : activeCat === "eternity"
-                          ? "eternity-bands"
-                          : activeCat === "necklace" || activeCat === "pendants"
-                          ? "necklaces"
-                          : activeCat;
-
-                      const subcategoryOptions = SUBCATEGORIES_BY_CATEGORY[normalizedCatKey];
+                      const selectedCategory = categories.find((category) => category.id === Number(formData.category_ref)) ||
+                        categories.find((category) => category.slug === formData.category);
+                      const subcategoryOptions = subcategories.filter((subcategory) => subcategory.category === selectedCategory?.id);
                       if (!subcategoryOptions || subcategoryOptions.length === 0) return null;
 
-                      const currentSub =
-                        formData.subcategory ||
-                        formData.ring_type ||
-                        formData.ring_style ||
-                        formData.earring_type ||
-                        formData.necklace_style ||
-                        formData.bracelet_type ||
-                        subcategoryOptions[0]?.value ||
-                        "";
+                      const currentSubcategory = subcategoryOptions.find((subcategory) => subcategory.id === Number(formData.subcategory_ref)) ||
+                        subcategoryOptions.find((subcategory) => subcategory.name === formData.subcategory) ||
+                        subcategoryOptions[0];
+                      const categoryKey = `${selectedCategory?.slug || ""} ${selectedCategory?.name || ""}`.toLowerCase();
 
                       return (
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Subcategory *</label>
                           <LuxurySelect
-                            value={currentSub}
+                            value={String(currentSubcategory.id)}
                             onChange={(val) => {
+                              const selectedSubcategory = subcategoryOptions.find((subcategory) => subcategory.id === Number(val));
+                              if (!selectedSubcategory) return;
+                              const subcategoryName = selectedSubcategory.name;
                               let newGender = formData.gender;
                               let newProfile = formData.ring_profile;
-                              if (normalizedCatKey === "wedding-bands") {
-                                if (val.startsWith("Men")) newGender = "men";
-                                else if (val.startsWith("Women") || val === "Eternity Rings") newGender = "women";
-                                if (["Traditional Court", "Flat Court", "Soft Court"].includes(val)) {
-                                  newProfile = val;
+                              if (categoryKey.includes("wedding")) {
+                                if (subcategoryName.startsWith("Men")) newGender = "men";
+                                else if (subcategoryName.startsWith("Women") || subcategoryName === "Eternity Rings") newGender = "women";
+                                if (["Traditional Court", "Flat Court", "Soft Court"].includes(subcategoryName)) {
+                                  newProfile = subcategoryName;
                                 }
                               }
+                              const isRingCategory = /ring|wedding|eternity/.test(categoryKey);
                               const updates: Partial<typeof formData> = {
-                                subcategory: val,
-                                ring_type: val,
-                                ring_style: val,
+                                subcategory: subcategoryName,
+                                subcategory_ref: selectedSubcategory.id,
+                                ring_type: isRingCategory ? subcategoryName : "",
+                                ring_style: isRingCategory ? subcategoryName : "",
+                                earring_type: ["Earrings", "Solitaire Studs", "Hoop Earrings"].includes(subcategoryName)
+                                  ? subcategoryName.toLowerCase().includes("hoop") ? "hoops" : "studs"
+                                  : null,
+                                necklace_style: ["Necklace", "Pendants", "Heart Pendants", "Cross Pendants"].includes(subcategoryName)
+                                  ? subcategoryName.toLowerCase().includes("pendant") ? "pendant" : "chain"
+                                  : null,
+                                bracelet_type: ["Bracelets & Bangles", "Tennis Bracelets"].includes(subcategoryName)
+                                  ? subcategoryName.toLowerCase().includes("tennis") ? "tennis" : "bangle"
+                                  : null,
                                 gender: newGender ?? formData.gender,
                                 ring_profile: newProfile,
                               };
-                              if (["Earrings", "Solitaire Studs", "Hoop Earrings"].includes(val)) {
-                                updates.earring_type = val.toLowerCase().includes("stud") ? "studs" : val.toLowerCase().includes("hoop") ? "hoops" : "studs";
-                              }
-                              if (["Necklace", "Pendants", "Heart Pendants", "Cross Pendants"].includes(val)) {
-                                updates.necklace_style = val.toLowerCase().includes("pendant") ? "pendant" : "chain";
-                              }
-                              if (["Bracelets & Bangles", "Tennis Bracelets"].includes(val)) {
-                                updates.bracelet_type = val.toLowerCase().includes("tennis") ? "tennis" : "bangle";
-                              }
                               setFormData({
                                 ...formData,
                                 ...updates,
                               });
                             }}
                             size="sm"
-                            options={subcategoryOptions.map((opt) => ({ value: opt.value, label: opt.label }))}
+                            options={subcategoryOptions.map((subcategory) => ({ value: String(subcategory.id), label: subcategory.name }))}
                           />
                         </div>
                       );
