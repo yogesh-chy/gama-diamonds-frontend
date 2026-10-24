@@ -9,6 +9,7 @@ export interface LuxurySelectOption {
   label: string;
   sublabel?: string;
   disabled?: boolean;
+  isHeader?: boolean;
 }
 
 interface LuxurySelectProps {
@@ -58,7 +59,7 @@ export default function LuxurySelect({
     };
   }, []);
 
-  const selectedOption = options.find((opt) => String(opt.value) === String(value));
+  const selectedOption = options.find((opt) => !opt.isHeader && String(opt.value) === String(value));
 
   const heightBySize = size === "sm" ? "36px" : size === "lg" ? "50px" : "44px";
   const fontSizeBySize = size === "sm" ? "11px" : "12px";
@@ -146,7 +147,30 @@ export default function LuxurySelect({
             }}
             className="modal-scrollbar"
           >
-            {options.map((option) => {
+            {options.map((option, idx) => {
+              if (option.isHeader) {
+                return (
+                  <div
+                    key={`header-${option.label}-${idx}`}
+                    style={{
+                      padding: "8px 14px 4px",
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      letterSpacing: "1px",
+                      color: "#c6a45f",
+                      textTransform: "uppercase",
+                      backgroundColor: "rgba(198, 164, 95, 0.08)",
+                      borderTop: idx > 0 ? "1px solid rgba(198, 164, 95, 0.2)" : "none",
+                      borderBottom: "1px solid rgba(198, 164, 95, 0.12)",
+                      marginTop: idx > 0 ? "6px" : "0",
+                      marginBottom: "3px",
+                      userSelect: "none",
+                    }}
+                  >
+                    {option.label}
+                  </div>
+                );
+              }
               const isSelected = String(option.value) === String(value);
               return (
                 <button
