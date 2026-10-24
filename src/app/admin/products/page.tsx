@@ -1470,32 +1470,17 @@ export default function AdminProductsPage() {
 
                       const dropdownConfig = CATEGORY_DROPDOWN_MENU_ITEMS[catKey];
 
-                      // Build options with grouped section headers matching navigation mega-menus
-                      const options: { value: string; label: string; sublabel?: string; isHeader?: boolean }[] = [];
+                      // Clean list of subcategory dropdown items without section headers
+                      const options: { value: string; label: string }[] = [];
 
                       if (dropdownConfig && dropdownConfig.length > 0) {
-                        const sectionMap = new Map<string, typeof dropdownConfig>();
                         dropdownConfig.forEach((item) => {
-                          const sec = item.section || "Dropdown Items";
-                          if (!sectionMap.has(sec)) sectionMap.set(sec, []);
-                          sectionMap.get(sec)!.push(item);
-                        });
-
-                        sectionMap.forEach((items, section) => {
+                          const matchedDbSub = dbSubcategories.find(
+                            (s) => s.slug === item.slug || s.name.toLowerCase() === item.name.toLowerCase()
+                          );
                           options.push({
-                            value: `header-${section}`,
-                            label: section,
-                            isHeader: true,
-                          });
-                          items.forEach((item) => {
-                            const matchedDbSub = dbSubcategories.find(
-                              (s) => s.slug === item.slug || s.name.toLowerCase() === item.name.toLowerCase()
-                            );
-                            options.push({
-                              value: matchedDbSub ? String(matchedDbSub.id) : item.slug,
-                              label: item.name,
-                              sublabel: section,
-                            });
+                            value: matchedDbSub ? String(matchedDbSub.id) : item.slug,
+                            label: item.name,
                           });
                         });
                       } else if (dbSubcategories.length > 0) {
@@ -1507,14 +1492,13 @@ export default function AdminProductsPage() {
                         );
                       }
 
-                      const selectableOptions = options.filter((opt) => !opt.isHeader);
-                      if (selectableOptions.length === 0) return null;
+                      if (options.length === 0) return null;
 
                       const currentSubVal = String(formData.subcategory_ref || "");
                       const currentSubName = String(formData.subcategory || "").toLowerCase();
-                      const currentOption = selectableOptions.find((opt) => opt.value === currentSubVal) ||
-                        selectableOptions.find((opt) => opt.label.toLowerCase() === currentSubName) ||
-                        selectableOptions[0];
+                      const currentOption = options.find((opt) => opt.value === currentSubVal) ||
+                        options.find((opt) => opt.label.toLowerCase() === currentSubName) ||
+                        options[0];
 
                       return (
                         <div style={fieldGroupStyle}>
@@ -1522,7 +1506,7 @@ export default function AdminProductsPage() {
                           <LuxurySelect
                             value={currentOption ? currentOption.value : ""}
                             onChange={(val) => {
-                              const chosenOpt = selectableOptions.find((opt) => String(opt.value) === String(val));
+                              const chosenOpt = options.find((opt) => String(opt.value) === String(val));
                               if (!chosenOpt) return;
                               const subcategoryName = chosenOpt.label;
 
@@ -2061,25 +2045,6 @@ export default function AdminProductsPage() {
                         </div>
 
                         <div style={fieldGroupStyle}>
-                          <label style={labelStyle}>Diamond Shape</label>
-                          <LuxurySelect
-                            value={formData.diamond_spec?.diamond_shape || formData.diamond_cut || "round"}
-                            onChange={(val) => {
-                              setFormData({
-                                ...formData,
-                                diamond_cut: val,
-                                diamond_spec: { ...(formData.diamond_spec || {}), diamond_shape: val }
-                              });
-                            }}
-                            size="sm"
-                            options={DIAMOND_SHAPE_OPTIONS.map((opt) => ({
-                              value: opt.value,
-                              label: opt.label,
-                            }))}
-                          />
-                        </div>
-
-                        <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Carat Weight</label>
                           <input
                             type="number"
@@ -2093,9 +2058,7 @@ export default function AdminProductsPage() {
                             style={inputStyle}
                           />
                         </div>
-                      </div>
 
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Cut Grade</label>
                           <LuxurySelect
@@ -2111,7 +2074,9 @@ export default function AdminProductsPage() {
                             }))}
                           />
                         </div>
+                      </div>
 
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Colour Grade</label>
                           <LuxurySelect
@@ -2137,9 +2102,7 @@ export default function AdminProductsPage() {
                             options={CLARITY_GRADE_OPTIONS.map((cla) => ({ value: cla, label: cla }))}
                           />
                         </div>
-                      </div>
 
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Certification Lab</label>
                           <LuxurySelect
@@ -2152,7 +2115,9 @@ export default function AdminProductsPage() {
                             options={CERT_LAB_OPTIONS.map((lab) => ({ value: lab, label: lab }))}
                           />
                         </div>
+                      </div>
 
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "14px" }}>
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Certificate Number</label>
                           <input
