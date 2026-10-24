@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import ProductDetailContent from "@/components/product/ProductDetailContent";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://gama-jewels.onrender.com/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://gama-diamonds-backend.onrender.com/api";
 const SITE_URL = "https://www.gamajewels.com";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {

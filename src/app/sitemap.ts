@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 const SITE_URL = "https://www.gamajewels.com";
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://gama-jewels.onrender.com/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://gama-diamonds-backend.onrender.com/api";
 
 /**
  * Dynamic sitemap for Google Search Console.
