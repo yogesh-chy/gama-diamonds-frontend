@@ -947,34 +947,45 @@ export default function AdminProductsPage() {
         subcategories.find((s) => s.slug === subNameLower || s.name.toLowerCase() === subNameLower)?.id ??
         null;
 
-      // Auto-infer type classifications if not already set
-      let autoEarringType = formData.earring_type;
-      if (!autoEarringType) {
+      const catSlugNorm = normalizeCategorySlug(formData.category);
+      const isEarringDomain = catSlugNorm === "earrings" || (catSlugNorm === "jewellery" && (subNameLower.includes("earring") || subNameLower.includes("hoop") || subNameLower.includes("stud") || subNameLower.includes("drop")));
+      const isNecklaceDomain = catSlugNorm === "necklaces" || (catSlugNorm === "jewellery" && (subNameLower.includes("necklace") || subNameLower.includes("pendant") || subNameLower.includes("chain")));
+      const isBraceletDomain = catSlugNorm === "bracelets" || (catSlugNorm === "jewellery" && (subNameLower.includes("bracelet") || subNameLower.includes("bangle") || subNameLower.includes("tennis")));
+      const isRingDomain = /ring|wedding|eternity/.test(catSlugNorm) || (catSlugNorm === "jewellery" && subNameLower.includes("ring"));
+
+      // Cleanly calculate type classifications: reset inapplicable ones to null to prevent lingering on old pages
+      let autoEarringType: string | null = null;
+      if (isEarringDomain) {
         if (subNameLower.includes("hoop")) autoEarringType = "hoops";
-        else if (subNameLower.includes("stud")) autoEarringType = "studs";
         else if (subNameLower.includes("drop") || subNameLower.includes("chandelier")) autoEarringType = "drops";
+        else if (subNameLower.includes("stud")) autoEarringType = "studs";
+        else autoEarringType = formData.earring_type || "studs";
       }
 
-      let autoNecklaceStyle = formData.necklace_style;
-      if (!autoNecklaceStyle) {
+      let autoNecklaceStyle: string | null = null;
+      let autoPendantShape: string | null = null;
+      if (isNecklaceDomain) {
         if (subNameLower.includes("chain")) autoNecklaceStyle = "chain";
         else if (subNameLower.includes("tennis")) autoNecklaceStyle = "tennis";
-        else if (subNameLower.includes("pendant") || subNameLower.includes("necklace")) autoNecklaceStyle = "pendant";
+        else autoNecklaceStyle = formData.necklace_style || "pendant";
+
+        if (subNameLower.includes("heart")) autoPendantShape = "heart";
+        else if (subNameLower.includes("cross")) autoPendantShape = "cross";
+        else autoPendantShape = formData.pendant_shape || "";
       }
 
-      let autoBraceletType = formData.bracelet_type;
-      if (!autoBraceletType) {
+      let autoBraceletType: string | null = null;
+      if (isBraceletDomain) {
         if (subNameLower.includes("tennis")) autoBraceletType = "tennis";
         else if (subNameLower.includes("bangle")) autoBraceletType = "bangle";
         else if (subNameLower.includes("cuff")) autoBraceletType = "cuff";
         else if (subNameLower.includes("chain")) autoBraceletType = "chain";
+        else autoBraceletType = formData.bracelet_type || "tennis";
       }
 
-      let autoPendantShape = formData.pendant_shape;
-      if (!autoPendantShape) {
-        if (subNameLower.includes("heart")) autoPendantShape = "heart";
-        else if (subNameLower.includes("cross")) autoPendantShape = "cross";
-      }
+      const autoRingType = isRingDomain ? (formData.ring_type || formData.subcategory || "") : "";
+      const autoRingStyle = isRingDomain ? (formData.ring_style || formData.subcategory || "") : "";
+      const autoRingProfile = isRingDomain ? (formData.ring_profile || "") : "";
 
       const payload: Partial<AdminProduct> = {
         ...cleanFormData,
@@ -985,6 +996,9 @@ export default function AdminProductsPage() {
         necklace_style: autoNecklaceStyle,
         bracelet_type: autoBraceletType,
         pendant_shape: autoPendantShape,
+        ring_type: autoRingType,
+        ring_style: autoRingStyle,
+        ring_profile: autoRingProfile,
         metal_type: targetMetalType,
         metal_karat: targetMetalKarat,
         base_price: targetBasePrice,
