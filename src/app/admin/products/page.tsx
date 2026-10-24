@@ -944,7 +944,9 @@ export default function AdminProductsPage() {
       const responseData = err && typeof err === "object" && "response" in err ? (err.response as { data?: unknown }).data : null;
       let msg = "Failed to save product";
       if (responseData && typeof responseData === "object") {
-        const details = (responseData as Record<string, unknown>).details || (responseData as Record<string, unknown>).error?.details || responseData;
+        const respMap = responseData as Record<string, unknown>;
+        const errObj = respMap.error && typeof respMap.error === "object" ? (respMap.error as Record<string, unknown>) : null;
+        const details = respMap.details || (errObj ? errObj.details || errObj : null) || responseData;
         const errors: string[] = [];
         const extractErrors = (obj: unknown, prefix = ""): void => {
           if (typeof obj === "string") { errors.push(prefix ? `${prefix}: ${obj}` : obj); return; }
