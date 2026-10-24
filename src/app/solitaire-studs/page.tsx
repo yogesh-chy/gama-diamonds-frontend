@@ -43,7 +43,7 @@ export default function SolitaireStudsPage() {
       <Header />
       <CategoryListing
         products={[]}
-        categoryTitle="Earrings"
+        categoryTitle="Solitaire Studs"
         customMetals={SOLITAIRE_STUDS_METALS}
         customStyles={SOLITAIRE_STUDS_STYLES}
         hideDiamondType={false}

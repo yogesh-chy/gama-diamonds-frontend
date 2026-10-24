@@ -357,11 +357,11 @@ export default function AdminProductsPage() {
   };
 
   const selectedCategory = (formData.category || "engagement-rings").toLowerCase();
-  const isRingCategory = ["engagement-rings", "wedding-bands", "eternity-bands", "rings"].includes(selectedCategory);
-  const isEarringCategory = selectedCategory === "earrings";
-  const isNecklaceCategory = ["necklaces", "pendants"].includes(selectedCategory);
-  const isBraceletCategory = selectedCategory === "bracelets";
-  const isBangleCategory = selectedCategory === "bangles";
+  const isRingCategory = ["engagement-rings", "wedding-rings", "wedding-bands", "eternity-rings", "eternity-bands", "rings", "wedding", "eternity"].includes(selectedCategory);
+  const isEarringCategory = ["earrings", "earring"].includes(selectedCategory);
+  const isNecklaceCategory = ["necklaces", "necklace", "pendants", "pendant"].includes(selectedCategory);
+  const isBraceletCategory = ["bracelets", "bracelet", "bangles", "bangle"].includes(selectedCategory);
+  const isBangleCategory = ["bangles", "bangle"].includes(selectedCategory);
 
   const getDimensionOptions = () => {
     if (isNecklaceCategory) return CHAIN_LENGTH_OPTIONS;
@@ -1285,6 +1285,11 @@ export default function AdminProductsPage() {
                             if (firstSub.startsWith("Men")) newGender = "men";
                             else if (firstSub.startsWith("Women") || firstSub === "Eternity Rings") newGender = "women";
                           }
+
+                          const matchedStyle = firstSubcategory
+                            ? stylesList.find((s) => s.slug === firstSubcategory.slug || s.name.toLowerCase() === firstSub.toLowerCase())
+                            : null;
+
                           setFormData({
                             ...formData,
                             category: selectedCategory?.slug || "",
@@ -1293,10 +1298,12 @@ export default function AdminProductsPage() {
                             ring_style: isRingCategory ? firstSub : "",
                             earring_type: earringType,
                             necklace_style: necklaceStyle,
+                            pendant_shape: firstSub.includes("Heart") ? "heart" : firstSub.includes("Cross") ? "cross" : formData.pendant_shape,
                             bracelet_type: braceletType,
                             subcategory: firstSub,
                             subcategory_ref: firstSubcategory?.id ?? null,
                             gender: newGender ?? formData.gender,
+                            styles: matchedStyle ? [matchedStyle.id] : [],
                           });
                         }}
                         size="sm"
@@ -1335,6 +1342,15 @@ export default function AdminProductsPage() {
                                 }
                               }
                               const isRingCategory = /ring|wedding|eternity/.test(categoryKey);
+
+                              const matchedStyle = stylesList.find(
+                                (s) => s.slug === selectedSubcategory.slug || s.name.toLowerCase() === subcategoryName.toLowerCase()
+                              );
+                              const existingStyles = (formData.styles || []).map((s) => (typeof s === "object" ? (s as any).id : s));
+                              const nextStyles = matchedStyle && !existingStyles.includes(matchedStyle.id)
+                                ? [...existingStyles, matchedStyle.id]
+                                : existingStyles;
+
                               const updates: Partial<typeof formData> = {
                                 subcategory: subcategoryName,
                                 subcategory_ref: selectedSubcategory.id,
@@ -1342,15 +1358,17 @@ export default function AdminProductsPage() {
                                 ring_style: isRingCategory ? subcategoryName : "",
                                 earring_type: ["Earrings", "Solitaire Studs", "Hoop Earrings"].includes(subcategoryName)
                                   ? subcategoryName.toLowerCase().includes("hoop") ? "hoops" : "studs"
-                                  : null,
+                                  : formData.earring_type,
                                 necklace_style: ["Necklace", "Pendants", "Heart Pendants", "Cross Pendants"].includes(subcategoryName)
                                   ? subcategoryName.toLowerCase().includes("pendant") ? "pendant" : "chain"
-                                  : null,
+                                  : formData.necklace_style,
+                                pendant_shape: subcategoryName.includes("Heart") ? "heart" : subcategoryName.includes("Cross") ? "cross" : formData.pendant_shape,
                                 bracelet_type: ["Bracelets & Bangles", "Tennis Bracelets"].includes(subcategoryName)
                                   ? subcategoryName.toLowerCase().includes("tennis") ? "tennis" : "bangle"
-                                  : null,
+                                  : formData.bracelet_type,
                                 gender: newGender ?? formData.gender,
                                 ring_profile: newProfile,
+                                styles: nextStyles,
                               };
                               setFormData({
                                 ...formData,
@@ -1368,12 +1386,11 @@ export default function AdminProductsPage() {
                     {(() => {
                       const activeCat = formData.category || "engagement-rings";
                       const isEng = activeCat === "engagement-rings" || activeCat === "rings";
-                      const isWedding = activeCat === "wedding-bands" || activeCat === "wedding";
-                      const isJewellery = activeCat === "jewellery";
+                      const isJewelleryCat = ["wedding-bands", "wedding", "wedding-rings", "jewellery", "earrings", "necklaces", "necklace", "bracelets", "eternity-rings", "eternity-bands"].includes(activeCat);
 
                       const currentShape = formData.diamond_cut || formData.diamond_spec?.diamond_shape || "round";
 
-                      if (!isEng && !isWedding && !isJewellery) return null;
+                      if (!isEng && !isJewelleryCat) return null;
 
                       return (
                         <div style={fieldGroupStyle}>

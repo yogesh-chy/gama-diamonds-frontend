@@ -223,7 +223,7 @@ export const FALLBACK_RINGS_MENU: MegaMenuData = {
     {
       heading: "ALL ENGAGEMENT RINGS",
       items: [
-        { label: "Explore All Engagement Rings", href: "/rings/round-brilliant" },
+        { label: "Explore All Engagement Rings", href: "/rings" },
       ],
     },
     {

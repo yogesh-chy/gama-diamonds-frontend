@@ -73,7 +73,7 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
           const retry = await productsApi.getProducts({ style: styleSlug, status: "active" });
           apiData = (retry.data?.data || []).filter((p: any) => {
             const cat = String(p.category || "").toLowerCase();
-            return cat === "rings" || cat === "engagement-rings" || cat === "wedding-bands" || cat === "eternity-bands";
+            return cat === "rings" || cat === "engagement-rings" || cat === "wedding-rings" || cat === "wedding-bands" || cat === "eternity-rings" || cat === "eternity-bands";
           });
         }
         if (cancelled) return;

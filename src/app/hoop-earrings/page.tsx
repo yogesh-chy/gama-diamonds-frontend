@@ -45,7 +45,7 @@ export default function HoopEarringsPage() {
       <Header />
       <CategoryListing
         products={[]}
-        categoryTitle="Earrings"
+        categoryTitle="Hoop Earrings"
         customMetals={HOOP_EARRINGS_METALS}
         customStyles={HOOP_EARRINGS_STYLES}
         hideDiamondType={false}

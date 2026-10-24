@@ -189,20 +189,19 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
 
         // Track in Recently Viewed
         try {
-          if (imagesList.length > 0) {
-            const itemToStore = {
-              title: p.name,
-              rawPrice: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
-              hasPrefix: false,
-              href: `/product/${p.id || p.slug || productId}`,
-              badge: p.is_featured ? "FEATURED" : null,
-              image: imagesList[0],
-            };
-            const existing = JSON.parse(localStorage.getItem("gama_recently_viewed") || "[]");
-            const filtered = Array.isArray(existing) ? existing.filter((item: any) => item.href !== itemToStore.href) : [];
-            filtered.unshift(itemToStore);
-            localStorage.setItem("gama_recently_viewed", JSON.stringify(filtered.slice(0, 8)));
-          }
+          const mainImg = imagesList[0] || p.thumbnail || p.images?.[0]?.url || "/shopbycategory/engement_ring.png";
+          const itemToStore = {
+            title: p.name,
+            rawPrice: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
+            hasPrefix: false,
+            href: `/product/${p.id || p.slug || productId}`,
+            badge: p.is_featured ? "FEATURED" : null,
+            image: mainImg,
+          };
+          const existing = JSON.parse(localStorage.getItem("gama_recently_viewed") || "[]");
+          const filtered = Array.isArray(existing) ? existing.filter((item: any) => item.href !== itemToStore.href) : [];
+          filtered.unshift(itemToStore);
+          localStorage.setItem("gama_recently_viewed", JSON.stringify(filtered.slice(0, 8)));
         } catch {}
       })
       .catch(() => {

@@ -64,7 +64,7 @@ export default function RingsOtherCutsListing({ shapeSlug }: RingsOtherCutsListi
         const res = await productsApi.getProducts({ diamond_cut: shapeSlug, status: "active" });
         const list = (res.data?.data || []).filter((item: any) => {
           const cat = String(item.category || "").toLowerCase();
-          return cat === "rings" || cat === "engagement-rings" || cat === "wedding-bands" || cat === "eternity-bands";
+          return cat === "rings" || cat === "engagement-rings" || cat === "wedding-rings" || cat === "wedding-bands" || cat === "eternity-rings" || cat === "eternity-bands";
         });
         const mapped: Product[] = list.map((item: any) => {
           const rawPrice =
