@@ -942,7 +942,36 @@ export default function AdminProductsPage() {
       await loadData();
     } catch (err: unknown) {
       const responseData = err && typeof err === "object" && "response" in err ? (err.response as { data?: unknown }).data : null;
-      const msg = responseData ? JSON.stringify(responseData) : "Failed to save product";
+      let msg = "Failed to save product";
+      if (responseData && typeof responseData === "object") {
+        const details = (responseData as Record<string, unknown>).details || (responseData as Record<string, unknown>).error?.details || responseData;
+        const errors: string[] = [];
+        const extractErrors = (obj: unknown, prefix = ""): void => {
+          if (typeof obj === "string") { errors.push(prefix ? `${prefix}: ${obj}` : obj); return; }
+          if (Array.isArray(obj)) {
+            obj.forEach((item) => {
+              if (typeof item === "string") errors.push(prefix ? `${prefix}: ${item}` : item);
+              else if (typeof item === "object" && item) extractErrors(item, prefix);
+            });
+            return;
+          }
+          if (typeof obj === "object" && obj) {
+            for (const [key, val] of Object.entries(obj as Record<string, unknown>)) {
+              if (["code", "message", "status", "statusText"].includes(key)) continue;
+              const label = key.replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\b\w/g, (c) => c.toUpperCase());
+              extractErrors(val, prefix ? `${prefix} → ${label}` : label);
+            }
+          }
+        };
+        extractErrors(details);
+        if (errors.length > 0) {
+          msg = errors.slice(0, 5).join("\n");
+          if (errors.length > 5) msg += `\n...and ${errors.length - 5} more`;
+        } else {
+          const fallback = (responseData as Record<string, unknown>).message;
+          if (typeof fallback === "string") msg = fallback;
+        }
+      }
       toast.error(msg);
     } finally {
       setSaving(false);
