@@ -9,6 +9,7 @@ import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import LuxurySelect from "@/components/ui/LuxurySelect";
 import { useCurrency } from "@/context/CurrencyContext";
 import { productsApi } from "@/lib/api/products";
+import { resolveMediaUrl } from "@/lib/api/client";
 import { applyProductFilters } from "@/lib/productFilters";
 
 interface SearchProduct {
@@ -124,12 +125,13 @@ function SearchContent() {
               inStock:
                 (p.total_stock || 0) > 0 ||
                 Boolean(p.variants?.some((v: any) => Number(v.stock || 0) > 0)),
-              image:
+              image: resolveMediaUrl(
                 p.thumbnail ||
                 p.images?.find((img: any) => img.isPrimary || img.is_primary)?.url ||
                 p.images?.[0]?.url ||
                 p.variants?.[0]?.images?.[0]?.url ||
-                p.image,
+                p.image
+              ),
             };
           });
           setProducts(mapped);

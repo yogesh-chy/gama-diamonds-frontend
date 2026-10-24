@@ -34,6 +34,15 @@ apiClient.interceptors.request.use((config) => {
     config.headers = config.headers ?? new AxiosHeaders();
     config.headers.set("Authorization", `Bearer ${token}`);
   }
+  if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+    if (config.headers) {
+      if (typeof (config.headers as any).delete === "function") {
+        (config.headers as any).delete("Content-Type");
+      } else {
+        delete (config.headers as Record<string, unknown>)["Content-Type"];
+      }
+    }
+  }
   return config;
 });
 
@@ -120,3 +129,19 @@ apiClient.interceptors.response.use(
     }
   }
 );
+
+/**
+ * Converts a potentially-relative image/media URL into an absolute URL.
+ * - Already-absolute URLs (https://...) pass through unchanged.
+ * - Relative paths like /media/uploads/... get the backend origin prepended.
+ */
+export function resolveMediaUrl(url: string | undefined | null): string {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:") || url.startsWith("blob:")) {
+    return url;
+  }
+  // Derive backend origin from API_BASE_URL (strip /api suffix)
+  const backendOrigin = API_BASE_URL.replace(/\/api\/?$/, "");
+  const cleanPath = url.startsWith("/") ? url : `/${url}`;
+  return `${backendOrigin}${cleanPath}`;
+}

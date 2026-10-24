@@ -8,6 +8,7 @@ import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import LuxurySelect from "@/components/ui/LuxurySelect";
 import { useCurrency } from "@/context/CurrencyContext";
 import { productsApi } from "@/lib/api/products";
+import { resolveMediaUrl } from "@/lib/api/client";
 import { applyProductFilters } from "@/lib/productFilters";
 
 interface Product {
@@ -88,7 +89,7 @@ export default function RingsOtherCutsListing({ shapeSlug }: RingsOtherCutsListi
             price: validPrice,
             badge: item.is_featured ? "FEATURED" : undefined,
             inStock: (item.total_stock || 0) > 0 || (item.variants?.some((v: any) => v.stock > 0)),
-            image: item.thumbnail || item.images?.find((img: any) => img.isPrimary || img.is_primary)?.url || item.images?.[0]?.url || item.variants?.[0]?.images?.[0]?.url || item.image,
+            image: resolveMediaUrl(item.thumbnail || item.images?.find((img: any) => img.isPrimary || img.is_primary)?.url || item.images?.[0]?.url || item.variants?.[0]?.images?.[0]?.url || item.image),
           };
         });
         setProducts(mapped);

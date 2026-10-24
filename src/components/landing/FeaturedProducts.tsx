@@ -12,6 +12,7 @@ import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { fadeInUp } from "@/lib/constants";
 import { useCurrency } from "@/context/CurrencyContext";
 import { productsApi } from "@/lib/api/products";
+import { resolveMediaUrl } from "@/lib/api/client";
 import type { Product } from "@/types";
 
 export default function FeaturedProducts() {
@@ -25,11 +26,12 @@ export default function FeaturedProducts() {
       .then((res) => {
         if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
           const mapped: Product[] = res.data.data.map((p: any) => {
-            const imgUrl =
+            const imgUrl = resolveMediaUrl(
               p.thumbnail ||
               p.images?.find((i: any) => i.isPrimary || i.is_primary)?.url ||
               p.images?.[0]?.url ||
-              p.variants?.[0]?.images?.[0]?.url;
+              p.variants?.[0]?.images?.[0]?.url
+            );
             return {
               id: p.id,
               name: p.name,
@@ -44,11 +46,12 @@ export default function FeaturedProducts() {
           productsApi.getProducts({ limit: 8 }).then((allRes) => {
             if (allRes.data?.data && Array.isArray(allRes.data.data)) {
               const mapped: Product[] = allRes.data.data.map((p: any) => {
-                const imgUrl =
+                const imgUrl = resolveMediaUrl(
                   p.thumbnail ||
                   p.images?.find((i: any) => i.isPrimary || i.is_primary)?.url ||
                   p.images?.[0]?.url ||
-                  p.variants?.[0]?.images?.[0]?.url;
+                  p.variants?.[0]?.images?.[0]?.url
+                );
                 return {
                   id: p.id,
                   name: p.name,

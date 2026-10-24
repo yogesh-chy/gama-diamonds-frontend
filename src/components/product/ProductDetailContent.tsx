@@ -32,6 +32,7 @@ import { useCurrency } from "@/context/CurrencyContext";
 import { useAuth } from "@/context/AuthContext";
 import { productsApi } from "@/lib/api/products";
 import { cartApi } from "@/lib/api/orders";
+import { resolveMediaUrl } from "@/lib/api/client";
 import { toast } from "sonner";
 
 interface ProductDetailProps {
@@ -119,7 +120,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
 
         const p = res.data;
         setNumericId(p.id);
-        const imagesList = (p.images?.map((img) => img.url) || []).filter(Boolean);
+        const imagesList = (p.images?.map((img: { url: string }) => resolveMediaUrl(img.url)) || []).filter(Boolean);
 
         const pVars = (p.variants || []) as any[];
         setVariants(pVars);
@@ -275,7 +276,8 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
   };
 
   // Build Media Items safely
-  const variantImgUrl = selectedVariant?.images?.find((i: any) => i.isPrimary || i.is_primary)?.url || selectedVariant?.images?.[0]?.url;
+  const rawVariantImgUrl = selectedVariant?.images?.find((i: any) => i.isPrimary || i.is_primary)?.url || selectedVariant?.images?.[0]?.url;
+  const variantImgUrl = resolveMediaUrl(rawVariantImgUrl);
   const rawImageList = product?.images || [];
   const galleryImages = variantImgUrl
     ? [variantImgUrl, ...rawImageList.filter((url) => url !== variantImgUrl)]

@@ -28,6 +28,7 @@ import {
 import { toast } from "sonner";
 import LuxurySelect from "@/components/ui/LuxurySelect";
 import { adminApi, AdminProduct, AdminCategory, AdminSubcategory, AdminTaxonomyItem } from "@/lib/api/admin";
+import { resolveMediaUrl } from "@/lib/api/client";
 
 const METAL_VARIANT_OPTIONS = [
   { code: "SL925", label: "Silver", metal_type: "silver", metal_karat: "925Ag", defaultWeight: "1.70" },
@@ -365,13 +366,27 @@ export default function AdminProductsPage() {
         return;
       }
       for (const file of fileArr) {
-        const res = await adminApi.uploadMedia(file);
-        const url = res.data.url;
+        const localBlob = URL.createObjectURL(file);
         setFormData((prev) => ({
           ...prev,
-          images: [...(prev.images || []), { url, isPrimary: (prev.images || []).length === 0 }],
+          images: [...(prev.images || []), { url: localBlob, isPrimary: (prev.images || []).length === 0 }],
         }));
-        toast.success(`Uploaded image`);
+
+        try {
+          const res = await adminApi.uploadMedia(file);
+          const uploadedUrl = res.data.url;
+          setFormData((prev) => ({
+            ...prev,
+            images: (prev.images || []).map((im) => im.url === localBlob ? { ...im, url: uploadedUrl } : im),
+          }));
+          toast.success(`Uploaded ${file.name}`);
+        } catch (uploadErr) {
+          setFormData((prev) => ({
+            ...prev,
+            images: (prev.images || []).filter((im) => im.url !== localBlob),
+          }));
+          toast.error(`Upload failed for ${file.name}`);
+        }
       }
     } catch (err) {
       toast.error("Image upload failed");
@@ -389,19 +404,33 @@ export default function AdminProductsPage() {
         return;
       }
       for (const file of fileArr) {
-        const res = await adminApi.uploadMedia(file);
-        const url = res.data.url;
+        const localBlob = URL.createObjectURL(file);
         setFormData((prev) => {
           const updatedVariants = [...(prev.variants || [])];
           const currVariant = updatedVariants[variantIdx] || {};
-          const currImages = currVariant.images || [];
           updatedVariants[variantIdx] = {
             ...currVariant,
-            images: [...currImages, { url, isPrimary: currImages.length === 0 }],
+            images: [{ url: localBlob, isPrimary: true }],
           };
           return { ...prev, variants: updatedVariants };
         });
-        toast.success(`Variant image uploaded`);
+
+        try {
+          const res = await adminApi.uploadMedia(file);
+          const uploadedUrl = res.data.url;
+          setFormData((prev) => {
+            const updatedVariants = [...(prev.variants || [])];
+            const currVariant = updatedVariants[variantIdx] || {};
+            updatedVariants[variantIdx] = {
+              ...currVariant,
+              images: [{ url: uploadedUrl, isPrimary: true }],
+            };
+            return { ...prev, variants: updatedVariants };
+          });
+          toast.success(`Variant image uploaded`);
+        } catch (uploadErr) {
+          toast.error("Variant image upload failed");
+        }
       }
     } catch (err) {
       toast.error("Variant image upload failed");
@@ -1188,7 +1217,7 @@ export default function AdminProductsPage() {
               </thead>
               <tbody style={{ color: "#dddddd" }}>
                 {products.map((prod) => {
-                  const img = prod.images?.[0]?.url || prod.thumbnail;
+                  const img = resolveMediaUrl(prod.images?.[0]?.url || prod.thumbnail);
                   const defaultVar = prod.variants?.find((v) => v.is_default || v.isDefault) || prod.variants?.[0];
                   const rawPrice =
                     defaultVar?.price ??
@@ -2343,7 +2372,7 @@ export default function AdminProductsPage() {
                           </thead>
                           <tbody>
                             {(formData.variants || []).map((variant, idx) => {
-                              const varImg = variant.images && variant.images.length > 0 ? variant.images[0].url : null;
+                              const varImg = resolveMediaUrl(variant.images && variant.images.length > 0 ? variant.images[0].url : null);
                               return (
                                 <tr key={idx} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.05)" }}>
                                   <td style={{ padding: "8px", textAlign: "center" }}>
@@ -2532,7 +2561,7 @@ export default function AdminProductsPage() {
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
                       {(formData.images || []).map((img, idx) => (
                         <div key={idx} style={{ position: "relative", border: img.isPrimary ? "2px solid #c6a45f" : "1px solid rgba(255, 255, 255, 0.15)", backgroundColor: "#000000", padding: "6px" }}>
-                          <img src={img.url} alt="" style={{ width: "100%", height: 120, objectFit: "cover" }} />
+                          <img src={resolveMediaUrl(img.url)} alt="" style={{ width: "100%", height: 120, objectFit: "cover" }} />
                           <button
                             type="button"
                             onClick={() => {

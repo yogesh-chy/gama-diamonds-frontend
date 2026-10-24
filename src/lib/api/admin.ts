@@ -310,8 +310,7 @@ export const adminApi = {
     formData.append("file", file);
     return apiClient.post<{ success: boolean; url: string; media_type: "image" | "video"; filename: string }>(
       "/products/upload/",
-      formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      formData
     );
   },
 
