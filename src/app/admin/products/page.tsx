@@ -934,11 +934,57 @@ export default function AdminProductsPage() {
         ...cleanFormData
       } = formData as Record<string, unknown>;
 
+      // Resolve category_ref and subcategory_ref automatically if missing
+      const resolvedCategoryRef =
+        formData.category_ref ??
+        categories.find((c) => c.slug === formData.category || normalizeCategorySlug(c.slug) === normalizeCategorySlug(formData.category))?.id ??
+        null;
+
+      const subNameLower = String(formData.subcategory || "").toLowerCase().trim();
+      const resolvedSubcategoryRef =
+        formData.subcategory_ref ??
+        subcategories.find((s) => s.category === resolvedCategoryRef && (s.slug === subNameLower || s.name.toLowerCase() === subNameLower))?.id ??
+        subcategories.find((s) => s.slug === subNameLower || s.name.toLowerCase() === subNameLower)?.id ??
+        null;
+
+      // Auto-infer type classifications if not already set
+      let autoEarringType = formData.earring_type;
+      if (!autoEarringType) {
+        if (subNameLower.includes("hoop")) autoEarringType = "hoops";
+        else if (subNameLower.includes("stud")) autoEarringType = "studs";
+        else if (subNameLower.includes("drop") || subNameLower.includes("chandelier")) autoEarringType = "drops";
+      }
+
+      let autoNecklaceStyle = formData.necklace_style;
+      if (!autoNecklaceStyle) {
+        if (subNameLower.includes("chain")) autoNecklaceStyle = "chain";
+        else if (subNameLower.includes("tennis")) autoNecklaceStyle = "tennis";
+        else if (subNameLower.includes("pendant") || subNameLower.includes("necklace")) autoNecklaceStyle = "pendant";
+      }
+
+      let autoBraceletType = formData.bracelet_type;
+      if (!autoBraceletType) {
+        if (subNameLower.includes("tennis")) autoBraceletType = "tennis";
+        else if (subNameLower.includes("bangle")) autoBraceletType = "bangle";
+        else if (subNameLower.includes("cuff")) autoBraceletType = "cuff";
+        else if (subNameLower.includes("chain")) autoBraceletType = "chain";
+      }
+
+      let autoPendantShape = formData.pendant_shape;
+      if (!autoPendantShape) {
+        if (subNameLower.includes("heart")) autoPendantShape = "heart";
+        else if (subNameLower.includes("cross")) autoPendantShape = "cross";
+      }
+
       const payload: Partial<AdminProduct> = {
         ...cleanFormData,
         sku: formData.sku || generateAutoSku(formData.category, formData.name),
-        category_ref: formData.category_ref ?? null,
-        subcategory_ref: formData.subcategory_ref ?? null,
+        category_ref: resolvedCategoryRef,
+        subcategory_ref: resolvedSubcategoryRef,
+        earring_type: autoEarringType,
+        necklace_style: autoNecklaceStyle,
+        bracelet_type: autoBraceletType,
+        pendant_shape: autoPendantShape,
         metal_type: targetMetalType,
         metal_karat: targetMetalKarat,
         base_price: targetBasePrice,
@@ -1570,9 +1616,13 @@ export default function AdminProductsPage() {
                               if (!chosenOpt) return;
                               const subcategoryName = chosenOpt.label;
 
-                              const matchedDbSub = dbSubcategories.find(
-                                (s) => String(s.id) === String(val) || s.slug === String(val) || s.name.toLowerCase() === subcategoryName.toLowerCase()
-                              );
+                              const matchedDbSub =
+                                dbSubcategories.find(
+                                  (s) => String(s.id) === String(val) || s.slug === String(val) || s.name.toLowerCase() === subcategoryName.toLowerCase()
+                                ) ||
+                                subcategories.find(
+                                  (s) => String(s.id) === String(val) || s.slug === String(val) || s.name.toLowerCase() === subcategoryName.toLowerCase()
+                                );
 
                               let newGender = formData.gender;
                               let newProfile = formData.ring_profile;

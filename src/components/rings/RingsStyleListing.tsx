@@ -77,6 +77,32 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
             return cat === "rings" || cat === "engagement-rings" || cat === "wedding-rings" || cat === "wedding-bands" || cat === "eternity-rings" || cat === "eternity-bands";
           });
         }
+        if (apiData.length === 0) {
+          const allRingsRes = await productsApi.getProducts({ category: "engagement-rings", status: "active", limit: 100 });
+          const allRings = allRingsRes.data?.data || [];
+          const slugClean = styleSlug.toLowerCase().replace(/-/g, " ");
+          apiData = allRings.filter((p: any) => {
+            const pSub = String(p.subcategory || p.subcategory_ref?.name || p.subcategory_ref?.slug || "").toLowerCase();
+            const pStyle = String(p.ring_style || p.ring_type || "").toLowerCase();
+            const pName = String(p.name || "").toLowerCase();
+            if (styleSlug === "three-stone" || slugClean.includes("three stone")) {
+              return pSub.includes("three") || pSub.includes("trilogy") || pStyle.includes("three") || pStyle.includes("trilogy") || pName.includes("three") || pName.includes("trilogy");
+            }
+            if (styleSlug === "under-halo" || slugClean.includes("under halo")) {
+              return pSub.includes("under halo") || pStyle.includes("under halo") || pName.includes("under halo");
+            }
+            if (styleSlug === "diamond-shoulder" || slugClean.includes("shoulder")) {
+              return pSub.includes("shoulder") || pStyle.includes("shoulder") || pName.includes("shoulder");
+            }
+            if (styleSlug === "solitaire") {
+              return pSub.includes("solitaire") || pStyle.includes("solitaire") || pName.includes("solitaire");
+            }
+            if (styleSlug === "halo") {
+              return pSub.includes("halo") || pStyle.includes("halo") || pName.includes("halo");
+            }
+            return pSub.includes(slugClean) || pStyle.includes(slugClean) || pName.includes(slugClean);
+          });
+        }
         if (cancelled) return;
         if (Array.isArray(apiData)) {
           const mapped: Product[] = apiData.map((p) => {
