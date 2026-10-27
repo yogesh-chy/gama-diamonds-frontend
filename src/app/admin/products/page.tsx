@@ -818,8 +818,7 @@ export default function AdminProductsPage() {
     return vals.map(mapId).filter((id): id is number => id !== null);
   };
 
-  const handleSaveProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const executeSave = async (targetNextTab?: ModalTab | null): Promise<boolean> => {
     setSaving(true);
     try {
       const rawSpec = formData.diamond_spec || {};
@@ -953,7 +952,7 @@ export default function AdminProductsPage() {
       const isBraceletDomain = catSlugNorm === "bracelets" || (catSlugNorm === "jewellery" && (subNameLower.includes("bracelet") || subNameLower.includes("bangle") || subNameLower.includes("tennis")));
       const isRingDomain = /ring|wedding|eternity/.test(catSlugNorm) || (catSlugNorm === "jewellery" && subNameLower.includes("ring"));
 
-      // Cleanly calculate type classifications: reset inapplicable ones to null to prevent lingering on old pages
+      // Cleanly calculate type classifications: reset inapplicable ones to null / empty string
       let autoEarringType: string | null = null;
       if (isEarringDomain) {
         if (subNameLower.includes("hoop")) autoEarringType = "hoops";
@@ -963,7 +962,7 @@ export default function AdminProductsPage() {
       }
 
       let autoNecklaceStyle: string | null = null;
-      let autoPendantShape: string | null = null;
+      let autoPendantShape = "";
       if (isNecklaceDomain) {
         if (subNameLower.includes("chain")) autoNecklaceStyle = "chain";
         else if (subNameLower.includes("tennis")) autoNecklaceStyle = "tennis";
@@ -995,10 +994,29 @@ export default function AdminProductsPage() {
         earring_type: autoEarringType,
         necklace_style: autoNecklaceStyle,
         bracelet_type: autoBraceletType,
-        pendant_shape: autoPendantShape,
+        pendant_shape: autoPendantShape || "",
+        pendant_type: isNecklaceDomain ? (formData.pendant_type || "") : "",
+        pendant_height: isNecklaceDomain ? (formData.pendant_height || "") : "",
+        pendant_width: isNecklaceDomain ? (formData.pendant_width || "") : "",
+        pendant_depth: isNecklaceDomain ? (formData.pendant_depth || "") : "",
+        pendant_included: isNecklaceDomain ? (formData.pendant_included || "no") : "no",
+        chain_included: isNecklaceDomain ? (formData.chain_included || "no") : "no",
+        chain_type: isNecklaceDomain ? (formData.chain_type || "") : "",
+        chain_length: isNecklaceDomain ? (formData.chain_length || "") : "",
+        clasp_type: isNecklaceDomain ? (formData.clasp_type || "") : "",
         ring_type: autoRingType,
         ring_style: autoRingStyle,
         ring_profile: autoRingProfile,
+        ring_shape: isRingDomain ? (formData.ring_shape || "") : "",
+        band_style: isRingDomain ? (formData.band_style || "") : "",
+        band_width: isRingDomain ? (formData.band_width || "") : "",
+        ring_finish: isRingDomain ? (formData.ring_finish || "") : "",
+        ring_thickness: isRingDomain ? (formData.ring_thickness || "") : "",
+        resizable: isRingDomain ? (formData.resizable || "yes") : "yes",
+        closure_type: isEarringDomain ? (formData.closure_type || "") : "",
+        drop_length: isEarringDomain ? (formData.drop_length || "") : "",
+        earring_width: isEarringDomain ? (formData.earring_width || "") : "",
+        earring_height: isEarringDomain ? (formData.earring_height || "") : "",
         metal_type: targetMetalType,
         metal_karat: targetMetalKarat,
         base_price: targetBasePrice,
@@ -1014,21 +1032,47 @@ export default function AdminProductsPage() {
         variants: cleanedVariants,
       } as Partial<AdminProduct>;
 
+      // Ensure any CharFields that must never be null are sanitized to empty strings
+      const stringKeysToSanitize = [
+        "pendant_shape", "pendant_type", "pendant_height", "pendant_width", "pendant_depth",
+        "pendant_included", "chain_included", "chain_type", "chain_length", "necklace_type",
+        "clasp_type", "ring_type", "ring_style", "ring_shape", "band_style", "band_width",
+        "ring_profile", "ring_finish", "ring_thickness", "earring_style", "closure_type",
+        "drop_length", "earring_width", "earring_height", "bracelet_style", "bracelet_length",
+        "bracelet_width", "bracelet_thickness", "bangle_type", "inner_diameter", "bangle_width",
+        "bangle_thickness", "opening_type", "bangle_size", "adjustable", "resizable"
+      ];
+      for (const k of stringKeysToSanitize) {
+        if ((payload as Record<string, unknown>)[k] === null || (payload as Record<string, unknown>)[k] === undefined) {
+          (payload as Record<string, unknown>)[k] = "";
+        }
+      }
+
       if (editingProduct) {
         const res = await adminApi.updateProduct(editingProduct.id, payload);
         const savedItem = getProductFromResponse(res.data as ProductApiResponse) || ({ ...editingProduct, ...payload } as AdminProduct);
         setProducts((prev) => prev.map((p) => (p.id === editingProduct.id ? { ...p, ...savedItem } : p)));
-        toast.success("Product updated successfully");
+        setEditingProduct(savedItem);
+        setFormData((prev) => ({ ...prev, ...savedItem }));
+        toast.success(targetNextTab ? "Changes saved — moved to next section" : "Product updated successfully");
       } else {
         const res = await adminApi.createProduct(payload);
         const savedItem = getProductFromResponse(res.data as ProductApiResponse);
         if (savedItem && (savedItem.id || savedItem.slug)) {
           setProducts((prev) => [savedItem, ...prev]);
+          setEditingProduct(savedItem);
+          setFormData((prev) => ({ ...prev, ...savedItem }));
         }
-        toast.success("Product published successfully");
+        toast.success(targetNextTab ? "Product created & progress saved" : "Product published successfully");
       }
-      setIsModalOpen(false);
+
+      if (targetNextTab) {
+        setActiveTab(targetNextTab);
+      } else {
+        setIsModalOpen(false);
+      }
       await loadData();
+      return true;
     } catch (err: unknown) {
       const responseData = err && typeof err === "object" && "response" in err ? (err.response as { data?: unknown }).data : null;
       let msg = "Failed to save product";
@@ -1064,9 +1108,15 @@ export default function AdminProductsPage() {
         }
       }
       toast.error(msg);
+      return false;
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSaveProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await executeSave(null);
   };
 
   const updateVariant = (idx: number, patch: Partial<NonNullable<AdminProduct["variants"]>[number]>) => {
@@ -1979,10 +2029,10 @@ export default function AdminProductsPage() {
                     </div>
                   )}
 
-                  {/* Necklace Fields */}
+                  {/* Necklace & Pendant Fields */}
                   {isNecklaceCategory && (
                     <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                      <h3 style={{ fontSize: "11px", fontWeight: 600, color: "#ffffff", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid rgba(255, 255, 255, 0.1)", paddingBottom: "6px", margin: 0 }}>Necklace Attributes</h3>
+                      <h3 style={{ fontSize: "11px", fontWeight: 600, color: "#ffffff", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid rgba(255, 255, 255, 0.1)", paddingBottom: "6px", margin: 0 }}>Necklace & Pendant Attributes</h3>
                       
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
                         <div style={fieldGroupStyle}>
@@ -2000,12 +2050,31 @@ export default function AdminProductsPage() {
                         </div>
 
                         <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Pendant Shape</label>
+                          <LuxurySelect
+                            value={formData.pendant_shape || ""}
+                            onChange={(val) => setFormData({ ...formData, pendant_shape: val })}
+                            size="sm"
+                            options={[
+                              { value: "", label: "None / Not Applicable" },
+                              { value: "heart", label: "Heart" },
+                              { value: "cross", label: "Cross" },
+                              { value: "round", label: "Round Solitaire" },
+                              { value: "pear", label: "Pear" },
+                              { value: "oval", label: "Oval" },
+                              { value: "emerald", label: "Emerald" },
+                              { value: "cushion", label: "Cushion" },
+                            ]}
+                          />
+                        </div>
+
+                        <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Chain Type</label>
                           <input
                             type="text"
                             value={formData.chain_type || ""}
                             onChange={(e) => setFormData({ ...formData, chain_type: e.target.value })}
-                            placeholder="Chain Type"
+                            placeholder="Chain Type (e.g. Box, Cable)"
                             style={inputStyle}
                           />
                         </div>
@@ -2016,7 +2085,7 @@ export default function AdminProductsPage() {
                             type="text"
                             value={formData.clasp_type || ""}
                             onChange={(e) => setFormData({ ...formData, clasp_type: e.target.value })}
-                            placeholder="Clasp Type"
+                            placeholder="Clasp Type (e.g. Lobster)"
                             style={inputStyle}
                           />
                         </div>
@@ -2923,28 +2992,42 @@ export default function AdminProductsPage() {
                       )}
                     </div>
 
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
                       {!isLastTab && nextTab && (
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab(nextTab.id)}
-                          style={{ padding: "8px 20px", backgroundColor: "#c6a45f", color: "#000000", border: "none", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
-                        >
-                          <span>Next: {nextTab.label}</span>
-                          <ChevronRight style={{ width: 14, height: 14 }} />
-                        </button>
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab(nextTab.id)}
+                            style={{ padding: "8px 14px", backgroundColor: "rgba(255, 255, 255, 0.06)", color: "#cccccc", border: "1px solid rgba(255, 255, 255, 0.15)", fontSize: "11px", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px" }}
+                            title="Go to next section without saving"
+                          >
+                            <span>Next: {nextTab.label}</span>
+                            <ChevronRight style={{ width: 13, height: 13 }} />
+                          </button>
+
+                          <button
+                            type="button"
+                            disabled={saving}
+                            onClick={() => executeSave(nextTab.id)}
+                            style={{ padding: "8px 18px", backgroundColor: "#3a3020", color: "#e8c988", border: "1px solid #b38f4d", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+                            title="Save progress and continue to next section"
+                          >
+                            {saving && <RefreshCw style={{ width: 13, height: 13, animation: "spin 1s linear infinite" }} />}
+                            <span>Save & Next</span>
+                            <ChevronRight style={{ width: 14, height: 14 }} />
+                          </button>
+                        </>
                       )}
 
-                      {isLastTab && (
-                        <button
-                          type="submit"
-                          disabled={saving}
-                          style={{ padding: "8px 26px", backgroundColor: "#c6a45f", color: "#000000", border: "none", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
-                        >
-                          {saving && <RefreshCw style={{ width: 13, height: 13, animation: "spin 1s linear infinite" }} />}
-                          <span>{editingProduct ? "Save Changes" : "Publish Product"}</span>
-                        </button>
-                      )}
+                      <button
+                        type="submit"
+                        disabled={saving}
+                        style={{ padding: "8px 24px", backgroundColor: "#c6a45f", color: "#000000", border: "none", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+                        title="Save changes and close"
+                      >
+                        {saving && <RefreshCw style={{ width: 13, height: 13, animation: "spin 1s linear infinite" }} />}
+                        <span>{editingProduct ? "Save Changes" : "Publish Product"}</span>
+                      </button>
                     </div>
                   </div>
                 );

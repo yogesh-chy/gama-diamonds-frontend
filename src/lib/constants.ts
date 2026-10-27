@@ -278,9 +278,9 @@ export const FALLBACK_WEDDING_MENU: MegaMenuData = {
     {
       heading: "MEN'S COLLECTION",
       items: [
-        { label: "Men's plain", href: "/wedding/mens-plain" },
-        { label: "Men's diamond", href: "/wedding/mens-diamond" },
-        { label: "Men's pattern", href: "/wedding/mens-pattern" },
+        { label: "Men's Plain", href: "/wedding/mens-plain" },
+        { label: "Men's Diamond", href: "/wedding/mens-diamond" },
+        { label: "Men's Pattern", href: "/wedding/mens-pattern" },
       ],
     },
     {
