@@ -89,6 +89,31 @@ export interface AdminProduct {
   thickness?: string;
   weight?: string | number | null;
 
+  // Dynamic Jewellery-Specific Dimensions
+  ring_size?: string;
+  inner_circumference?: string;
+  top_height?: string;
+  setting_height?: string;
+  center_stone_length?: string;
+  center_stone_width?: string;
+  center_stone_depth?: string;
+
+  chain_width?: string;
+  chain_thickness?: string;
+  extension_length?: string;
+  clasp_dimensions?: string;
+
+  link_length?: string;
+  link_width?: string;
+  charm_height?: string;
+  charm_width?: string;
+
+  earring_depth?: string;
+  outer_diameter?: string;
+  post_length?: string;
+  post_thickness?: string;
+  backing_dimensions?: string;
+
   finish?: string;
   customisation_available?: string;
   engraving_available?: string;

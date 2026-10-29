@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCurrency } from "@/context/CurrencyContext";
 import { productsApi } from "@/lib/api/products";
+import { resolveMediaUrl } from "@/lib/api/client";
 
 export interface WeddingProduct {
   id: string;
@@ -33,20 +34,29 @@ function normalizeGender(value?: string | null): "men" | "women" | "unisex" {
 function isWeddingProduct(item: any): boolean {
   const categoryValue = String(item?.category ?? "").trim().toLowerCase();
   const categoryName = String(item?.category_ref?.name ?? item?.category_name ?? "").trim().toLowerCase();
+  const subCategory = String(item?.subcategory ?? item?.subcategory_ref?.name ?? item?.subcategory_ref?.slug ?? "").trim().toLowerCase();
+  const ringProfile = String(item?.ring_profile ?? item?.ring_style ?? "").trim().toLowerCase();
   const name = String(item?.name ?? "").trim().toLowerCase();
 
   const isWeddingCategory =
     categoryValue === "wedding-bands" ||
     categoryValue === "wedding" ||
     categoryValue === "wedding-rings" ||
-    categoryValue === "wedding-bands" ||
     categoryName.includes("wedding") ||
+    subCategory.includes("wedding") ||
+    subCategory.includes("plain") ||
+    subCategory.includes("court") ||
+    subCategory.includes("pattern") ||
+    subCategory.includes("diamond") ||
     name.includes("wedding");
 
   const isRingLike =
     categoryValue === "rings" ||
     categoryValue === "engagement-rings" ||
     categoryValue === "eternity-bands" ||
+    categoryValue === "eternity-rings" ||
+    ringProfile.includes("court") ||
+    ringProfile.includes("plain") ||
     name.includes("ring") ||
     name.includes("band");
 
@@ -68,30 +78,85 @@ export default function WeddingProductGrid({
     async function fetchWeddingBands() {
       setLoading(true);
       try {
-        const primaryRes = await productsApi.getProducts({
-          category: "wedding-bands",
-          status: "active",
-          limit: 200,
-        });
+        const settled = await Promise.allSettled([
+          productsApi.getProducts({
+            category: "wedding-rings",
+            status: "active",
+            limit: 200,
+          }),
+          productsApi.getProducts({
+            category: "wedding-bands",
+            status: "active",
+            limit: 200,
+          }),
+          productsApi.getProducts({
+            category: "wedding",
+            status: "active",
+            limit: 200,
+          }),
+        ]);
 
-        const primaryList = primaryRes.data?.data || [];
-        const list = primaryList.filter((item: any) => item?.is_active !== false);
+        const itemMap = new Map<string | number, any>();
+        for (const res of settled) {
+          if (res.status === "fulfilled" && res.value?.data?.data) {
+            const list = res.value.data.data;
+            if (Array.isArray(list)) {
+              for (const item of list) {
+                if (item && item.id && item.is_active !== false) {
+                  itemMap.set(item.id, item);
+                }
+              }
+            }
+          }
+        }
 
-        const filteredWeddingProducts = list.filter((item: any) => isWeddingProduct(item));
+        const filteredWeddingProducts = Array.from(itemMap.values()).filter((item: any) => isWeddingProduct(item));
 
         const mapped: WeddingProduct[] = filteredWeddingProducts.map((item: any) => {
           const gender = normalizeGender(item.gender);
+          const subName = String(item.subcategory || item.subcategory_ref?.name || "").toLowerCase();
+          const itemName = String(item.name || "").toLowerCase();
+
+          let targetCat: "women" | "men" = "women";
+          if (gender === "men" || subName.includes("men") || itemName.includes("men")) {
+            targetCat = "men";
+          } else if (gender === "women" || subName.includes("women") || itemName.includes("women")) {
+            targetCat = "women";
+          } else {
+            targetCat = "women";
+          }
+
+          let formattedMetal = "18K Gold";
+          const firstVar = item.variants?.[0];
+          if (firstVar?.metal_karat && firstVar?.metal_type) {
+            formattedMetal = `${firstVar.metal_karat} ${firstVar.metal_type.replace("-", " ")}`;
+          } else if (item.metal_type) {
+            formattedMetal = item.metal_karat ? `${item.metal_karat} ${item.metal_type.replace("-", " ")}` : item.metal_type.replace("-", " ");
+          }
+
+          const rawPrice =
+            Number(item.base_price) ||
+            Number(item.discount_price) ||
+            Number(item.pricing?.basePrice) ||
+            Number(firstVar?.price) ||
+            Number(item.price) ||
+            0;
+
+          const mainImage = resolveMediaUrl(
+            item.images?.find((img: any) => img.isPrimary || img.is_primary)?.url ||
+            item.thumbnail ||
+            item.images?.[0]?.url ||
+            firstVar?.images?.[0]?.url ||
+            item.image
+          ) || "/women_wedding_ring.png";
 
           return {
             id: String(item.id || item.slug),
             title: item.name,
-            category: gender === "men" ? "men" : gender === "women" ? "women" : "women",
-            metal: item.metal_type?.replace("-", " ") || "18K Gold",
-            price:
-              typeof item.base_price === "number"
-                ? item.base_price
-                : parseFloat(item.base_price || "0") || 0,
-            image: item.images?.[0]?.url || "/women_wedding_ring.png",
+            category: targetCat,
+            metal: formattedMetal,
+            price: rawPrice,
+            image: mainImage,
             badge: item.is_featured ? "BESTSELLER" : undefined,
             href: `/product/${item.id || item.slug}`,
           };

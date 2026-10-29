@@ -33,7 +33,7 @@ const styles = [
     name: "Diamond Shoulder Ring Box",
     href: "/rings/style/diamond-shoulder",
     label: "SHOP DIAMOND SHOULDER RINGS",
-    imageSrc: "/eternity_styles_guide.jpg",
+    imageSrc: "/diamond_shoulder_ring.jpg",
   },
   {
     name: "Eternity Ring Box",
@@ -79,12 +79,25 @@ export default function RingsStyleGrid() {
                 }}
                 className="er-style-card"
               >
-                <div style={{ position: "relative", width: "100%", height: "340px" }}>
+                <div
+                  style={{
+                    position: "relative",
+                    width: "100%",
+                    height: "340px",
+                    background: "#f7f0e8",
+                    overflow: "hidden",
+                  }}
+                >
                   <Image
                     src={item.imageSrc}
                     alt={item.name}
                     fill
-                    style={{ objectFit: "cover", borderRadius: "0px" }}
+                    style={{
+                      objectFit: "contain",
+                      objectPosition: "center",
+                      borderRadius: "0px",
+                      background: "#f7f0e8",
+                    }}
                     sizes="(max-width: 768px) 100vw, 33vw"
                   />
                 </div>

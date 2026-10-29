@@ -130,8 +130,8 @@ export default function MensPatternPage() {
         products={MENS_PATTERN_PRODUCTS}
         categoryTitle="Men's Patterned Wedding Rings"
         customMetals={MENS_PATTERN_METALS}
-        defaultMinPrice={490}
-        defaultMaxPrice={1950}
+        defaultMinPrice={0}
+        defaultMaxPrice={50000}
         hideDiamondType={true}
         hideCarat={true}
         hideColor={true}

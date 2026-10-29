@@ -31,28 +31,53 @@ export default function WomensPlainWeddingPageClient() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await productsApi.getProducts({
-          category: "wedding-bands",
-          gender: "women",
-          status: "active",
-          limit: 100,
-        });
+        const settled = await Promise.allSettled([
+          productsApi.getProducts({
+            category: "wedding-rings",
+            gender: "women",
+            status: "active",
+            limit: 100,
+          }),
+          productsApi.getProducts({
+            category: "wedding-bands",
+            gender: "women",
+            status: "active",
+            limit: 100,
+          }),
+          productsApi.getProducts({
+            subcategory: "womens-plain",
+            status: "active",
+            limit: 100,
+          }),
+        ]);
 
-        const mapped: ProductItem[] = (res.data?.data || [])
-          .filter((item: any) => item.is_active !== false)
-          .map((item: any) => ({
-            id: String(item.id || item.slug),
-            title: item.name,
-            metal:
-              item.metal_karat && item.metal_type
-                ? `${item.metal_karat} ${item.metal_type.replace("-", " ")}`
-                : "18K Gold",
-            price: Number(item.base_price || 0),
-            badge: item.is_featured ? "BESTSELLER" : undefined,
-            inStock: Number(item.total_stock || 0) > 0,
-            image: item.images?.[0]?.url || item.thumbnail || undefined,
-            style: item.ring_style || item.band_style || "Plain",
-          }));
+        const itemMap = new Map<string | number, any>();
+        for (const res of settled) {
+          if (res.status === "fulfilled" && res.value?.data?.data) {
+            const list = res.value.data.data;
+            if (Array.isArray(list)) {
+              for (const item of list) {
+                if (item && item.id && item.is_active !== false) {
+                  itemMap.set(item.id, item);
+                }
+              }
+            }
+          }
+        }
+
+        const mapped: ProductItem[] = Array.from(itemMap.values()).map((item: any) => ({
+          id: String(item.id || item.slug),
+          title: item.name,
+          metal:
+            item.metal_karat && item.metal_type
+              ? `${item.metal_karat} ${item.metal_type.replace("-", " ")}`
+              : "18K Gold",
+          price: Number(item.base_price || 0),
+          badge: item.is_featured ? "BESTSELLER" : undefined,
+          inStock: Number(item.total_stock || 0) > 0,
+          image: item.images?.[0]?.url || item.thumbnail || undefined,
+          style: item.ring_style || item.band_style || "Plain",
+        }));
 
         setProducts(mapped);
       } catch {
@@ -71,7 +96,7 @@ export default function WomensPlainWeddingPageClient() {
         categoryTitle="Women's Plain Wedding Rings"
         customStyles={WOMENS_PLAIN_STYLES}
         customMetals={WOMENS_PLAIN_METALS}
-        defaultMinPrice={310}
+        defaultMinPrice={0}
         defaultMaxPrice={30000}
         hideDiamondType={true}
         hideCarat={true}

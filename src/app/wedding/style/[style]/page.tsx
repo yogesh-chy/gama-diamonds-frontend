@@ -212,8 +212,8 @@ export default async function WeddingStylePage({ params }: PageProps) {
         products={pageProducts}
         categoryTitle={config.title}
         customMetals={STYLE_METALS}
-        defaultMinPrice={minPrice}
-        defaultMaxPrice={maxPrice}
+        defaultMinPrice={0}
+        defaultMaxPrice={50000}
         hideDiamondType={true}
         hideCarat={true}
         hideColor={true}

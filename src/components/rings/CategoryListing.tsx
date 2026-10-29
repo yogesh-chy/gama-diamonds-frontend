@@ -89,6 +89,13 @@ export default function CategoryListing({
   const { formatPrice } = useCurrency();
   const [productList, setProductList] = useState<ProductItem[]>(initialProducts);
 
+  // Synchronize when parent provides updated initialProducts
+  useEffect(() => {
+    if (initialProducts && initialProducts.length > 0) {
+      setProductList(initialProducts);
+    }
+  }, [initialProducts]);
+
   const safeNumber = (value: unknown): number => {
     if (typeof value === "number" && Number.isFinite(value)) return value;
     if (typeof value === "string") {
@@ -103,6 +110,14 @@ export default function CategoryListing({
     return 0;
   };
 
+  const normalizeSubString = (s?: string | null): string =>
+    String(s || "")
+      .toLowerCase()
+      .replace(/['’]/g, "")
+      .replace(/[-_]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
   // Sync backend live products for this category (NO MOCKUPS)
   useEffect(() => {
     let cancelled = false;
@@ -110,30 +125,51 @@ export default function CategoryListing({
     const derivedSlug = titleLower.replace(/\s+rings?$/, "").replace(/\s+jewellery$/, "");
 
     const CATEGORY_CONFIG_MAP: Record<string, { category?: string; subcategory?: string; gender?: string; candidates: string[] }> = {
+      // Eternity
       "eternity rings": { category: "eternity-rings", candidates: ["eternity-rings", "eternity-bands", "eternity"] },
       "eternity ring": { category: "eternity-rings", candidates: ["eternity-rings", "eternity-bands", "eternity"] },
       "eternity": { category: "eternity-rings", candidates: ["eternity-rings", "eternity-bands", "eternity"] },
+      // Engagement
       "engagement rings": { category: "engagement-rings", candidates: ["engagement-rings", "rings"] },
       "engagement ring": { category: "engagement-rings", candidates: ["engagement-rings", "rings"] },
+      // Wedding generic
       "wedding bands": { category: "wedding-rings", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
       "wedding rings": { category: "wedding-rings", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
       "wedding rings by style": { category: "wedding-rings", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      // Men's wedding
       "men's wedding rings": { category: "wedding-rings", gender: "men", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
-      "men's plain wedding rings": { category: "wedding-rings", gender: "men", subcategory: "plain", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
-      "men's plain": { category: "wedding-rings", gender: "men", subcategory: "plain", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
-      "men's diamond wedding rings": { category: "wedding-rings", gender: "men", subcategory: "diamond", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
-      "men's diamond": { category: "wedding-rings", gender: "men", subcategory: "diamond", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
-      "men's pattern wedding rings": { category: "wedding-rings", gender: "men", subcategory: "pattern", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
-      "men's pattern": { category: "wedding-rings", gender: "men", subcategory: "pattern", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "mens wedding rings": { category: "wedding-rings", gender: "men", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "men's plain wedding rings": { category: "wedding-rings", gender: "men", subcategory: "mens-plain", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "mens plain wedding rings": { category: "wedding-rings", gender: "men", subcategory: "mens-plain", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "men's plain": { category: "wedding-rings", gender: "men", subcategory: "mens-plain", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "mens plain": { category: "wedding-rings", gender: "men", subcategory: "mens-plain", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "men's diamond wedding rings": { category: "wedding-rings", gender: "men", subcategory: "mens-diamond", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "mens diamond wedding rings": { category: "wedding-rings", gender: "men", subcategory: "mens-diamond", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "men's diamond": { category: "wedding-rings", gender: "men", subcategory: "mens-diamond", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "mens diamond": { category: "wedding-rings", gender: "men", subcategory: "mens-diamond", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "men's pattern wedding rings": { category: "wedding-rings", gender: "men", subcategory: "mens-pattern", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "men's patterned wedding rings": { category: "wedding-rings", gender: "men", subcategory: "mens-pattern", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "mens pattern wedding rings": { category: "wedding-rings", gender: "men", subcategory: "mens-pattern", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "mens patterned wedding rings": { category: "wedding-rings", gender: "men", subcategory: "mens-pattern", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "men's pattern": { category: "wedding-rings", gender: "men", subcategory: "mens-pattern", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "mens pattern": { category: "wedding-rings", gender: "men", subcategory: "mens-pattern", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "men's patterned": { category: "wedding-rings", gender: "men", subcategory: "mens-pattern", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "mens patterned": { category: "wedding-rings", gender: "men", subcategory: "mens-pattern", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      // Women's wedding
       "women's wedding rings": { category: "wedding-rings", gender: "women", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
-      "women's plain wedding rings": { category: "wedding-rings", gender: "women", subcategory: "plain", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
-      "women's plain": { category: "wedding-rings", gender: "women", subcategory: "plain", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
-      "traditional court wedding rings": { category: "wedding-rings", subcategory: "traditional court", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
-      "traditional court": { category: "wedding-rings", subcategory: "traditional court", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
-      "flat court wedding rings": { category: "wedding-rings", subcategory: "flat court", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
-      "flat court": { category: "wedding-rings", subcategory: "flat court", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
-      "soft court wedding rings": { category: "wedding-rings", subcategory: "soft court", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
-      "soft court": { category: "wedding-rings", subcategory: "soft court", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "womens wedding rings": { category: "wedding-rings", gender: "women", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "women's plain wedding rings": { category: "wedding-rings", gender: "women", subcategory: "womens-plain", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "womens plain wedding rings": { category: "wedding-rings", gender: "women", subcategory: "womens-plain", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "women's plain": { category: "wedding-rings", gender: "women", subcategory: "womens-plain", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "womens plain": { category: "wedding-rings", gender: "women", subcategory: "womens-plain", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      // Wedding by style
+      "traditional court wedding rings": { category: "wedding-rings", subcategory: "traditional-court", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "traditional court": { category: "wedding-rings", subcategory: "traditional-court", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "flat court wedding rings": { category: "wedding-rings", subcategory: "flat-court", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "flat court": { category: "wedding-rings", subcategory: "flat-court", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "soft court wedding rings": { category: "wedding-rings", subcategory: "soft-court", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      "soft court": { category: "wedding-rings", subcategory: "soft-court", candidates: ["wedding-rings", "wedding-bands", "wedding"] },
+      // Jewellery & others
       "all precious jewellery": { category: "jewellery", candidates: ["jewellery", "earrings", "necklaces", "bracelets", "pendants", "bangles"] },
       "jewellery": { category: "jewellery", candidates: ["jewellery", "earrings", "necklaces", "bracelets", "pendants", "bangles"] },
       "fine jewellery": { category: "jewellery", candidates: ["jewellery", "earrings", "necklaces", "bracelets", "pendants", "bangles"] },
@@ -180,15 +216,25 @@ export default function CategoryListing({
           );
         }
 
-        // 2. Parallel candidate categories queries
+        // 2. Parallel candidate categories queries (fetch both with gender and all items to avoid missing products)
         for (const cand of candidateCategories) {
-          const queryParams: Record<string, any> = {
-            category: cand,
-            status: "active",
-            limit: 100,
-          };
-          if (config.gender) queryParams.gender = config.gender;
-          queryPromises.push(productsApi.getProducts(queryParams));
+          queryPromises.push(
+            productsApi.getProducts({
+              category: cand,
+              status: "active",
+              limit: 100,
+            })
+          );
+          if (config.gender) {
+            queryPromises.push(
+              productsApi.getProducts({
+                category: cand,
+                gender: config.gender,
+                status: "active",
+                limit: 100,
+              })
+            );
+          }
         }
 
         // Execute all network requests simultaneously
@@ -208,90 +254,107 @@ export default function CategoryListing({
         const allFetched = Array.from(fetchedMap.values());
         const matched = allFetched.filter((p: any) => {
           const pGender = String(p.gender || "").toLowerCase();
-          if (config.gender && pGender && pGender !== config.gender && pGender !== "unisex") return false;
-
-          const pSub = String(p.subcategory || p.subcategory_ref?.name || p.subcategory_ref?.slug || "").toLowerCase();
-          const pName = String(p.name || "").toLowerCase();
+          const normSub = normalizeSubString(p.subcategory || p.subcategory_ref?.name || p.subcategory_ref?.slug);
+          const normName = normalizeSubString(p.name);
+          const normCategory = normalizeSubString(p.category || p.category_ref?.slug || p.category_ref?.name);
+          const normRingProfile = normalizeSubString(p.ring_profile || p.ring_style || p.ring_type);
           const pEarringType = String(p.earring_type || "").toLowerCase();
-          const pNecklaceStyle = String(p.necklace_style || p.necklace_type || "").toLowerCase();
           const pBraceletType = String(p.bracelet_type || p.bracelet_style || "").toLowerCase();
-          const pRingProfile = String(p.ring_profile || p.ring_style || p.ring_type || "").toLowerCase();
           const pPendantShape = String(p.pendant_shape || "").toLowerCase();
-          const pCategory = String(p.category || p.category_ref?.slug || "").toLowerCase();
+
+          // Check gender constraint if specified
+          if (config.gender) {
+            if (pGender && pGender !== config.gender && pGender !== "unisex") return false;
+            // Also reject if subcategory name strictly references the opposing gender
+            if (config.gender === "men" && (normSub.includes("women") || normSub.includes("womens"))) return false;
+            if (config.gender === "women" && (normSub.includes("men") || normSub.includes("mens")) && !normSub.includes("women") && !normSub.includes("womens")) return false;
+          }
 
           // Subcategory pages
           if (config.subcategory) {
-            const targetSub = config.subcategory.toLowerCase();
-            if (targetSub === "hoops" || targetSub.includes("hoop")) {
-              const isEarring = pCategory.includes("earring") || pCategory.includes("jewel");
-              return isEarring && (pSub.includes("hoop") || pEarringType === "hoops" || pName.includes("hoop"));
+            const targetSub = normalizeSubString(config.subcategory);
+
+            if (targetSub.includes("hoop")) {
+              const isEarring = normCategory.includes("earring") || normCategory.includes("jewel");
+              return isEarring && (normSub.includes("hoop") || pEarringType === "hoops" || normName.includes("hoop"));
             }
-            if (targetSub === "studs" || targetSub.includes("stud")) {
-              const isEarring = pCategory.includes("earring") || pCategory.includes("jewel");
-              return isEarring && (pSub.includes("stud") || pEarringType === "studs" || pName.includes("stud"));
+            if (targetSub.includes("stud")) {
+              const isEarring = normCategory.includes("earring") || normCategory.includes("jewel");
+              return isEarring && (normSub.includes("stud") || pEarringType === "studs" || normName.includes("stud"));
             }
-            if (targetSub === "tennis" || targetSub.includes("tennis")) {
-              const isBracelet = pCategory.includes("bracelet") || pCategory.includes("jewel");
-              return isBracelet && (pSub.includes("tennis") || pBraceletType === "tennis" || pName.includes("tennis"));
+            if (targetSub.includes("tennis")) {
+              const isBracelet = normCategory.includes("bracelet") || normCategory.includes("jewel");
+              return isBracelet && (normSub.includes("tennis") || pBraceletType === "tennis" || normName.includes("tennis"));
             }
-            if (targetSub === "cross" || targetSub.includes("cross")) {
-              const isNecklace = pCategory.includes("necklace") || pCategory.includes("pendant") || pCategory.includes("jewel");
-              return isNecklace && (pSub.includes("cross") || pPendantShape === "cross" || pName.includes("cross"));
+            if (targetSub.includes("cross")) {
+              const isNecklace = normCategory.includes("necklace") || normCategory.includes("pendant") || normCategory.includes("jewel");
+              return isNecklace && (normSub.includes("cross") || pPendantShape === "cross" || normName.includes("cross"));
             }
-            if (targetSub === "heart" || targetSub.includes("heart")) {
-              const isNecklace = pCategory.includes("necklace") || pCategory.includes("pendant") || pCategory.includes("jewel");
-              return isNecklace && (pSub.includes("heart") || pPendantShape === "heart" || pName.includes("heart"));
+            if (targetSub.includes("heart")) {
+              const isNecklace = normCategory.includes("necklace") || normCategory.includes("pendant") || normCategory.includes("jewel");
+              return isNecklace && (normSub.includes("heart") || pPendantShape === "heart" || normName.includes("heart"));
             }
-            if (targetSub === "plain") {
-              const isWedding = pCategory.includes("wedding");
-              return isWedding && (pSub.includes("plain") || pRingProfile.includes("plain") || pName.includes("plain"));
+
+            // Wedding Plain rings
+            if (targetSub.includes("plain")) {
+              const isPlain = normSub.includes("plain") || normRingProfile.includes("plain") || normName.includes("plain");
+              if (config.gender === "men") {
+                return isPlain && (normSub.includes("men") || normSub.includes("mens") || pGender === "men" || (!pGender && !normSub.includes("women") && !normSub.includes("womens")));
+              }
+              if (config.gender === "women") {
+                return isPlain && (normSub.includes("women") || normSub.includes("womens") || pGender === "women" || (!pGender && !normSub.includes("men") && !normSub.includes("mens")));
+              }
+              return isPlain;
             }
-            if (targetSub === "diamond") {
-              const isWedding = pCategory.includes("wedding");
-              return isWedding && (pSub.includes("diamond") || pName.includes("diamond"));
+
+            // Wedding Diamond rings
+            if (targetSub.includes("diamond")) {
+              return normSub.includes("diamond") || normRingProfile.includes("diamond") || normName.includes("diamond");
             }
-            if (targetSub === "pattern") {
-              const isWedding = pCategory.includes("wedding");
-              return isWedding && (pSub.includes("pattern") || pName.includes("pattern"));
+
+            // Wedding Pattern rings
+            if (targetSub.includes("pattern")) {
+              return normSub.includes("pattern") || normRingProfile.includes("pattern") || normName.includes("pattern");
             }
+
+            // Wedding Courts
             if (targetSub.includes("traditional")) {
-              return pSub.includes("traditional") || pRingProfile.includes("traditional") || pName.includes("traditional");
+              return normSub.includes("traditional") || normRingProfile.includes("traditional") || normName.includes("traditional");
             }
             if (targetSub.includes("flat")) {
-              return pSub.includes("flat") || pRingProfile.includes("flat") || pName.includes("flat");
+              return normSub.includes("flat") || normRingProfile.includes("flat") || normName.includes("flat");
             }
             if (targetSub.includes("soft")) {
-              return pSub.includes("soft") || pRingProfile.includes("soft") || pName.includes("soft");
+              return normSub.includes("soft") || normRingProfile.includes("soft") || normName.includes("soft");
             }
             if (targetSub.includes("statement")) {
-              return pSub.includes("statement") || pRingProfile.includes("statement") || pName.includes("statement");
+              return normSub.includes("statement") || normRingProfile.includes("statement") || normName.includes("statement");
             }
-            const cleanSub = targetSub.replace(/-/g, " ");
-            return pSub.includes(cleanSub) || pSub.includes(targetSub) || pName.includes(cleanSub);
+            if (targetSub.includes("eternity")) {
+              return normSub.includes("eternity") || normCategory.includes("eternity") || normRingProfile.includes("eternity") || normName.includes("eternity");
+            }
+
+            return normSub.includes(targetSub) || normRingProfile.includes(targetSub) || normName.includes(targetSub);
           }
 
           // Parent category pages
           if (titleLower === "earrings") {
-            const isEarring = pCategory.includes("earring") || (pCategory.includes("jewel") && (pSub.includes("earring") || pSub.includes("hoop") || pSub.includes("stud") || pSub.includes("drop") || Boolean(p.earring_type) || pName.includes("earring")));
-            return isEarring;
+            return normCategory.includes("earring") || (normCategory.includes("jewel") && (normSub.includes("earring") || normSub.includes("hoop") || normSub.includes("stud") || normSub.includes("drop") || Boolean(p.earring_type) || normName.includes("earring")));
           }
           if (titleLower === "necklace" || titleLower === "necklaces & pendants") {
-            const isNecklace = pCategory.includes("necklace") || pCategory.includes("pendant") || (pCategory.includes("jewel") && (pSub.includes("necklace") || pSub.includes("pendant") || pSub.includes("chain") || Boolean(p.necklace_style) || pName.includes("necklace") || pName.includes("pendant")));
-            return isNecklace;
+            return normCategory.includes("necklace") || normCategory.includes("pendant") || (normCategory.includes("jewel") && (normSub.includes("necklace") || normSub.includes("pendant") || normSub.includes("chain") || Boolean(p.necklace_style) || normName.includes("necklace") || normName.includes("pendant")));
           }
           if (titleLower === "pendants") {
-            const isPendant = pCategory.includes("pendant") || pSub.includes("pendant") || pName.includes("pendant");
-            return isPendant;
+            return normCategory.includes("pendant") || normSub.includes("pendant") || normName.includes("pendant");
           }
           if (titleLower === "bracelets & bangles") {
-            const isBracelet = pCategory.includes("bracelet") || pCategory.includes("bangle") || (pCategory.includes("jewel") && (pSub.includes("bracelet") || pSub.includes("bangle") || Boolean(p.bracelet_type) || pName.includes("bracelet") || pName.includes("bangle")));
-            return isBracelet;
+            return normCategory.includes("bracelet") || normCategory.includes("bangle") || (normCategory.includes("jewel") && (normSub.includes("bracelet") || normSub.includes("bangle") || Boolean(p.bracelet_type) || normName.includes("bracelet") || normName.includes("bangle")));
           }
           if (titleLower === "all precious jewellery" || titleLower === "jewellery" || titleLower === "fine jewellery") {
-            return pCategory.includes("jewel") || pCategory.includes("earring") || pCategory.includes("necklace") || pCategory.includes("bracelet") || pCategory.includes("pendant") || pCategory.includes("other");
+            return normCategory.includes("jewel") || normCategory.includes("earring") || normCategory.includes("necklace") || normCategory.includes("bracelet") || normCategory.includes("pendant") || normCategory.includes("other");
           }
           if (titleLower === "eternity rings" || titleLower === "eternity") {
-            return pCategory.includes("eternity") || pSub.includes("eternity") || pRingProfile.includes("eternity") || pName.includes("eternity");
+            return normCategory.includes("eternity") || normSub.includes("eternity") || normRingProfile.includes("eternity") || normName.includes("eternity");
           }
           return true;
         });
@@ -382,6 +445,19 @@ export default function CategoryListing({
   const [minPrice, setMinPrice] = useState<number>(defaultMinPrice);
   const [maxPrice, setMaxPrice] = useState<number>(defaultMaxPrice);
   const [sortBy, setSortBy] = useState("featured");
+
+  // Dynamically expand price bounds to accommodate all fetched products
+  useEffect(() => {
+    if (productList.length > 0) {
+      const prices = productList.map((p) => p.price).filter((pr) => typeof pr === "number" && pr > 0);
+      if (prices.length > 0) {
+        const lowest = Math.floor(Math.min(...prices));
+        const highest = Math.ceil(Math.max(...prices));
+        setMinPrice((prev) => Math.min(prev, lowest));
+        setMaxPrice((prev) => Math.max(prev, highest));
+      }
+    }
+  }, [productList]);
 
   const metalOptions = customMetals || ALL_METALS;
   const caratOptions = customCarats || ALL_CARATS;

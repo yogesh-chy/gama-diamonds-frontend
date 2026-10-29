@@ -132,8 +132,8 @@ export default function MensDiamondPage() {
         products={MENS_DIAMOND_PRODUCTS}
         categoryTitle="Men's Diamond Wedding Rings"
         customMetals={MENS_DIAMOND_METALS}
-        defaultMinPrice={650}
-        defaultMaxPrice={2450}
+        defaultMinPrice={0}
+        defaultMaxPrice={50000}
         hideDiamondType={false}
         hideCarat={true}
         hideColor={true}

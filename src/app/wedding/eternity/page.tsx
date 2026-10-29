@@ -52,8 +52,8 @@ export default function WeddingEternityPage() {
         customMetals={WEDDING_ETERNITY_METALS}
         customStyles={WEDDING_ETERNITY_STYLES}
         customColors={WEDDING_ETERNITY_COLORS}
-        defaultMinPrice={290}
-        defaultMaxPrice={8700}
+        defaultMinPrice={0}
+        defaultMaxPrice={50000}
         hideDiamondType={false}
         hideCarat={true}
         hideColor={false}

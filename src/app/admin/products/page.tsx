@@ -1941,298 +1941,391 @@ export default function AdminProductsPage() {
                 </div>
               )}
 
-              {/* TAB 2: CATEGORY SPECIFICATIONS */}
+              {/* TAB 2: SPECIFICATIONS & PRODUCT DIMENSIONS */}
               {activeTab === "specs" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
-                  {/* Ring Fields */}
+                  {/* ═══════════════════ RING DIMENSIONS ═══════════════════ */}
                   {isRingCategory && (
                     <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                      <h3 style={{ fontSize: "11px", fontWeight: 600, color: "#ffffff", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid rgba(255, 255, 255, 0.1)", paddingBottom: "6px", margin: 0 }}>Ring Attributes</h3>
-                      
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
+                      <h3 style={{ fontSize: "11px", fontWeight: 600, color: "#ffffff", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid rgba(255, 255, 255, 0.1)", paddingBottom: "6px", margin: 0 }}>Ring Dimensions & Attributes</h3>
 
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Ring Size</label>
+                          <input type="text" value={formData.ring_size || ""} onChange={(e) => setFormData({ ...formData, ring_size: e.target.value })} placeholder="e.g. US 6, UK M" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Inner Diameter (mm)</label>
+                          <input type="text" value={formData.inner_diameter || ""} onChange={(e) => setFormData({ ...formData, inner_diameter: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Inner Circumference (mm)</label>
+                          <input type="text" value={formData.inner_circumference || ""} onChange={(e) => setFormData({ ...formData, inner_circumference: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Band Width (mm)</label>
+                          <input type="text" value={formData.band_width || ""} onChange={(e) => setFormData({ ...formData, band_width: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Band Thickness (mm)</label>
+                          <input type="text" value={formData.ring_thickness || ""} onChange={(e) => setFormData({ ...formData, ring_thickness: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Top / Head Height (mm)</label>
+                          <input type="text" value={formData.top_height || ""} onChange={(e) => setFormData({ ...formData, top_height: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Setting Height (mm)</label>
+                          <input type="text" value={formData.setting_height || ""} onChange={(e) => setFormData({ ...formData, setting_height: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Band Fit</label>
-                          <LuxurySelect
-                            value={formData.band_fit || "comfort"}
-                            onChange={(val) => setFormData({ ...formData, band_fit: val })}
-                            size="sm"
-                            options={[
-                              { value: "comfort", label: "Comfort Fit" },
-                              { value: "standard", label: "Standard Fit" },
-                            ]}
-                          />
-                        </div>
-
-                        <div style={fieldGroupStyle}>
-                          <label style={labelStyle}>Band Width</label>
-                          <input
-                            type="text"
-                            value={formData.band_width || ""}
-                            onChange={(e) => setFormData({ ...formData, band_width: e.target.value })}
-                            placeholder="Band Width"
-                            style={inputStyle}
-                          />
+                          <LuxurySelect value={formData.band_fit || "comfort"} onChange={(val) => setFormData({ ...formData, band_fit: val })} size="sm" options={[{ value: "comfort", label: "Comfort Fit" }, { value: "standard", label: "Standard Fit" }]} />
                         </div>
                       </div>
 
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
+                      <h4 style={{ fontSize: "10px", fontWeight: 600, color: "#c6a45f", textTransform: "uppercase", letterSpacing: "0.8px", margin: "4px 0 0" }}>Center Stone Dimensions</h4>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Stone Length (mm)</label>
+                          <input type="text" value={formData.center_stone_length || ""} onChange={(e) => setFormData({ ...formData, center_stone_length: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Stone Width (mm)</label>
+                          <input type="text" value={formData.center_stone_width || ""} onChange={(e) => setFormData({ ...formData, center_stone_width: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Stone Depth (mm)</label>
+                          <input type="text" value={formData.center_stone_depth || ""} onChange={(e) => setFormData({ ...formData, center_stone_depth: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                      </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Ring Profile</label>
-                          <input
-                            type="text"
-                            value={formData.ring_profile || ""}
-                            onChange={(e) => setFormData({ ...formData, ring_profile: e.target.value })}
-                            placeholder="Ring Profile"
-                            style={inputStyle}
-                          />
+                          <input type="text" value={formData.ring_profile || ""} onChange={(e) => setFormData({ ...formData, ring_profile: e.target.value })} placeholder="e.g. High Set, D-Shape" style={inputStyle} />
                         </div>
-
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Ring Finish</label>
-                          <input
-                            type="text"
-                            value={formData.ring_finish || ""}
-                            onChange={(e) => setFormData({ ...formData, ring_finish: e.target.value })}
-                            placeholder="Ring Finish"
-                            style={inputStyle}
-                          />
+                          <input type="text" value={formData.ring_finish || ""} onChange={(e) => setFormData({ ...formData, ring_finish: e.target.value })} placeholder="e.g. Polished, Brushed" style={inputStyle} />
                         </div>
-
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Resizable</label>
-                          <LuxurySelect
-                            value={formData.resizable || "yes"}
-                            onChange={(val) => setFormData({ ...formData, resizable: val })}
-                            size="sm"
-                            options={[
-                              { value: "yes", label: "Yes" },
-                              { value: "no", label: "No" },
-                              { value: "on_request", label: "On Request" },
-                            ]}
-                          />
+                          <LuxurySelect value={formData.resizable || "yes"} onChange={(val) => setFormData({ ...formData, resizable: val })} size="sm" options={[{ value: "yes", label: "Yes" }, { value: "no", label: "No" }, { value: "on_request", label: "On Request" }]} />
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {/* Earring Fields */}
+                  {/* ═══════════════════ EARRING DIMENSIONS ═══════════════════ */}
                   {isEarringCategory && (
                     <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                      <h3 style={{ fontSize: "11px", fontWeight: 600, color: "#ffffff", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid rgba(255, 255, 255, 0.1)", paddingBottom: "6px", margin: 0 }}>Earring Attributes</h3>
-                      
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
+                      <h3 style={{ fontSize: "11px", fontWeight: 600, color: "#ffffff", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid rgba(255, 255, 255, 0.1)", paddingBottom: "6px", margin: 0 }}>Earring Dimensions & Attributes</h3>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Earring Type</label>
-                          <LuxurySelect
-                            value={formData.earring_type || "studs"}
-                            onChange={(val) => setFormData({ ...formData, earring_type: val })}
-                            size="sm"
-                            options={[
-                              { value: "studs", label: "Studs" },
-                              { value: "hoops", label: "Hoops" },
-                              { value: "drops", label: "Drops" },
-                              { value: "huggies", label: "Huggies" },
-                            ]}
-                          />
+                          <LuxurySelect value={formData.earring_type || "studs"} onChange={(val) => setFormData({ ...formData, earring_type: val })} size="sm" options={[{ value: "studs", label: "Studs" }, { value: "hoops", label: "Hoops" }, { value: "drops", label: "Drops" }, { value: "huggies", label: "Huggies" }, { value: "climbers", label: "Climbers" }, { value: "chandelier", label: "Chandelier" }]} />
                         </div>
-
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Earring Style</label>
+                          <input type="text" value={formData.earring_style || ""} onChange={(e) => setFormData({ ...formData, earring_style: e.target.value })} placeholder="e.g. Classic, Halo" style={inputStyle} />
+                        </div>
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Closure Type</label>
-                          <input
-                            type="text"
-                            value={formData.closure_type || ""}
-                            onChange={(e) => setFormData({ ...formData, closure_type: e.target.value })}
-                            placeholder="Closure Type"
-                            style={inputStyle}
-                          />
-                        </div>
-
-                        <div style={fieldGroupStyle}>
-                          <label style={labelStyle}>Drop Length</label>
-                          <input
-                            type="text"
-                            value={formData.drop_length || ""}
-                            onChange={(e) => setFormData({ ...formData, drop_length: e.target.value })}
-                            placeholder="Drop Length"
-                            style={inputStyle}
-                          />
+                          <input type="text" value={formData.closure_type || ""} onChange={(e) => setFormData({ ...formData, closure_type: e.target.value })} placeholder="e.g. Push Back, Lever" style={inputStyle} />
                         </div>
                       </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Earring Height (mm)</label>
+                          <input type="text" value={formData.earring_height || ""} onChange={(e) => setFormData({ ...formData, earring_height: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Drop Length (mm)</label>
+                          <input type="text" value={formData.drop_length || ""} onChange={(e) => setFormData({ ...formData, drop_length: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Earring Width (mm)</label>
+                          <input type="text" value={formData.earring_width || ""} onChange={(e) => setFormData({ ...formData, earring_width: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Depth / Thickness (mm)</label>
+                          <input type="text" value={formData.earring_depth || ""} onChange={(e) => setFormData({ ...formData, earring_depth: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                      </div>
+
+                      {/* Hoop-specific fields */}
+                      {(formData.earring_type === "hoops" || formData.earring_type === "huggies") && (
+                        <>
+                          <h4 style={{ fontSize: "10px", fontWeight: 600, color: "#c6a45f", textTransform: "uppercase", letterSpacing: "0.8px", margin: "4px 0 0" }}>Hoop Dimensions</h4>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Outer Diameter (mm)</label>
+                              <input type="text" value={formData.outer_diameter || ""} onChange={(e) => setFormData({ ...formData, outer_diameter: e.target.value })} placeholder="Optional" style={inputStyle} />
+                            </div>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Inner Diameter (mm)</label>
+                              <input type="text" value={formData.inner_diameter || ""} onChange={(e) => setFormData({ ...formData, inner_diameter: e.target.value })} placeholder="Optional" style={inputStyle} />
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Post-style fields */}
+                      {(formData.earring_type === "studs" || formData.earring_type === "drops" || formData.earring_type === "climbers" || formData.earring_type === "chandelier") && (
+                        <>
+                          <h4 style={{ fontSize: "10px", fontWeight: 600, color: "#c6a45f", textTransform: "uppercase", letterSpacing: "0.8px", margin: "4px 0 0" }}>Post & Backing</h4>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Post Length (mm)</label>
+                              <input type="text" value={formData.post_length || ""} onChange={(e) => setFormData({ ...formData, post_length: e.target.value })} placeholder="Optional" style={inputStyle} />
+                            </div>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Post Thickness (mm)</label>
+                              <input type="text" value={formData.post_thickness || ""} onChange={(e) => setFormData({ ...formData, post_thickness: e.target.value })} placeholder="Optional" style={inputStyle} />
+                            </div>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Backing Dimensions (mm)</label>
+                              <input type="text" value={formData.backing_dimensions || ""} onChange={(e) => setFormData({ ...formData, backing_dimensions: e.target.value })} placeholder="Optional" style={inputStyle} />
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
 
-                  {/* Necklace & Pendant Fields */}
+                  {/* ═══════════════════ NECKLACE DIMENSIONS ═══════════════════ */}
                   {isNecklaceCategory && (
                     <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                      <h3 style={{ fontSize: "11px", fontWeight: 600, color: "#ffffff", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid rgba(255, 255, 255, 0.1)", paddingBottom: "6px", margin: 0 }}>Necklace & Pendant Attributes</h3>
-                      
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
+                      <h3 style={{ fontSize: "11px", fontWeight: 600, color: "#ffffff", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid rgba(255, 255, 255, 0.1)", paddingBottom: "6px", margin: 0 }}>Necklace & Chain Dimensions</h3>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Necklace Style</label>
-                          <LuxurySelect
-                            value={formData.necklace_style || "pendant"}
-                            onChange={(val) => setFormData({ ...formData, necklace_style: val })}
-                            size="sm"
-                            options={[
-                              { value: "pendant", label: "Pendant" },
-                              { value: "chain", label: "Chain" },
-                              { value: "tennis", label: "Tennis" },
-                            ]}
-                          />
+                          <LuxurySelect value={formData.necklace_style || "pendant"} onChange={(val) => setFormData({ ...formData, necklace_style: val })} size="sm" options={[{ value: "pendant", label: "Pendant" }, { value: "chain", label: "Chain" }, { value: "choker", label: "Choker" }, { value: "collar", label: "Collar" }, { value: "station", label: "Station" }, { value: "lariat", label: "Lariat" }, { value: "tennis", label: "Tennis" }]} />
                         </div>
-
-                        <div style={fieldGroupStyle}>
-                          <label style={labelStyle}>Pendant Shape</label>
-                          <LuxurySelect
-                            value={formData.pendant_shape || ""}
-                            onChange={(val) => setFormData({ ...formData, pendant_shape: val })}
-                            size="sm"
-                            options={[
-                              { value: "", label: "None / Not Applicable" },
-                              { value: "heart", label: "Heart" },
-                              { value: "cross", label: "Cross" },
-                              { value: "round", label: "Round Solitaire" },
-                              { value: "pear", label: "Pear" },
-                              { value: "oval", label: "Oval" },
-                              { value: "emerald", label: "Emerald" },
-                              { value: "cushion", label: "Cushion" },
-                            ]}
-                          />
-                        </div>
-
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Chain Type</label>
-                          <input
-                            type="text"
-                            value={formData.chain_type || ""}
-                            onChange={(e) => setFormData({ ...formData, chain_type: e.target.value })}
-                            placeholder="Chain Type (e.g. Box, Cable)"
-                            style={inputStyle}
-                          />
+                          <input type="text" value={formData.chain_type || ""} onChange={(e) => setFormData({ ...formData, chain_type: e.target.value })} placeholder="e.g. Box, Cable, Rope" style={inputStyle} />
                         </div>
-
                         <div style={fieldGroupStyle}>
-                          <label style={labelStyle}>Clasp Type</label>
-                          <input
-                            type="text"
-                            value={formData.clasp_type || ""}
-                            onChange={(e) => setFormData({ ...formData, clasp_type: e.target.value })}
-                            placeholder="Clasp Type (e.g. Lobster)"
-                            style={inputStyle}
-                          />
+                          <label style={labelStyle}>Chain Length (cm / in)</label>
+                          <input type="text" value={formData.chain_length || ""} onChange={(e) => setFormData({ ...formData, chain_length: e.target.value })} placeholder={'e.g. 18"'} style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Chain Width (mm)</label>
+                          <input type="text" value={formData.chain_width || ""} onChange={(e) => setFormData({ ...formData, chain_width: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Chain Thickness (mm)</label>
+                          <input type="text" value={formData.chain_thickness || ""} onChange={(e) => setFormData({ ...formData, chain_thickness: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Extension Length (cm / in)</label>
+                          <input type="text" value={formData.extension_length || ""} onChange={(e) => setFormData({ ...formData, extension_length: e.target.value })} placeholder="For adjustable necklaces" style={inputStyle} />
                         </div>
                       </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Pendant Included</label>
+                          <LuxurySelect value={formData.pendant_included || "no"} onChange={(val) => setFormData({ ...formData, pendant_included: val })} size="sm" options={[{ value: "yes", label: "Yes" }, { value: "no", label: "No" }]} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Chain Included</label>
+                          <LuxurySelect value={formData.chain_included || "no"} onChange={(val) => setFormData({ ...formData, chain_included: val })} size="sm" options={[{ value: "yes", label: "Yes" }, { value: "no", label: "No" }]} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Clasp Type</label>
+                          <input type="text" value={formData.clasp_type || ""} onChange={(e) => setFormData({ ...formData, clasp_type: e.target.value })} placeholder="e.g. Lobster, Spring Ring" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Clasp Dimensions (mm)</label>
+                          <input type="text" value={formData.clasp_dimensions || ""} onChange={(e) => setFormData({ ...formData, clasp_dimensions: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                      </div>
+
+                      {/* Pendant Dimensions — shown only when pendant is included */}
+                      {formData.pendant_included === "yes" && (
+                        <>
+                          <h4 style={{ fontSize: "10px", fontWeight: 600, color: "#c6a45f", textTransform: "uppercase", letterSpacing: "0.8px", margin: "4px 0 0" }}>Pendant Dimensions</h4>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Pendant Type</label>
+                              <input type="text" value={formData.pendant_type || ""} onChange={(e) => setFormData({ ...formData, pendant_type: e.target.value })} placeholder="e.g. Solitaire, Heart" style={inputStyle} />
+                            </div>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Pendant Shape</label>
+                              <LuxurySelect value={formData.pendant_shape || ""} onChange={(val) => setFormData({ ...formData, pendant_shape: val })} size="sm" options={[{ value: "", label: "None" }, { value: "heart", label: "Heart" }, { value: "cross", label: "Cross" }, { value: "round", label: "Round" }, { value: "pear", label: "Pear" }, { value: "oval", label: "Oval" }, { value: "emerald", label: "Emerald" }, { value: "cushion", label: "Cushion" }]} />
+                            </div>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Pendant Height (mm)</label>
+                              <input type="text" value={formData.pendant_height || ""} onChange={(e) => setFormData({ ...formData, pendant_height: e.target.value })} placeholder="Optional" style={inputStyle} />
+                            </div>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Pendant Width (mm)</label>
+                              <input type="text" value={formData.pendant_width || ""} onChange={(e) => setFormData({ ...formData, pendant_width: e.target.value })} placeholder="Optional" style={inputStyle} />
+                            </div>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Pendant Depth (mm)</label>
+                              <input type="text" value={formData.pendant_depth || ""} onChange={(e) => setFormData({ ...formData, pendant_depth: e.target.value })} placeholder="Optional" style={inputStyle} />
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
 
-                  {/* Bracelet Fields */}
+                  {/* ═══════════════════ BRACELET DIMENSIONS ═══════════════════ */}
                   {isBraceletCategory && (
                     <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                      <h3 style={{ fontSize: "11px", fontWeight: 600, color: "#ffffff", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid rgba(255, 255, 255, 0.1)", paddingBottom: "6px", margin: 0 }}>Bracelet Attributes</h3>
-                      
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
+                      <h3 style={{ fontSize: "11px", fontWeight: 600, color: "#ffffff", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid rgba(255, 255, 255, 0.1)", paddingBottom: "6px", margin: 0 }}>Bracelet Dimensions & Attributes</h3>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Bracelet Type</label>
-                          <LuxurySelect
-                            value={formData.bracelet_type || "tennis"}
-                            onChange={(val) => setFormData({ ...formData, bracelet_type: val })}
-                            size="sm"
-                            options={[
-                              { value: "tennis", label: "Tennis Bracelet" },
-                              { value: "bangle", label: "Bangle" },
-                              { value: "cuff", label: "Cuff Bracelet" },
-                              { value: "chain", label: "Chain Bracelet" },
-                            ]}
-                          />
+                          <LuxurySelect value={formData.bracelet_type || "tennis"} onChange={(val) => setFormData({ ...formData, bracelet_type: val })} size="sm" options={[{ value: "tennis", label: "Tennis" }, { value: "bangle", label: "Bangle" }, { value: "chain", label: "Chain" }, { value: "cuff", label: "Cuff" }, { value: "charm", label: "Charm" }, { value: "link", label: "Link" }]} />
                         </div>
-
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Bracelet Style</label>
-                          <input
-                            type="text"
-                            value={formData.bracelet_style || ""}
-                            onChange={(e) => setFormData({ ...formData, bracelet_style: e.target.value })}
-                            placeholder="Bracelet Style"
-                            style={inputStyle}
-                          />
+                          <input type="text" value={formData.bracelet_style || ""} onChange={(e) => setFormData({ ...formData, bracelet_style: e.target.value })} placeholder="e.g. Tennis, Station" style={inputStyle} />
                         </div>
-
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Bracelet Length (cm / in)</label>
+                          <input type="text" value={formData.bracelet_length || ""} onChange={(e) => setFormData({ ...formData, bracelet_length: e.target.value })} placeholder={'e.g. 7"'} style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Width (mm)</label>
+                          <input type="text" value={formData.bracelet_width || ""} onChange={(e) => setFormData({ ...formData, bracelet_width: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Thickness (mm)</label>
+                          <input type="text" value={formData.bracelet_thickness || ""} onChange={(e) => setFormData({ ...formData, bracelet_thickness: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Extension Length (cm / in)</label>
+                          <input type="text" value={formData.extension_length || ""} onChange={(e) => setFormData({ ...formData, extension_length: e.target.value })} placeholder="For adjustable bracelets" style={inputStyle} />
+                        </div>
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Clasp Type</label>
-                          <input
-                            type="text"
-                            value={formData.clasp_type || ""}
-                            onChange={(e) => setFormData({ ...formData, clasp_type: e.target.value })}
-                            placeholder="Clasp Type"
-                            style={inputStyle}
-                          />
+                          <input type="text" value={formData.clasp_type || ""} onChange={(e) => setFormData({ ...formData, clasp_type: e.target.value })} placeholder="e.g. Lobster, Box" style={inputStyle} />
                         </div>
-
                         <div style={fieldGroupStyle}>
                           <label style={labelStyle}>Adjustable</label>
-                          <LuxurySelect
-                            value={formData.adjustable || "no"}
-                            onChange={(val) => setFormData({ ...formData, adjustable: val })}
-                            size="sm"
-                            options={[
-                              { value: "no", label: "No" },
-                              { value: "yes", label: "Yes" },
-                              { value: "on_request", label: "On Request" },
-                            ]}
-                          />
+                          <LuxurySelect value={formData.adjustable || "no"} onChange={(val) => setFormData({ ...formData, adjustable: val })} size="sm" options={[{ value: "no", label: "No" }, { value: "yes", label: "Yes" }, { value: "on_request", label: "On Request" }]} />
+                        </div>
+                      </div>
+
+                      {/* Bangle-specific fields */}
+                      {(formData.bracelet_type === "bangle" || formData.bracelet_type === "cuff") && (
+                        <>
+                          <h4 style={{ fontSize: "10px", fontWeight: 600, color: "#c6a45f", textTransform: "uppercase", letterSpacing: "0.8px", margin: "4px 0 0" }}>Bangle Dimensions</h4>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Inner Diameter (mm)</label>
+                              <input type="text" value={formData.inner_diameter || ""} onChange={(e) => setFormData({ ...formData, inner_diameter: e.target.value })} placeholder="Optional" style={inputStyle} />
+                            </div>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Inner Circumference (mm)</label>
+                              <input type="text" value={formData.inner_circumference || ""} onChange={(e) => setFormData({ ...formData, inner_circumference: e.target.value })} placeholder="Optional" style={inputStyle} />
+                            </div>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Bangle Size</label>
+                              <input type="text" value={formData.bangle_size || ""} onChange={(e) => setFormData({ ...formData, bangle_size: e.target.value })} placeholder="e.g. 2.4, 2.6" style={inputStyle} />
+                            </div>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Opening Type</label>
+                              <input type="text" value={formData.opening_type || ""} onChange={(e) => setFormData({ ...formData, opening_type: e.target.value })} placeholder="e.g. Hinged, Slip-on" style={inputStyle} />
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Link bracelet fields */}
+                      {(formData.bracelet_type === "chain" || formData.bracelet_type === "link") && (
+                        <>
+                          <h4 style={{ fontSize: "10px", fontWeight: 600, color: "#c6a45f", textTransform: "uppercase", letterSpacing: "0.8px", margin: "4px 0 0" }}>Link Dimensions</h4>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Link Length (mm)</label>
+                              <input type="text" value={formData.link_length || ""} onChange={(e) => setFormData({ ...formData, link_length: e.target.value })} placeholder="Optional" style={inputStyle} />
+                            </div>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Link Width (mm)</label>
+                              <input type="text" value={formData.link_width || ""} onChange={(e) => setFormData({ ...formData, link_width: e.target.value })} placeholder="Optional" style={inputStyle} />
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Charm bracelet fields */}
+                      {formData.bracelet_type === "charm" && (
+                        <>
+                          <h4 style={{ fontSize: "10px", fontWeight: 600, color: "#c6a45f", textTransform: "uppercase", letterSpacing: "0.8px", margin: "4px 0 0" }}>Charm Dimensions</h4>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Charm Height (mm)</label>
+                              <input type="text" value={formData.charm_height || ""} onChange={(e) => setFormData({ ...formData, charm_height: e.target.value })} placeholder="Optional" style={inputStyle} />
+                            </div>
+                            <div style={fieldGroupStyle}>
+                              <label style={labelStyle}>Charm Width (mm)</label>
+                              <input type="text" value={formData.charm_width || ""} onChange={(e) => setFormData({ ...formData, charm_width: e.target.value })} placeholder="Optional" style={inputStyle} />
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ═══════════════════ GENERIC DIMENSIONS (fallback) ═══════════════════ */}
+                  {!isRingCategory && !isEarringCategory && !isNecklaceCategory && !isBraceletCategory && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                      <h3 style={{ fontSize: "11px", fontWeight: 600, color: "#ffffff", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid rgba(255, 255, 255, 0.1)", paddingBottom: "6px", margin: 0 }}>Product Dimensions</h3>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Height (mm)</label>
+                          <input type="text" value={formData.height || ""} onChange={(e) => setFormData({ ...formData, height: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Width (mm)</label>
+                          <input type="text" value={formData.width || ""} onChange={(e) => setFormData({ ...formData, width: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Length (mm / in)</label>
+                          <input type="text" value={formData.length || ""} onChange={(e) => setFormData({ ...formData, length: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Depth (mm)</label>
+                          <input type="text" value={formData.depth || ""} onChange={(e) => setFormData({ ...formData, depth: e.target.value })} placeholder="Optional" style={inputStyle} />
+                        </div>
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Thickness (mm)</label>
+                          <input type="text" value={formData.thickness || ""} onChange={(e) => setFormData({ ...formData, thickness: e.target.value })} placeholder="Optional" style={inputStyle} />
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {/* Universal Dimensions */}
+                  {/* Weight — shared for all types */}
                   <div style={{ display: "flex", flexDirection: "column", gap: "14px", paddingTop: "10px", borderTop: "1px solid rgba(255, 255, 255, 0.1)" }}>
-                    <h3 style={{ fontSize: "11px", fontWeight: 600, color: "#ffffff", textTransform: "uppercase", letterSpacing: "1px", margin: 0 }}>Dimensions & Weight</h3>
-                    
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "14px" }}>
-                      <div style={fieldGroupStyle}>
-                        <label style={labelStyle}>Height (mm)</label>
-                        <input
-                          type="text"
-                          value={formData.height || ""}
-                          onChange={(e) => setFormData({ ...formData, height: e.target.value })}
-                          style={inputStyle}
-                        />
-                      </div>
-                      <div style={fieldGroupStyle}>
-                        <label style={labelStyle}>Width (mm)</label>
-                        <input
-                          type="text"
-                          value={formData.width || ""}
-                          onChange={(e) => setFormData({ ...formData, width: e.target.value })}
-                          style={inputStyle}
-                        />
-                      </div>
-                      <div style={fieldGroupStyle}>
-                        <label style={labelStyle}>Length (mm / in)</label>
-                        <input
-                          type="text"
-                          value={formData.length || ""}
-                          onChange={(e) => setFormData({ ...formData, length: e.target.value })}
-                          style={inputStyle}
-                        />
-                      </div>
+                    <h3 style={{ fontSize: "11px", fontWeight: 600, color: "#ffffff", textTransform: "uppercase", letterSpacing: "1px", margin: 0 }}>Weight</h3>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
                       <div style={fieldGroupStyle}>
                         <label style={labelStyle}>Weight (grams)</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={formData.weight ?? ""}
-                          onChange={(e) => setFormData({ ...formData, weight: e.target.value ? parseFloat(e.target.value) : null })}
-                          style={inputStyle}
-                        />
+                        <input type="number" step="0.01" min="0" value={formData.weight ?? ""} onChange={(e) => setFormData({ ...formData, weight: e.target.value ? parseFloat(e.target.value) : null })} placeholder="Optional" style={inputStyle} />
+                      </div>
+                      <div style={fieldGroupStyle}>
+                        <label style={labelStyle}>Finish</label>
+                        <input type="text" value={formData.finish || ""} onChange={(e) => setFormData({ ...formData, finish: e.target.value })} placeholder="e.g. Polished, Matte" style={inputStyle} />
                       </div>
                     </div>
                   </div>
                 </div>
               )}
+
 
               {/* TAB 3: DIAMOND & GEMSTONE WITH SPREADSHEET FIELDS */}
               {activeTab === "diamonds" && (
