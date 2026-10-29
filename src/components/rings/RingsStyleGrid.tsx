@@ -79,25 +79,12 @@ export default function RingsStyleGrid() {
                 }}
                 className="er-style-card"
               >
-                <div
-                  style={{
-                    position: "relative",
-                    width: "100%",
-                    height: "340px",
-                    background: "#f7f0e8",
-                    overflow: "hidden",
-                  }}
-                >
+                <div style={{ position: "relative", width: "100%", height: "340px" }}>
                   <Image
                     src={item.imageSrc}
                     alt={item.name}
                     fill
-                    style={{
-                      objectFit: "contain",
-                      objectPosition: "center",
-                      borderRadius: "0px",
-                      background: "#f7f0e8",
-                    }}
+                    style={{ objectFit: "cover", borderRadius: "0px" }}
                     sizes="(max-width: 768px) 100vw, 33vw"
                   />
                 </div>
