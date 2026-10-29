@@ -779,6 +779,17 @@ export default function AdminProductsPage() {
               },
             ],
       video_url: prod.video_url || prod.videoUrl || "",
+      adjustable: prod.adjustable || "no",
+      resizable: prod.resizable || "yes",
+      pendant_included: prod.pendant_included || "no",
+      chain_included: prod.chain_included || "no",
+      gemstone_included: prod.gemstone_included || "no",
+      customisation_available: prod.customisation_available || "no",
+      engraving_available: prod.engraving_available || "no",
+      personalisation_available: prod.personalisation_available || "no",
+      next_day_delivery_available: prod.next_day_delivery_available || "no",
+      made_to_order: prod.made_to_order || "no",
+      gender: prod.gender || "women",
     });
     setSelectedVariantMetals([]);
     setSelectedVariantSizes([]);
@@ -1012,7 +1023,15 @@ export default function AdminProductsPage() {
         band_width: isRingDomain ? (formData.band_width || "") : "",
         ring_finish: isRingDomain ? (formData.ring_finish || "") : "",
         ring_thickness: isRingDomain ? (formData.ring_thickness || "") : "",
-        resizable: isRingDomain ? (formData.resizable || "yes") : "yes",
+        adjustable: formData.adjustable || "no",
+        resizable: formData.resizable || "yes",
+        gemstone_included: formData.gemstone_included || "no",
+        customisation_available: formData.customisation_available || "no",
+        engraving_available: formData.engraving_available || "no",
+        personalisation_available: formData.personalisation_available || "no",
+        next_day_delivery_available: formData.next_day_delivery_available || "no",
+        made_to_order: formData.made_to_order || "no",
+        gender: formData.gender || "women",
         closure_type: isEarringDomain ? (formData.closure_type || "") : "",
         drop_length: isEarringDomain ? (formData.drop_length || "") : "",
         earring_width: isEarringDomain ? (formData.earring_width || "") : "",
@@ -1032,15 +1051,30 @@ export default function AdminProductsPage() {
         variants: cleanedVariants,
       } as Partial<AdminProduct>;
 
-      // Ensure any CharFields that must never be null are sanitized to empty strings
+      // Ensure availability choice fields always have valid choices ("yes", "no", "on_request")
+      const availabilityKeys = [
+        "adjustable", "resizable", "pendant_included", "chain_included",
+        "gemstone_included", "customisation_available", "engraving_available",
+        "personalisation_available", "next_day_delivery_available", "made_to_order"
+      ];
+      for (const k of availabilityKeys) {
+        const rawVal = (payload as Record<string, unknown>)[k];
+        if (!rawVal || typeof rawVal !== "string" || !["yes", "no", "on_request"].includes(rawVal.toLowerCase())) {
+          (payload as Record<string, unknown>)[k] = k === "resizable" ? "yes" : "no";
+        } else {
+          (payload as Record<string, unknown>)[k] = rawVal.toLowerCase();
+        }
+      }
+
+      // Ensure pure CharFields that must never be null are sanitized to empty strings
       const stringKeysToSanitize = [
         "pendant_shape", "pendant_type", "pendant_height", "pendant_width", "pendant_depth",
-        "pendant_included", "chain_included", "chain_type", "chain_length", "necklace_type",
-        "clasp_type", "ring_type", "ring_style", "ring_shape", "band_style", "band_width",
+        "chain_type", "chain_length", "necklace_type", "clasp_type",
+        "ring_type", "ring_style", "ring_shape", "band_style", "band_width",
         "ring_profile", "ring_finish", "ring_thickness", "earring_style", "closure_type",
         "drop_length", "earring_width", "earring_height", "bracelet_style", "bracelet_length",
         "bracelet_width", "bracelet_thickness", "bangle_type", "inner_diameter", "bangle_width",
-        "bangle_thickness", "opening_type", "bangle_size", "adjustable", "resizable"
+        "bangle_thickness", "opening_type", "bangle_size"
       ];
       for (const k of stringKeysToSanitize) {
         if ((payload as Record<string, unknown>)[k] === null || (payload as Record<string, unknown>)[k] === undefined) {
@@ -2135,6 +2169,20 @@ export default function AdminProductsPage() {
                             style={inputStyle}
                           />
                         </div>
+
+                        <div style={fieldGroupStyle}>
+                          <label style={labelStyle}>Adjustable</label>
+                          <LuxurySelect
+                            value={formData.adjustable || "no"}
+                            onChange={(val) => setFormData({ ...formData, adjustable: val })}
+                            size="sm"
+                            options={[
+                              { value: "no", label: "No" },
+                              { value: "yes", label: "Yes" },
+                              { value: "on_request", label: "On Request" },
+                            ]}
+                          />
+                        </div>
                       </div>
                     </div>
                   )}
@@ -2994,29 +3042,17 @@ export default function AdminProductsPage() {
 
                     <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
                       {!isLastTab && nextTab && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => setActiveTab(nextTab.id)}
-                            style={{ padding: "8px 14px", backgroundColor: "rgba(255, 255, 255, 0.06)", color: "#cccccc", border: "1px solid rgba(255, 255, 255, 0.15)", fontSize: "11px", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px" }}
-                            title="Go to next section without saving"
-                          >
-                            <span>Next: {nextTab.label}</span>
-                            <ChevronRight style={{ width: 13, height: 13 }} />
-                          </button>
-
-                          <button
-                            type="button"
-                            disabled={saving}
-                            onClick={() => executeSave(nextTab.id)}
-                            style={{ padding: "8px 18px", backgroundColor: "#3a3020", color: "#e8c988", border: "1px solid #b38f4d", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
-                            title="Save progress and continue to next section"
-                          >
-                            {saving && <RefreshCw style={{ width: 13, height: 13, animation: "spin 1s linear infinite" }} />}
-                            <span>Save & Next</span>
-                            <ChevronRight style={{ width: 14, height: 14 }} />
-                          </button>
-                        </>
+                        <button
+                          type="button"
+                          disabled={saving}
+                          onClick={() => executeSave(nextTab.id)}
+                          style={{ padding: "8px 18px", backgroundColor: "#3a3020", color: "#e8c988", border: "1px solid #b38f4d", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+                          title="Save progress and continue to next section"
+                        >
+                          {saving && <RefreshCw style={{ width: 13, height: 13, animation: "spin 1s linear infinite" }} />}
+                          <span>Save & Next</span>
+                          <ChevronRight style={{ width: 14, height: 14 }} />
+                        </button>
                       )}
 
                       <button
