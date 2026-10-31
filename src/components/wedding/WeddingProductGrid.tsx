@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCurrency } from "@/context/CurrencyContext";
 import { productsApi } from "@/lib/api/products";
 import { resolveMediaUrl } from "@/lib/api/client";
+import ProductGridSkeleton from "@/components/ui/ProductCardSkeleton";
 
 export interface WeddingProduct {
   id: string;
@@ -278,21 +279,26 @@ export default function WeddingProductGrid({
         </div>
 
         {/* 4 Cards Per Row Product Grid */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeCategory}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.4 }}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-              gap: "24px",
-              marginBottom: "50px",
-            }}
-          >
-            {filteredProducts.map((prod) => (
+        {loading ? (
+          <div style={{ marginBottom: "50px" }}>
+            <ProductGridSkeleton count={8} message="Curating Wedding Rings Collection..." />
+          </div>
+        ) : (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeCategory}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.4 }}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                gap: "24px",
+                marginBottom: "50px",
+              }}
+            >
+              {filteredProducts.map((prod) => (
               <Link
                 key={prod.id}
                 href={prod.href}
@@ -350,6 +356,8 @@ export default function WeddingProductGrid({
                   <img
                     src={prod.image}
                     alt={prod.title}
+                    loading="lazy"
+                    decoding="async"
                     style={{
                       width: "100%",
                       height: "100%",
@@ -418,8 +426,9 @@ export default function WeddingProductGrid({
                 </div>
               </Link>
             ))}
-          </motion.div>
-        </AnimatePresence>
+            </motion.div>
+          </AnimatePresence>
+        )}
 
         {/* Centered View All Button */}
         <div style={{ textAlign: "center" }}>

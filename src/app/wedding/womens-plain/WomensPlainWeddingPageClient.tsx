@@ -7,15 +7,22 @@ import CategoryListing, { ProductItem } from "@/components/rings/CategoryListing
 import RingsRecentlyViewed from "@/components/rings/RingsRecentlyViewed";
 import CertificationBar from "@/components/landing/CertificationBar";
 import { productsApi } from "@/lib/api/products";
+import { resolveMediaUrl } from "@/lib/api/client";
 
 const WOMENS_PLAIN_METALS = [
   "9K White Gold",
   "9K Yellow Gold",
   "9K Rose Gold",
+  "10K White Gold",
+  "10K Yellow Gold",
+  "10K Rose Gold",
+  "14K White Gold",
+  "14K Yellow Gold",
+  "14K Rose Gold",
+  "18K Rose Gold",
   "18K White Gold",
   "18K Yellow Gold",
-  "18K Rose Gold",
-  "Platinum",
+  "Platinum 950",
 ];
 
 const WOMENS_PLAIN_STYLES = [
@@ -27,9 +34,11 @@ const WOMENS_PLAIN_STYLES = [
 
 export default function WomensPlainWeddingPageClient() {
   const [products, setProducts] = useState<ProductItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
+      setLoading(true);
       try {
         const settled = await Promise.allSettled([
           productsApi.getProducts({
@@ -75,13 +84,15 @@ export default function WomensPlainWeddingPageClient() {
           price: Number(item.base_price || 0),
           badge: item.is_featured ? "BESTSELLER" : undefined,
           inStock: Number(item.total_stock || 0) > 0,
-          image: item.images?.[0]?.url || item.thumbnail || undefined,
+          image: resolveMediaUrl(item.images?.[0]?.url || item.thumbnail, { width: 600, type: "image" }),
           style: item.ring_style || item.band_style || "Plain",
         }));
 
         setProducts(mapped);
       } catch {
         setProducts([]);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -102,6 +113,7 @@ export default function WomensPlainWeddingPageClient() {
         hideCarat={true}
         hideStyle={false}
         hideColor={true}
+        isLoading={loading}
       />
       <RingsRecentlyViewed />
       <CertificationBar />

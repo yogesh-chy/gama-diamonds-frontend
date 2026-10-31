@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, RotateCcw, ChevronDown } from "lucide-react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
+import ProductGridSkeleton from "@/components/ui/ProductCardSkeleton";
 import LuxurySelect from "@/components/ui/LuxurySelect";
 import { useCurrency } from "@/context/CurrencyContext";
 import { productsApi } from "@/lib/api/products";
@@ -964,8 +965,42 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
             </div>
 
             {/* 8 Product Grid Cards */}
-            <div className="rings-product-grid">
-              {filteredProducts.map((product) => (
+            {loading ? (
+              <ProductGridSkeleton count={8} message={`Loading ${styleName} Engagement Rings...`} />
+            ) : filteredProducts.length === 0 ? (
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "60px 24px",
+                  backgroundColor: "rgba(255, 255, 255, 0.015)",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                }}
+              >
+                <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: "14px", color: "#888888" }}>
+                  No rings found matching the selected filters.
+                </p>
+                <button
+                  onClick={resetFilters}
+                  style={{
+                    marginTop: "16px",
+                    backgroundColor: "#c6a45f",
+                    color: "#000000",
+                    border: "none",
+                    padding: "8px 20px",
+                    fontFamily: "'Poppins', sans-serif",
+                    fontSize: "11px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    textTransform: "uppercase",
+                    letterSpacing: "1px",
+                  }}
+                >
+                  Reset Filters
+                </button>
+              </div>
+            ) : (
+              <div className="rings-product-grid">
+                {filteredProducts.map((product) => (
                 <Link
                   key={product.id}
                   href={`/product/${product.id}`}
@@ -990,7 +1025,7 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
 
                     <div className="product-image-block">
                       {product.image ? (
-                        <img src={product.image} alt={product.title} />
+                        <img src={product.image} alt={product.title} loading="lazy" decoding="async" />
                       ) : (
                         <ImagePlaceholder
                           width="100%"
@@ -1009,7 +1044,8 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
                   </motion.div>
                 </Link>
               ))}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

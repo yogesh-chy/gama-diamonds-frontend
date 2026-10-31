@@ -131,17 +131,73 @@ apiClient.interceptors.response.use(
 );
 
 /**
- * Converts a potentially-relative image/media URL into an absolute URL.
- * - Already-absolute URLs (https://...) pass through unchanged.
- * - Relative paths like /media/uploads/... get the backend origin prepended.
+ * Converts a potentially-relative image/media URL into an absolute URL,
+ * and automatically applies modern CDN image & video optimizations (WebP/AVIF,
+ * perceptually lossless compression, and faststart video codecs for Cloudinary & Unsplash).
  */
-export function resolveMediaUrl(url: string | undefined | null): string {
+export function resolveMediaUrl(
+  url: string | undefined | null,
+  options?: { width?: number; type?: "image" | "video" }
+): string {
   if (!url) return "";
-  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:") || url.startsWith("blob:")) {
-    return url;
+  let absoluteUrl = url;
+
+  if (
+    !url.startsWith("http://") &&
+    !url.startsWith("https://") &&
+    !url.startsWith("data:") &&
+    !url.startsWith("blob:")
+  ) {
+    // Derive backend origin from API_BASE_URL (strip /api suffix)
+    const backendOrigin = API_BASE_URL.replace(/\/api\/?$/, "");
+    const cleanPath = url.startsWith("/") ? url : `/${url}`;
+    absoluteUrl = `${backendOrigin}${cleanPath}`;
   }
-  // Derive backend origin from API_BASE_URL (strip /api suffix)
-  const backendOrigin = API_BASE_URL.replace(/\/api\/?$/, "");
-  const cleanPath = url.startsWith("/") ? url : `/${url}`;
-  return `${backendOrigin}${cleanPath}`;
+
+  return optimizeMediaUrl(absoluteUrl, options);
+}
+
+/**
+ * Optimizes media URLs (both images and videos) for ultra-fast web delivery:
+ * - Cloudinary images: injects /f_auto,q_auto/ (WebP/AVIF auto-format, quality compression)
+ * - Cloudinary videos: injects /q_auto,vc_auto/ (modern fast codecs, web bitrate, FastStart moov placement)
+ * - Unsplash images: ensures auto=format&fit=crop&q=80
+ */
+export function optimizeMediaUrl(
+  url: string | undefined | null,
+  options?: {
+    width?: number;
+    type?: "image" | "video";
+  }
+): string {
+  if (!url) return "";
+
+  // Cloudinary optimizations
+  if (url.includes("res.cloudinary.com")) {
+    const isVideo = options?.type === "video" || url.includes("/video/upload/");
+    const widthParam = options?.width ? `w_${options.width}` : "";
+
+    if (isVideo && url.includes("/video/upload/")) {
+      if (!url.includes("/video/upload/q_auto") && !url.includes("/video/upload/vc_auto")) {
+        const transforms = ["q_auto", "vc_auto", widthParam].filter(Boolean).join(",");
+        return url.replace("/video/upload/", `/video/upload/${transforms}/`);
+      }
+    } else if (url.includes("/image/upload/")) {
+      if (!url.includes("/image/upload/f_auto") && !url.includes("/image/upload/q_auto")) {
+        const transforms = ["f_auto", "q_auto", widthParam].filter(Boolean).join(",");
+        return url.replace("/image/upload/", `/image/upload/${transforms}/`);
+      }
+    }
+  }
+
+  // Unsplash optimizations
+  if (url.includes("images.unsplash.com")) {
+    const widthParam = options?.width ? `&w=${options.width}` : "";
+    if (!url.includes("auto=format")) {
+      const sep = url.includes("?") ? "&" : "?";
+      return `${url}${sep}auto=format&fit=crop&q=80${widthParam}`;
+    }
+  }
+
+  return url;
 }

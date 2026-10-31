@@ -23,6 +23,7 @@ import {
   HelpCircle,
   Volume2,
   VolumeX,
+  Loader2,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -104,6 +105,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVideoMuted, setIsVideoMuted] = useState(true);
   const [isVideoPlaying, setIsVideoPlaying] = useState(true);
+  const [isVideoBuffering, setIsVideoBuffering] = useState(false);
   const [activeTab, setActiveTab] = useState<"details" | "spec" | "shipping">("details");
 
   // Fetch real backend product data
@@ -282,7 +284,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
 
   // Build Media Items safely
   const rawVariantImgUrl = selectedVariant?.images?.find((i: any) => i.isPrimary || i.is_primary)?.url || selectedVariant?.images?.[0]?.url;
-  const variantImgUrl = resolveMediaUrl(rawVariantImgUrl);
+  const variantImgUrl = resolveMediaUrl(rawVariantImgUrl, { width: 1200, type: "image" });
   const rawImageList = product?.images || [];
   const galleryImages = variantImgUrl
     ? [variantImgUrl, ...rawImageList.filter((url) => url !== variantImgUrl)]
@@ -291,7 +293,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
   const mediaItems: { type: "image" | "video"; src?: string; alt: string; isFallback?: boolean }[] = [
     ...galleryImages.map((img, i) => ({
       type: "image" as const,
-      src: img,
+      src: resolveMediaUrl(img, { width: 1200, type: "image" }),
       alt: `${product?.title || "Product"} view ${i + 1}`,
     })),
   ];
@@ -299,7 +301,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
   if (product?.video_url) {
     mediaItems.push({
       type: "video" as const,
-      src: product.video_url,
+      src: resolveMediaUrl(product.video_url, { type: "video" }),
       alt: "360° Showcase",
     });
   }
@@ -717,6 +719,8 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                       <img
                         src={currentMedia.src}
                         alt={currentMedia.alt}
+                        loading="eager"
+                        decoding="async"
                         style={{ width: "100%", height: "100%", objectFit: "contain", padding: "8px" }}
                         draggable={false}
                       />
@@ -742,6 +746,12 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                         loop
                         playsInline
                         preload="auto"
+                        onWaiting={() => setIsVideoBuffering(true)}
+                        onCanPlay={() => setIsVideoBuffering(false)}
+                        onPlaying={() => {
+                          setIsVideoPlaying(true);
+                          setIsVideoBuffering(false);
+                        }}
                         onPlay={() => setIsVideoPlaying(true)}
                         onPause={() => setIsVideoPlaying(false)}
                         onClick={() => {
@@ -761,6 +771,39 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                           cursor: "pointer",
                         }}
                       />
+
+                      {/* Buffering Indicator */}
+                      {isVideoBuffering && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            inset: 0,
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor: "rgba(0, 0, 0, 0.5)",
+                            backdropFilter: "blur(4px)",
+                            zIndex: 4,
+                            pointerEvents: "none",
+                          }}
+                        >
+                          <Loader2 size={30} className="animate-spin" color="#c6a45f" />
+                          <span
+                            style={{
+                              marginTop: "10px",
+                              fontFamily: "'Poppins', sans-serif",
+                              fontSize: "10.5px",
+                              fontWeight: 600,
+                              letterSpacing: "1.5px",
+                              color: "#c6a45f",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            Loading 360° Video...
+                          </span>
+                        </div>
+                      )}
 
                       {/* Top-left Minimal Luxury Badge */}
                       <div
@@ -964,7 +1007,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                         <span style={{ fontSize: "7px", letterSpacing: "0.5px", color: "#c6a45f", fontWeight: 700 }}>360°</span>
                       </div>
                     ) : item.src ? (
-                      <img src={item.src} alt={item.alt} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img src={item.src} alt={item.alt} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
                       <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <ImageIcon size={14} color="#777777" />

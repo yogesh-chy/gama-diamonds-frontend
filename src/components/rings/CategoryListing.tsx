@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, RotateCcw, ChevronDown } from "lucide-react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
+import ProductGridSkeleton from "@/components/ui/ProductCardSkeleton";
 import LuxurySelect from "@/components/ui/LuxurySelect";
 import { useCurrency } from "@/context/CurrencyContext";
 import { productsApi } from "@/lib/api/products";
@@ -69,6 +70,7 @@ interface CategoryListingProps {
   hideColor?: boolean;
   hideStyle?: boolean;
   hideMetal?: boolean;
+  isLoading?: boolean;
 }
 
 export default function CategoryListing({
@@ -85,9 +87,12 @@ export default function CategoryListing({
   hideColor = true,
   hideStyle = false,
   hideMetal = false,
+  isLoading: propIsLoading,
 }: CategoryListingProps) {
   const { formatPrice } = useCurrency();
   const [productList, setProductList] = useState<ProductItem[]>(initialProducts);
+  const [internalLoading, setInternalLoading] = useState<boolean>(initialProducts.length === 0);
+  const loading = propIsLoading !== undefined ? propIsLoading : internalLoading;
 
   // Synchronize when parent provides updated initialProducts
   useEffect(() => {
@@ -196,6 +201,7 @@ export default function CategoryListing({
     const config = CATEGORY_CONFIG_MAP[titleLower] || { category: derivedSlug, candidates: [derivedSlug] };
 
     async function loadCategoryProducts() {
+      setInternalLoading(true);
       try {
         let apiData: any[] = [];
         const candidateCategories = Array.from(
@@ -1511,7 +1517,9 @@ export default function CategoryListing({
             </div>
 
             {/* ── 4-COLUMN PRODUCT GRID ── */}
-            {filteredProducts.length === 0 ? (
+            {loading ? (
+              <ProductGridSkeleton count={8} message={`Curating ${categoryTitle || "our finest diamond"} collection...`} />
+            ) : filteredProducts.length === 0 ? (
               <div
                 style={{
                   textAlign: "center",
@@ -1576,7 +1584,12 @@ export default function CategoryListing({
 
                       <div className="product-image-block">
                         {product.image ? (
-                          <img src={product.image} alt={product.title} />
+                          <img
+                            src={product.image}
+                            alt={product.title}
+                            loading="lazy"
+                            decoding="async"
+                          />
                         ) : (
                           <ImagePlaceholder height="100%" label={product.title} />
                         )}
