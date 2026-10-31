@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import {
   Plus,
   Search,
@@ -180,6 +180,7 @@ export default function AdminProductsPage() {
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [videoExplicitlyRemoved, setVideoExplicitlyRemoved] = useState(false);
   const [variantUploadingIdx, setVariantUploadingIdx] = useState<number | null>(null);
+  const [metalUploadingKey, setMetalUploadingKey] = useState<string | null>(null);
 
   // Variant Matrix Generator Selection (starts empty so only user-chosen variants are generated)
   const [selectedVariantMetals, setSelectedVariantMetals] = useState<string[]>([]);
@@ -269,7 +270,7 @@ export default function AdminProductsPage() {
     engraving_instructions: "",
     personalisation_available: "no",
     delivery_type: "Standard Secure Shipping",
-    estimated_delivery_time: "3-5 Business Days",
+    estimated_delivery_time: "14-15 Days",
     next_day_delivery_available: "no",
     made_to_order: "no",
     production_time: "",
@@ -396,6 +397,112 @@ export default function AdminProductsPage() {
     }
   };
 
+  const handleMetalGroupImageUpload = async (
+    files: FileList | File[],
+    metalType: string,
+    metalKarat: string
+  ) => {
+    const groupKey = `${metalType}__${metalKarat}`;
+    setMetalUploadingKey(groupKey);
+    try {
+      const fileArr = Array.from(files).filter((f) => f.type.startsWith("image/"));
+      if (fileArr.length === 0) {
+        toast.error("Select valid image files");
+        return;
+      }
+      const file = fileArr[0];
+      const localBlob = URL.createObjectURL(file);
+
+      // Optimistically update all variants sharing this metal
+      setFormData((prev) => {
+        const updatedVariants = (prev.variants || []).map((v) => {
+          const vType = v.metal_type || "yellow-gold";
+          const vKarat = v.metal_karat || "18K";
+          if (vType === metalType && (vKarat === metalKarat || !metalKarat)) {
+            return {
+              ...v,
+              images: [{ url: localBlob, isPrimary: true }],
+            };
+          }
+          return v;
+        });
+        return { ...prev, variants: updatedVariants };
+      });
+
+      const res = await adminApi.uploadMedia(file);
+      const uploadedUrl = res.data.url;
+
+      setFormData((prev) => {
+        const updatedVariants = (prev.variants || []).map((v) => {
+          const vType = v.metal_type || "yellow-gold";
+          const vKarat = v.metal_karat || "18K";
+          if (vType === metalType && (vKarat === metalKarat || !metalKarat)) {
+            return {
+              ...v,
+              images: [{ url: uploadedUrl, isPrimary: true }],
+            };
+          }
+          return v;
+        });
+        return { ...prev, variants: updatedVariants };
+      });
+
+      const metalMatch = METAL_VARIANT_OPTIONS.find((m) => m.metal_type === metalType && m.metal_karat === metalKarat);
+      const metalLabel = metalMatch?.label || metalType;
+      toast.success(`Image applied to all ${metalLabel} sizes`);
+    } catch (err) {
+      toast.error("Metal image upload failed");
+    } finally {
+      setMetalUploadingKey(null);
+    }
+  };
+
+  const handleRemoveMetalGroupImage = (metalType: string, metalKarat: string) => {
+    setFormData((prev) => {
+      const updatedVariants = (prev.variants || []).map((v) => {
+        const vType = v.metal_type || "yellow-gold";
+        const vKarat = v.metal_karat || "18K";
+        if (vType === metalType && (vKarat === metalKarat || !metalKarat)) {
+          return {
+            ...v,
+            images: [],
+          };
+        }
+        return v;
+      });
+      return { ...prev, variants: updatedVariants };
+    });
+    toast.success("Image removed from all sizes of this metal");
+  };
+
+  const handleSyncVariantImageToSameMetal = (variantIdx: number) => {
+    const targetVariant = (formData.variants || [])[variantIdx];
+    if (!targetVariant) return;
+    const targetImg = targetVariant.images && targetVariant.images.length > 0 ? targetVariant.images[0] : null;
+    if (!targetImg || !targetImg.url) {
+      toast.error("No image to sync for this variant");
+      return;
+    }
+    const targetMetal = targetVariant.metal_type || "yellow-gold";
+    const targetKarat = targetVariant.metal_karat || "18K";
+
+    setFormData((prev) => {
+      const updatedVariants = (prev.variants || []).map((v) => {
+        const vType = v.metal_type || "yellow-gold";
+        const vKarat = v.metal_karat || "18K";
+        if (vType === targetMetal && vKarat === targetKarat) {
+          return {
+            ...v,
+            images: [{ ...targetImg }],
+          };
+        }
+        return v;
+      });
+      return { ...prev, variants: updatedVariants };
+    });
+    toast.success("Image synced across all sizes of this metal");
+  };
+
   const handleVariantImageUpload = async (files: FileList | File[], variantIdx: number) => {
     setVariantUploadingIdx(variantIdx);
     try {
@@ -406,13 +513,22 @@ export default function AdminProductsPage() {
       }
       for (const file of fileArr) {
         const localBlob = URL.createObjectURL(file);
+        const targetVariant = (formData.variants || [])[variantIdx];
+        const targetMetal = targetVariant?.metal_type || "yellow-gold";
+        const targetKarat = targetVariant?.metal_karat || "18K";
+
         setFormData((prev) => {
-          const updatedVariants = [...(prev.variants || [])];
-          const currVariant = updatedVariants[variantIdx] || {};
-          updatedVariants[variantIdx] = {
-            ...currVariant,
-            images: [{ url: localBlob, isPrimary: true }],
-          };
+          const updatedVariants = (prev.variants || []).map((v, i) => {
+            const vType = v.metal_type || "yellow-gold";
+            const vKarat = v.metal_karat || "18K";
+            if (i === variantIdx || (vType === targetMetal && vKarat === targetKarat)) {
+              return {
+                ...v,
+                images: [{ url: localBlob, isPrimary: true }],
+              };
+            }
+            return v;
+          });
           return { ...prev, variants: updatedVariants };
         });
 
@@ -420,15 +536,20 @@ export default function AdminProductsPage() {
           const res = await adminApi.uploadMedia(file);
           const uploadedUrl = res.data.url;
           setFormData((prev) => {
-            const updatedVariants = [...(prev.variants || [])];
-            const currVariant = updatedVariants[variantIdx] || {};
-            updatedVariants[variantIdx] = {
-              ...currVariant,
-              images: [{ url: uploadedUrl, isPrimary: true }],
-            };
+            const updatedVariants = (prev.variants || []).map((v, i) => {
+              const vType = v.metal_type || "yellow-gold";
+              const vKarat = v.metal_karat || "18K";
+              if (i === variantIdx || (vType === targetMetal && vKarat === targetKarat)) {
+                return {
+                  ...v,
+                  images: [{ url: uploadedUrl, isPrimary: true }],
+                };
+              }
+              return v;
+            });
             return { ...prev, variants: updatedVariants };
           });
-          toast.success(`Variant image uploaded`);
+          toast.success(`Image uploaded and synced to all ${targetMetal.replace("-", " ")} sizes`);
         } catch (uploadErr) {
           toast.error("Variant image upload failed");
         }
@@ -501,6 +622,57 @@ export default function AdminProductsPage() {
     if (isRingCategory) return RING_SIZE_OPTIONS;
     return [""];
   };
+
+  const uniqueMetalGroups = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        metal_type: string;
+        metal_karat: string;
+        label: string;
+        count: number;
+        sizes: string[];
+        sampleImageUrl: string | null;
+        hasImage: boolean;
+      }
+    >();
+
+    (formData.variants || []).forEach((v, idx) => {
+      const mType = v.metal_type || "yellow-gold";
+      const mKarat = v.metal_karat || "18K";
+      const key = `${mType}__${mKarat}`;
+      const sizeVal = v.size || v.length || v.bangle_size || `V${idx + 1}`;
+      const imgUrl = v.images && v.images.length > 0 ? v.images[0].url : null;
+
+      if (!map.has(key)) {
+        const metalMatch = METAL_VARIANT_OPTIONS.find(
+          (m) => m.metal_type === mType && m.metal_karat === mKarat
+        );
+        const label = metalMatch ? metalMatch.label : `${mKarat} ${mType.replace("-", " ")}`;
+        map.set(key, {
+          metal_type: mType,
+          metal_karat: mKarat,
+          label,
+          count: 0,
+          sizes: [],
+          sampleImageUrl: imgUrl,
+          hasImage: Boolean(imgUrl),
+        });
+      }
+
+      const grp = map.get(key)!;
+      grp.count += 1;
+      if (sizeVal && !grp.sizes.includes(sizeVal)) {
+        grp.sizes.push(sizeVal);
+      }
+      if (!grp.sampleImageUrl && imgUrl) {
+        grp.sampleImageUrl = imgUrl;
+        grp.hasImage = true;
+      }
+    });
+
+    return Array.from(map.values());
+  }, [formData.variants]);
 
   const bulkGenerateVariants = () => {
     const baseSku = formData.sku || generateAutoSku(formData.category, formData.name);
@@ -644,7 +816,7 @@ export default function AdminProductsPage() {
       engraving_instructions: "",
       personalisation_available: "no",
       delivery_type: "Standard Secure Shipping",
-      estimated_delivery_time: "3-5 Business Days",
+      estimated_delivery_time: "14-15 Days",
       next_day_delivery_available: "no",
       made_to_order: "no",
       production_time: "",
@@ -2643,6 +2815,141 @@ export default function AdminProductsPage() {
                     </div>
                   </div>
 
+                  {/* SINGLE IMAGE UPLOAD PER METAL (SYNC ACROSS SIZES) */}
+                  {(formData.variants || []).length > 0 && uniqueMetalGroups.length > 0 && (
+                    <div
+                      style={{
+                        padding: "14px 16px",
+                        backgroundColor: "#0d0d0d",
+                        border: "1px solid rgba(198, 164, 95, 0.35)",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "10px",
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "6px" }}>
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                            <ImageIcon style={{ width: 14, height: 14, color: "#c6a45f" }} />
+                            <h4 style={{ fontSize: "11px", fontWeight: 700, color: "#ffffff", textTransform: "uppercase", letterSpacing: "1px", margin: 0 }}>
+                              Metal Image Upload (Single Photo Per Metal)
+                            </h4>
+                          </div>
+                          <p style={{ fontSize: "10px", color: "#888888", margin: "3px 0 0 0" }}>
+                            Upload once per metal. The photo automatically applies across all sizes of that metal (e.g. Silver sizes 5, 5.5, 6 all share one photo).
+                          </p>
+                        </div>
+                      </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "10px" }}>
+                        {uniqueMetalGroups.map((group) => {
+                          const groupKey = `${group.metal_type}__${group.metal_karat}`;
+                          const isUploading = metalUploadingKey === groupKey;
+                          const displayImg = resolveMediaUrl(group.sampleImageUrl);
+
+                          return (
+                            <div
+                              key={groupKey}
+                              style={{
+                                padding: "8px 10px",
+                                backgroundColor: "#000000",
+                                border: displayImg ? "1px solid rgba(198, 164, 95, 0.4)" : "1px solid rgba(255, 255, 255, 0.12)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                gap: "10px",
+                              }}
+                            >
+                              <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
+                                {displayImg ? (
+                                  <img
+                                    src={displayImg}
+                                    alt={group.label}
+                                    style={{ width: 34, height: 34, objectFit: "cover", border: "1px solid #c6a45f", flexShrink: 0 }}
+                                  />
+                                ) : (
+                                  <div
+                                    style={{
+                                      width: 34,
+                                      height: 34,
+                                      border: "1px dashed rgba(255, 255, 255, 0.2)",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      color: "#666",
+                                      fontSize: "8px",
+                                      flexShrink: 0,
+                                      textAlign: "center",
+                                      lineHeight: "1.1",
+                                    }}
+                                  >
+                                    No img
+                                  </div>
+                                )}
+                                <div style={{ minWidth: 0 }}>
+                                  <div style={{ fontSize: "11px", fontWeight: 600, color: "#ffffff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                    {group.label}
+                                  </div>
+                                  <div style={{ fontSize: "9px", color: displayImg ? "#c6a45f" : "#888888" }}>
+                                    {group.count} {group.count === 1 ? "variant" : "sizes"} {displayImg ? "• Applied" : ""}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div style={{ display: "flex", alignItems: "center", gap: "5px", flexShrink: 0 }}>
+                                <label
+                                  htmlFor={`metal-file-${groupKey}`}
+                                  style={{
+                                    padding: "4px 8px",
+                                    backgroundColor: "rgba(198, 164, 95, 0.15)",
+                                    border: "1px solid rgba(198, 164, 95, 0.4)",
+                                    color: "#c6a45f",
+                                    fontSize: "10px",
+                                    cursor: isUploading ? "wait" : "pointer",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  <Upload style={{ width: 10, height: 10 }} />
+                                  <span>{isUploading ? "..." : displayImg ? "Change" : "Upload"}</span>
+                                </label>
+                                <input
+                                  id={`metal-file-${groupKey}`}
+                                  type="file"
+                                  accept="image/*"
+                                  style={{ display: "none" }}
+                                  disabled={isUploading}
+                                  onChange={(e) =>
+                                    e.target.files && handleMetalGroupImageUpload(e.target.files, group.metal_type, group.metal_karat)
+                                  }
+                                />
+                                {displayImg && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveMetalGroupImage(group.metal_type, group.metal_karat)}
+                                    title="Remove image from all sizes of this metal"
+                                    style={{
+                                      padding: "3px 6px",
+                                      background: "transparent",
+                                      border: "1px solid rgba(244, 63, 94, 0.3)",
+                                      color: "#f43f5e",
+                                      fontSize: "10px",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    ✕
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Variant Fields Table */}
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -2801,6 +3108,24 @@ export default function AdminProductsPage() {
                                         style={{ display: "none" }}
                                         onChange={(e) => e.target.files && handleVariantImageUpload(e.target.files, idx)}
                                       />
+                                      {varImg && (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleSyncVariantImageToSameMetal(idx)}
+                                          title="Sync this image across all sizes of this metal"
+                                          style={{
+                                            padding: "3px 6px",
+                                            backgroundColor: "rgba(255, 255, 255, 0.05)",
+                                            border: "1px solid rgba(255, 255, 255, 0.15)",
+                                            color: "#c6a45f",
+                                            fontSize: "9px",
+                                            cursor: "pointer",
+                                            whiteSpace: "nowrap",
+                                          }}
+                                        >
+                                          Sync sizes
+                                        </button>
+                                      )}
                                     </div>
                                   </td>
 
@@ -2998,9 +3323,9 @@ export default function AdminProductsPage() {
                       <label style={labelStyle}>Estimated Delivery Time</label>
                       <input
                         type="text"
-                        value={formData.estimated_delivery_time || "3-5 Business Days"}
+                        value={formData.estimated_delivery_time || "14-15 Days"}
                         onChange={(e) => setFormData({ ...formData, estimated_delivery_time: e.target.value })}
-                        placeholder="Estimated Delivery Time"
+                        placeholder="14-15 Days"
                         style={inputStyle}
                       />
                     </div>

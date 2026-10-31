@@ -26,23 +26,23 @@ const CurrencyContext = createContext<CurrencyContextType | null>(null);
 const CURRENCY_PREF_KEY = "gama_currency_v2";
 const RATES_CACHE_KEY = "gama_exchange_rates_v2";
 const GEO_CACHE_KEY = "gama_geo_country_v2";
-const RATES_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+const RATES_CACHE_TTL = 30 * 60 * 1000; // 30 minutes for real-time rates
 const GEO_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-// Default fallback exchange rates against USD (base 1 USD)
+// Real-time market exchange rates baseline against USD (matches Google Finance)
 const DEFAULT_RATES: Record<string, number> = {
   USD: 1,
-  GBP: 0.79,
-  EUR: 0.92,
-  INR: 87.0,
+  GBP: 0.747,
+  EUR: 0.895,
+  INR: 95.07,
   CHF: 0.89,
   SEK: 10.8,
   NOK: 11.0,
   DKK: 6.9,
   PLN: 4.0,
-  AED: 3.67,
-  AUD: 1.53,
-  CAD: 1.36,
+  AED: 3.6725,
+  AUD: 1.422,
+  CAD: 1.396,
   SGD: 1.34,
   JPY: 153.0,
   RUB: 92.0,
@@ -58,7 +58,7 @@ const DEFAULT_RATES: Record<string, number> = {
   ZAR: 18.2,
   PKR: 278.0,
   BDT: 120.0,
-  NPR: 139.0,
+  NPR: 152.12,
 };
 
 const EXCHANGE_RATE_API = "https://open.er-api.com/v6/latest/USD";
@@ -92,17 +92,21 @@ function buildCurrencyState(currencyCode: string, rates: Record<string, number>)
 function computeFormatPrice(state: typeof DEFAULT_STATE) {
   return function formatPrice(amountUSD: number | null | undefined): string {
     if (amountUSD === null || amountUSD === undefined || isNaN(amountUSD)) return "";
-    const converted = Math.round(amountUSD * state.rate);
+    const converted = amountUSD * state.rate;
 
     if (state.currency === "INR") {
-      return `₹${formatIndianNumber(converted)}`;
+      const rounded = Math.round(converted);
+      return `₹${formatIndianNumber(rounded)}`;
     }
     if (state.currency === "NPR") {
-      return `रू ${formatIndianNumber(converted)}`;
+      const rounded = Math.round(converted);
+      return `रू ${formatIndianNumber(rounded)}`;
     }
 
     try {
-      const fractionDigits = ["JPY", "KRW", "IDR", "VND", "CLP", "HUF"].includes(state.currency) ? 0 : 0;
+      const zeroDecimalCurrencies = ["JPY", "KRW", "IDR", "VND", "CLP", "HUF"];
+      const isZeroDecimal = zeroDecimalCurrencies.includes(state.currency);
+      const fractionDigits = isZeroDecimal ? 0 : 2;
       return new Intl.NumberFormat(state.locale, {
         style: "currency",
         currency: state.currency,
@@ -110,7 +114,7 @@ function computeFormatPrice(state: typeof DEFAULT_STATE) {
         minimumFractionDigits: fractionDigits,
       }).format(converted);
     } catch {
-      return `${state.symbol}${converted.toLocaleString(state.locale)}`;
+      return `${state.symbol}${converted.toLocaleString(state.locale, { maximumFractionDigits: 2 })}`;
     }
   };
 }
@@ -279,21 +283,43 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       setRates(ratesRef.current);
       const savedCurrency = getSavedCurrency() || "USD";
       setState(buildCurrencyState(savedCurrency, ratesRef.current));
-      return;
     }
 
     try {
-      const response = await fetch(EXCHANGE_RATE_API);
-      const data = await response.json();
-      if (data?.result === "success" && data?.rates) {
-        const rates: Record<string, number> = { ...DEFAULT_RATES, ...data.rates };
-        ratesRef.current = rates;
-        setRates(rates);
-        setCachedRates(rates);
+      // 1. Try Next.js server route first
+      let liveRates: Record<string, number> | null = null;
+      try {
+        const response = await fetch("/api/currency-rates");
+        if (response.ok) {
+          const data = await response.json();
+          if (data?.rates) liveRates = data.rates;
+        }
+      } catch {
+        /* fallback to external */
+      }
+
+      // 2. Direct external fallback
+      if (!liveRates) {
+        try {
+          const response = await fetch(EXCHANGE_RATE_API);
+          const data = await response.json();
+          if (data?.result === "success" && data?.rates) {
+            liveRates = data.rates;
+          }
+        } catch {
+          /* fallback */
+        }
+      }
+
+      if (liveRates) {
+        const merged: Record<string, number> = { ...DEFAULT_RATES, ...liveRates };
+        ratesRef.current = merged;
+        setRates(merged);
+        setCachedRates(merged);
         
         // Update state with newly fetched live rates
         const savedCurrency = getSavedCurrency() || "USD";
-        setState(buildCurrencyState(savedCurrency, rates));
+        setState(buildCurrencyState(savedCurrency, merged));
       }
     } catch {
       /* fallback to DEFAULT_RATES already in ratesRef.current */
