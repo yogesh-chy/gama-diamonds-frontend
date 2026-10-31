@@ -365,6 +365,7 @@ export const footerLinks: FooterLinks = {
   ],
   explore: [
     { name: "About Gama Jewels", href: "/about" },
+    { name: "Contact & Inquiries", href: "/contact" },
     { name: "Bespoke Studio", href: "/bespoke" },
     { name: "Jewellery Creator", href: "/jewellery-creator" },
     { name: "Shopping Bag", href: "/cart" },

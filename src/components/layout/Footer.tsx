@@ -16,6 +16,7 @@ import {
   FileText,
 } from "lucide-react";
 import { footerLinks } from "@/lib/constants";
+import { contactApi } from "@/lib/api/contact";
 
 function InstagramIcon({ size = 15 }: { size?: number }) {
   return (
@@ -179,19 +180,21 @@ const socialLinks = [
 export default function Footer() {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim()) {
-      setSubscribed(true);
-      setEmail("");
-    }
+    if (!email.trim() || submitting) return;
+    setSubmitting(true);
+    try { await contactApi.subscribeNewsletter(email.trim()); } catch (err) { console.warn(err); }
+    setSubscribed(true);
+    setEmail('');
+    setSubmitting(false);
   };
-
   return (
     <footer className="footer-container">
       {/* ── Trust Features Strip ── */}
@@ -349,8 +352,8 @@ export default function Footer() {
                       className="footer-newsletter-input"
                       style={{ borderRadius: "0px" }}
                     />
-                    <button type="submit" className="footer-newsletter-btn" style={{ borderRadius: "0px" }}>
-                      JOIN
+                    <button type="submit" disabled={submitting} className="footer-newsletter-btn" style={{ borderRadius: "0px", opacity: submitting ? 0.7 : 1, cursor: submitting ? "not-allowed" : "pointer" }}>
+                      {submitting ? "..." : "JOIN"}
                     </button>
                   </div>
                 </form>

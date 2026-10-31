@@ -23,11 +23,14 @@ import {
   Layers,
   Flame,
   Check,
+  Loader2,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
 import LuxurySelect from "@/components/ui/LuxurySelect";
+import { contactApi } from "@/lib/api/contact";
+import { toast } from "sonner";
 
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 25 },
@@ -111,11 +114,29 @@ export default function AboutPage() {
     message: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setFormData({ name: "", email: "", phone: "", subject: "Private Consultation", message: "" });
+    setLoading(true);
+    try {
+      await contactApi.submitInquiry({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        subject: formData.subject,
+        inquiry_type: "consultation",
+        message: formData.message,
+      });
+      setSubmitted(true);
+      toast.success("Thank you! Your consultation request has been sent.");
+      setFormData({ name: "", email: "", phone: "", subject: "Private Consultation", message: "" });
+    } catch (err: any) {
+      const errDetail = err?.response?.data?.message || err?.response?.data?.detail || "Failed to send your request. Please try again or reach out on WhatsApp.";
+      toast.error(errDetail);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const mapAddressQuery = encodeURIComponent(
@@ -843,10 +864,11 @@ export default function AboutPage() {
 
                   <button
                     type="submit"
+                    disabled={loading}
                     className="about-form-submit"
                     style={{
                       padding: "14px 28px",
-                      background: "linear-gradient(135deg, #c6a45f, #a88738)",
+                      background: loading ? "#777777" : "linear-gradient(135deg, #c6a45f, #a88738)",
                       color: "#000000",
                       border: "none",
                       fontFamily: "'Poppins', sans-serif",
@@ -854,15 +876,25 @@ export default function AboutPage() {
                       fontWeight: 600,
                       letterSpacing: "0.1em",
                       textTransform: "uppercase",
-                      cursor: "pointer",
+                      cursor: loading ? "not-allowed" : "pointer",
                       display: "inline-flex",
                       alignItems: "center",
                       justifyContent: "center",
                       gap: "8px",
+                      opacity: loading ? 0.7 : 1,
                     }}
                   >
-                    <Send size={15} />
-                    <span>Submit Consultation Request</span>
+                    {loading ? (
+                      <>
+                        <Loader2 size={15} className="animate-spin" />
+                        <span>Sending Request...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send size={15} />
+                        <span>Submit Consultation Request</span>
+                      </>
+                    )}
                   </button>
                 </form>
               )}

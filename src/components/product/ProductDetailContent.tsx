@@ -702,68 +702,22 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
+                        backgroundColor: "#000000",
                       }}
                     >
-                      <div
+                      <video
+                        src={currentMedia.src}
+                        controls
+                        autoPlay={isPlayingVideo}
+                        playsInline
+                        onPlay={() => setIsPlayingVideo(true)}
+                        onPause={() => setIsPlayingVideo(false)}
                         style={{
-                          position: "absolute",
-                          inset: 0,
-                          backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url(${mediaItems[0]?.src || ""})`,
-                          backgroundSize: "cover",
-                          backgroundPosition: "center",
-                          filter: "blur(3px)",
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
                         }}
                       />
-                      {!isPlayingVideo ? (
-                        <div style={{ position: "relative", zIndex: 2, textAlign: "center" }}>
-                          <motion.button
-                            onClick={() => setIsPlayingVideo(true)}
-                            whileHover={{ scale: 1.06 }}
-                            whileTap={{ scale: 0.95 }}
-                            style={{
-                              width: "58px",
-                              height: "58px",
-                              borderRadius: "50%",
-                              background: "linear-gradient(135deg, #c6a45f 0%, #e8d5a3 50%, #c6a45f 100%)",
-                              color: "#000000",
-                              border: "none",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              cursor: "pointer",
-                              boxShadow: "0 0 24px rgba(198, 164, 95, 0.4)",
-                              marginBottom: "10px",
-                            }}
-                          >
-                            <Play size={24} fill="#000000" style={{ marginLeft: "2px" }} />
-                          </motion.button>
-                          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "14px", letterSpacing: "1.5px", color: "#ffffff", textTransform: "uppercase" }}>
-                            360° Video Showcase
-                          </div>
-                        </div>
-                      ) : (
-                        <div style={{ position: "relative", zIndex: 2, textAlign: "center" }}>
-                          <Sparkles size={32} color="#c6a45f" style={{ margin: "0 auto 8px" }} />
-                          <p style={{ fontSize: "12px", color: "#ffffff", marginBottom: "10px" }}>
-                            Interactive 360° View Active
-                          </p>
-                          <button
-                            onClick={() => setIsPlayingVideo(false)}
-                            style={{
-                              background: "none",
-                              border: "1px solid rgba(198, 164, 95, 0.5)",
-                              color: "#c6a45f",
-                              padding: "4px 12px",
-                              fontSize: "9.5px",
-                              cursor: "pointer",
-                              textTransform: "uppercase",
-                              letterSpacing: "1.2px",
-                            }}
-                          >
-                            <Pause size={9} style={{ display: "inline", marginRight: "4px" }} /> Pause
-                          </button>
-                        </div>
-                      )}
                     </div>
                   )}
                 </motion.div>
@@ -792,16 +746,15 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                       borderRadius: "2px",
                     }}
                   >
-                    {item.src ? (
+                    {item.type === "video" ? (
+                      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#111111" }}>
+                        <Play size={12} fill="#c6a45f" color="#c6a45f" />
+                      </div>
+                    ) : item.src ? (
                       <img src={item.src} alt={item.alt} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
                       <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <ImageIcon size={14} color="#777777" />
-                      </div>
-                    )}
-                    {item.type === "video" && (
-                      <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <Play size={8} fill="#c6a45f" color="#c6a45f" />
                       </div>
                     )}
                   </button>
@@ -1184,12 +1137,23 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
             >
               <X size={18} />
             </button>
-            <img
-              src={currentMedia.src}
-              alt={currentMedia.alt}
-              style={{ maxWidth: "85vw", maxHeight: "85vh", objectFit: "contain" }}
-              onClick={(e) => e.stopPropagation()}
-            />
+            {currentMedia.type === "video" ? (
+              <video
+                src={currentMedia.src}
+                controls
+                autoPlay
+                playsInline
+                style={{ maxWidth: "85vw", maxHeight: "85vh", objectFit: "contain" }}
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <img
+                src={currentMedia.src}
+                alt={currentMedia.alt}
+                style={{ maxWidth: "85vw", maxHeight: "85vh", objectFit: "contain" }}
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
           </motion.div>
         )}
       </AnimatePresence>

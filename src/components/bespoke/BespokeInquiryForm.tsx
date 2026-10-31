@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import { fadeInUp } from "@/lib/constants";
+import { contactApi } from "@/lib/api/contact";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -70,6 +72,7 @@ export default function BespokeInquiryForm() {
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const update = (field: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -87,19 +90,52 @@ export default function BespokeInquiryForm() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Thank you! Your design submission has been received. Our team will contact you shortly.");
-    setForm({
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      timeFrame: "",
-      additionalInfo: "",
-    });
-    setImageFile(null);
-    setDocumentFile(null);
+    setLoading(true);
+
+    try {
+      let attachmentUrl = "";
+      const fileToUpload = imageFile || documentFile;
+      if (fileToUpload) {
+        try {
+          const uploadRes = await contactApi.uploadAttachment(fileToUpload);
+          if (uploadRes?.url) {
+            attachmentUrl = uploadRes.url;
+          }
+        } catch (uploadErr) {
+          console.warn("Attachment upload skipped or failed:", uploadErr);
+        }
+      }
+
+      await contactApi.submitInquiry({
+        name: `${form.firstName} ${form.lastName}`.trim(),
+        email: form.email,
+        phone: form.phone,
+        subject: "Bespoke Custom Design Inquiry",
+        inquiry_type: "bespoke",
+        timeframe: form.timeFrame,
+        attachment_url: attachmentUrl,
+        message: form.additionalInfo,
+      });
+
+      toast.success("Thank you! Your bespoke design inquiry has been sent to our master artisans.");
+      setForm({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        timeFrame: "",
+        additionalInfo: "",
+      });
+      setImageFile(null);
+      setDocumentFile(null);
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.response?.data?.detail || "Could not submit your design. Please try again or contact us via WhatsApp.";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlers = focusHandlers();
@@ -365,6 +401,7 @@ export default function BespokeInquiryForm() {
           >
             <button
               type="submit"
+              disabled={loading}
               className="btn-gold"
               style={{
                 borderRadius: "0px",
@@ -372,12 +409,17 @@ export default function BespokeInquiryForm() {
                 fontSize: "11px",
                 fontWeight: "600",
                 letterSpacing: "2px",
-                cursor: "pointer",
+                cursor: loading ? "not-allowed" : "pointer",
                 border: "none",
                 textTransform: "uppercase",
+                opacity: loading ? 0.7 : 1,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
               }}
             >
-              Submit Design
+              {loading && <Loader2 size={14} className="animate-spin" />}
+              {loading ? "Submitting Design..." : "Submit Design"}
             </button>
           </div>
         </motion.form>
@@ -385,4 +427,3 @@ export default function BespokeInquiryForm() {
     </section>
   );
 }
-
