@@ -98,6 +98,7 @@ export default function CategoryListing({
   useEffect(() => {
     if (initialProducts && initialProducts.length > 0) {
       setProductList(initialProducts);
+      setInternalLoading(false);
     }
   }, [initialProducts]);
 
@@ -431,6 +432,8 @@ export default function CategoryListing({
         }
       } catch (err) {
         if (!cancelled) setProductList([]);
+      } finally {
+        if (!cancelled) setInternalLoading(false);
       }
     }
 
@@ -1526,29 +1529,72 @@ export default function CategoryListing({
                   padding: "60px 24px",
                   backgroundColor: "rgba(255, 255, 255, 0.015)",
                   border: "1px solid rgba(255, 255, 255, 0.08)",
+                  borderRadius: "2px",
                 }}
               >
-                <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: "14px", color: "#888888" }}>
-                  No products found matching the selected filters.
-                </p>
-                <button
-                  onClick={resetFilters}
+                <p
                   style={{
-                    marginTop: "16px",
-                    backgroundColor: "#c6a45f",
-                    color: "#000000",
-                    border: "none",
-                    padding: "8px 20px",
-                    fontFamily: "'Poppins', sans-serif",
-                    fontSize: "11px",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                    textTransform: "uppercase",
-                    letterSpacing: "1px",
+                    fontFamily: "'Playfair Display', serif",
+                    fontSize: "18px",
+                    color: "#ffffff",
+                    marginBottom: "8px",
                   }}
                 >
-                  Reset Filters
-                </button>
+                  {productList.length === 0
+                    ? "No Products Currently Available in this Collection"
+                    : "No Products Found Matching Selected Filters"}
+                </p>
+                <p
+                  style={{
+                    fontFamily: "'Poppins', sans-serif",
+                    fontSize: "13px",
+                    color: "#888888",
+                    maxWidth: "460px",
+                    margin: "0 auto 20px",
+                    lineHeight: "1.6",
+                  }}
+                >
+                  {productList.length === 0
+                    ? "Our master goldsmiths are constantly handcrafting new pieces. Inquire for bespoke creation or explore our other collections."
+                    : "Try adjusting or clearing your chosen filters, metals, or price limits to view available rings."}
+                </p>
+                {productList.length > 0 ? (
+                  <button
+                    onClick={resetFilters}
+                    style={{
+                      backgroundColor: "#c6a45f",
+                      color: "#000000",
+                      border: "none",
+                      padding: "10px 24px",
+                      fontFamily: "'Poppins', sans-serif",
+                      fontSize: "11px",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      textTransform: "uppercase",
+                      letterSpacing: "1.5px",
+                    }}
+                  >
+                    Reset Filters
+                  </button>
+                ) : (
+                  <Link
+                    href="/bespoke"
+                    style={{
+                      display: "inline-block",
+                      backgroundColor: "#c6a45f",
+                      color: "#000000",
+                      padding: "10px 24px",
+                      fontFamily: "'Poppins', sans-serif",
+                      fontSize: "11px",
+                      fontWeight: "600",
+                      textTransform: "uppercase",
+                      letterSpacing: "1.5px",
+                      textDecoration: "none",
+                    }}
+                  >
+                    Create Bespoke Ring
+                  </Link>
+                )}
               </div>
             ) : (
               <div className="rings-product-grid">
