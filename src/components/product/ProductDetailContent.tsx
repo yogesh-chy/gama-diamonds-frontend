@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
@@ -21,6 +21,8 @@ import {
   ArrowLeft,
   Check,
   HelpCircle,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -99,6 +101,9 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const autoPlayTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isVideoMuted, setIsVideoMuted] = useState(true);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(true);
   const [activeTab, setActiveTab] = useState<"details" | "spec" | "shipping">("details");
 
   // Fetch real backend product data
@@ -358,6 +363,29 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     };
   }, [isHovering, isPlayingVideo, isFullscreen, isAutoplayPaused, totalSlides]);
 
+  // Auto-play video whenever the video slide is in front
+  useEffect(() => {
+    const isCurrentVideo = mediaItems[selectedSlide]?.type === "video";
+    if (isCurrentVideo) {
+      setIsPlayingVideo(true);
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0;
+        videoRef.current.play().then(() => setIsVideoPlaying(true)).catch(() => {
+          if (videoRef.current) {
+            videoRef.current.muted = true;
+            setIsVideoMuted(true);
+            videoRef.current.play().then(() => setIsVideoPlaying(true)).catch(() => {});
+          }
+        });
+      }
+    } else {
+      setIsPlayingVideo(false);
+      if (videoRef.current) {
+        videoRef.current.pause();
+      }
+    }
+  }, [selectedSlide, mediaItems]);
+
   const slideVariants = {
     enter: (direction: number) => ({
       x: direction > 0 ? "100%" : "-100%",
@@ -384,7 +412,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     return (
       <div className="page-bg" style={{ backgroundColor: "#000000", color: "#ffffff", minHeight: "100vh" }}>
         <Header />
-        <main style={{ maxWidth: "1360px", margin: "0 auto", padding: "44px 28px 80px" }}>
+        <main style={{ maxWidth: "1360°px", margin: "0 auto", padding: "44px 28px 80px" }}>
           {/* Skeleton 2-Column */}
           <div style={{ display: "grid", gridTemplateColumns: "1.18fr 0.82fr", gap: "44px", alignItems: "start" }}>
             {/* Left Media Skeleton */}
@@ -511,7 +539,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
       <Header />
 
       {/* Main Container with Ample Breathing Room Below Navbar */}
-      <main style={{ maxWidth: "1360px", margin: "0 auto", padding: "44px 28px 80px" }}>
+      <main style={{ maxWidth: "1360°px", margin: "0 auto", padding: "44px 28px 80px" }}>
         
         {/* 2-Column Luxury Layout: Responsive 1-col on mobile/tablet, 1.18fr / 0.82fr on desktop */}
         <div className="grid grid-cols-1 lg:grid-cols-[1.18fr_0.82fr] gap-8 lg:gap-12 items-start">
@@ -703,21 +731,205 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                         alignItems: "center",
                         justifyContent: "center",
                         backgroundColor: "#000000",
+                        overflow: "hidden",
                       }}
                     >
                       <video
+                        ref={videoRef}
                         src={currentMedia.src}
-                        controls
-                        autoPlay={isPlayingVideo}
+                        autoPlay
+                        muted={isVideoMuted}
+                        loop
                         playsInline
-                        onPlay={() => setIsPlayingVideo(true)}
-                        onPause={() => setIsPlayingVideo(false)}
+                        preload="auto"
+                        onPlay={() => setIsVideoPlaying(true)}
+                        onPause={() => setIsVideoPlaying(false)}
+                        onClick={() => {
+                          if (videoRef.current) {
+                            if (videoRef.current.paused) {
+                              videoRef.current.play().then(() => setIsVideoPlaying(true)).catch(() => {});
+                            } else {
+                              videoRef.current.pause();
+                              setIsVideoPlaying(false);
+                            }
+                          }
+                        }}
                         style={{
                           width: "100%",
                           height: "100%",
                           objectFit: "contain",
+                          cursor: "pointer",
                         }}
                       />
+
+                      {/* Top-left Minimal Luxury Badge */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "12px",
+                          left: "12px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "5px",
+                          padding: "4px 10px",
+                          backgroundColor: "rgba(0, 0, 0, 0.7)",
+                          border: "1px solid rgba(198, 164, 95, 0.35)",
+                          backdropFilter: "blur(6px)",
+                          fontSize: "9.5px",
+                          fontWeight: 700,
+                          letterSpacing: "1.5px",
+                          color: "#c6a45f",
+                          textTransform: "uppercase",
+                          pointerEvents: "none",
+                          borderRadius: "2px",
+                          zIndex: 3,
+                        }}
+                      >
+                        <Sparkles size={11} color="#c6a45f" />
+                        <span>360° View</span>
+                      </div>
+
+                      {/* Centered Play Overlay when Paused */}
+                      {!isVideoPlaying && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (videoRef.current) {
+                              videoRef.current.play().then(() => setIsVideoPlaying(true)).catch(() => {});
+                            }
+                          }}
+                          style={{
+                            position: "absolute",
+                            inset: 0,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor: "rgba(0, 0, 0, 0.35)",
+                            border: "none",
+                            cursor: "pointer",
+                            zIndex: 2,
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "50px",
+                              height: "50px",
+                              borderRadius: "50%",
+                              backgroundColor: "rgba(0, 0, 0, 0.8)",
+                              border: "1.5px solid #c6a45f",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              boxShadow: "0 0 16px rgba(198, 164, 95, 0.35)",
+                            }}
+                          >
+                            <Play size={20} fill="#c6a45f" color="#c6a45f" style={{ marginLeft: "2px" }} />
+                          </div>
+                        </button>
+                      )}
+
+                      {/* Bottom-right Minimal Custom Controls (Gold Luxury Pattern) */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: "12px",
+                          right: "12px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          padding: "3px 6px",
+                          backgroundColor: "rgba(0, 0, 0, 0.7)",
+                          border: "1px solid rgba(198, 164, 95, 0.3)",
+                          backdropFilter: "blur(6px)",
+                          borderRadius: "2px",
+                          zIndex: 4,
+                        }}
+                      >
+                        {/* Play/Pause */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (videoRef.current) {
+                              if (isVideoPlaying) {
+                                videoRef.current.pause();
+                                setIsVideoPlaying(false);
+                              } else {
+                                videoRef.current.play().then(() => setIsVideoPlaying(true)).catch(() => {});
+                              }
+                            }
+                          }}
+                          title={isVideoPlaying ? "Pause" : "Play"}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "#c6a45f",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: "4px",
+                          }}
+                        >
+                          {isVideoPlaying ? (
+                            <Pause size={13} fill="#c6a45f" color="#c6a45f" />
+                          ) : (
+                            <Play size={13} fill="#c6a45f" color="#c6a45f" />
+                          )}
+                        </button>
+
+                        <div style={{ width: "1px", height: "10px", backgroundColor: "rgba(198, 164, 95, 0.25)" }} />
+
+                        {/* Mute/Unmute */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const nextMuted = !isVideoMuted;
+                            setIsVideoMuted(nextMuted);
+                            if (videoRef.current) {
+                              videoRef.current.muted = nextMuted;
+                            }
+                          }}
+                          title={isVideoMuted ? "Unmute" : "Mute"}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "#c6a45f",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: "4px",
+                          }}
+                        >
+                          {isVideoMuted ? <VolumeX size={13} /> : <Volume2 size={13} />}
+                        </button>
+
+                        <div style={{ width: "1px", height: "10px", backgroundColor: "rgba(198, 164, 95, 0.25)" }} />
+
+                        {/* Fullscreen */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsFullscreen(true);
+                          }}
+                          title="Fullscreen"
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "#c6a45f",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: "4px",
+                          }}
+                        >
+                          <Maximize2 size={12} />
+                        </button>
+                      </div>
                     </div>
                   )}
                 </motion.div>
@@ -747,8 +959,9 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                     }}
                   >
                     {item.type === "video" ? (
-                      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#111111" }}>
-                        <Play size={12} fill="#c6a45f" color="#c6a45f" />
+                      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", backgroundColor: "#0e0e0e", gap: "2px" }}>
+                        <Play size={10} fill="#c6a45f" color="#c6a45f" />
+                        <span style={{ fontSize: "7px", letterSpacing: "0.5px", color: "#c6a45f", fontWeight: 700 }}>360°</span>
                       </div>
                     ) : item.src ? (
                       <img src={item.src} alt={item.alt} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
