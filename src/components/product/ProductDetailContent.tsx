@@ -153,7 +153,13 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
         }
         setSelectedMetal(initialMetal);
 
-        const rawOrigin = (
+        const isPlainProduct = p.diamond_cut === "plain" || (
+          !p.diamond_type &&
+          !parseFloat(String(p.diamond_spec?.total_carat_weight || 0)) &&
+          !parseFloat(String(p.diamond_spec?.carat_weight || 0))
+        );
+
+        const rawOrigin = isPlainProduct ? "" : (
           p.diamond_spec?.diamond_origin ||
           p.diamond_spec?.diamondOrigin ||
           p.diamond_origin ||
@@ -162,11 +168,11 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
           "lab_grown"
         ).toLowerCase();
         const isNatural = rawOrigin === "natural";
-        const diamondOriginLabel = isNatural ? "Certified Natural Diamond" : "Certified Lab Diamond";
-        const diamondOriginSpec = isNatural ? "Natural Diamond" : "Lab Grown Diamond";
+        const diamondOriginLabel = isPlainProduct ? "Pure Metal Jewellery" : (isNatural ? "Certified Natural Diamond" : "Certified Lab Diamond");
+        const diamondOriginSpec = isPlainProduct ? "Plain Metal" : (isNatural ? "Natural Diamond" : "Lab Grown Diamond");
 
-        const certLab = String(p.diamond_spec?.certification_lab || p.diamond_spec?.certificationLab || "GIA").toUpperCase();
-        const certDisplay = certLab && certLab !== "NONE" ? `${certLab} Certified` : "Certified";
+        const certLab = isPlainProduct ? "" : String(p.diamond_spec?.certification_lab || p.diamond_spec?.certificationLab || "GIA").toUpperCase();
+        const certDisplay = isPlainProduct ? "" : (certLab && certLab !== "NONE" ? `${certLab} Certified` : "Certified");
 
         const loadedProduct: ProductData = {
           id: String(p.id),
@@ -175,14 +181,14 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
           price: typeof p.base_price === "number" ? p.base_price : parseFloat(String(p.base_price || 0)),
           sku: initialVar?.sku || p.sku || `GD-${p.id}`,
           metal: initialMetal,
-          carat: p.diamond_spec?.total_carat_weight
+          carat: isPlainProduct ? "" : (p.diamond_spec?.total_carat_weight
             ? `${p.diamond_spec.total_carat_weight}ct`
             : p.diamond_spec?.carat_weight
             ? `${p.diamond_spec.carat_weight}ct`
-            : "0.50ct",
-          shape: p.diamond_cut || p.diamond_spec?.diamond_shape || "Round Cut",
-          clarity: String(p.diamond_spec?.clarity_grade || p.diamond_spec?.clarityGrade || "VS1"),
-          color: String(p.diamond_spec?.colour_grade || p.diamond_spec?.colourGrade || "F"),
+            : "0.50ct"),
+          shape: isPlainProduct ? "Plain" : (p.diamond_cut || p.diamond_spec?.diamond_shape || "Round Cut"),
+          clarity: isPlainProduct ? "" : String(p.diamond_spec?.clarity_grade || p.diamond_spec?.clarityGrade || "VS1"),
+          color: isPlainProduct ? "" : String(p.diamond_spec?.colour_grade || p.diamond_spec?.colourGrade || "F"),
           certification: certDisplay,
           diamond_origin: rawOrigin,
           diamond_origin_label: diamondOriginLabel,
@@ -190,7 +196,9 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
           certificate_number: p.diamond_spec?.certificate_number || p.diamond_spec?.certificateNumber || "",
           certificate_url: p.diamond_spec?.certificate_url || p.diamond_spec?.certificateUrl || "",
           badge: p.is_featured ? "FEATURED" : "SIGNATURE",
-          description: p.description || "Meticulously crafted by master goldsmiths, featuring hand-selected certified diamonds handset into solid precious metal. Designed for everlasting brilliance.",
+          description: p.description || (isPlainProduct
+            ? "Expertly crafted from the finest precious metals by master goldsmiths. Designed for timeless elegance."
+            : "Meticulously crafted by master goldsmiths, featuring hand-selected certified diamonds handset into solid precious metal. Designed for everlasting brilliance."),
           video_url: p.video_url || p.videoUrl || null,
           video_poster_url: p.video_poster_url || null,
           video_hls_url: p.video_hls_url || null,
@@ -1127,11 +1135,13 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                     {product.description || "Each piece is meticulously crafted with the finest attention to detail, balancing timeless elegance with modern luxury craftsmanship."}
                   </p>
                   <ul style={{ paddingLeft: "14px", display: "flex", flexDirection: "column", gap: "4px", color: "#8e8e8e" }}>
-                    <li>
-                      Handset {product.diamond_origin === "natural" ? "certified natural diamonds" : "certified lab-grown diamonds"} for maximum brilliance
-                    </li>
+                    {product.diamond_origin_spec !== "Plain Metal" && (
+                      <li>
+                        Handset {product.diamond_origin === "natural" ? "certified natural diamonds" : "certified lab-grown diamonds"} for maximum brilliance
+                      </li>
+                    )}
                     <li>Solid precious metal composition</li>
-                    <li>Includes signature presentation box and certificate</li>
+                    <li>Includes signature presentation box {product.certification ? "and certificate" : ""}</li>
                   </ul>
                 </div>
               )}
@@ -1143,33 +1153,48 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                     <strong style={{ color: "#ffffff" }}>{selectedMetal}</strong>
                   </div>
                   <div style={{ padding: "6px 8px", backgroundColor: "#090909", borderRadius: "2px" }}>
-                    <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Diamond Origin</span>
+                    <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Product Type</span>
                     <strong style={{ color: "#ffffff" }}>{product.diamond_origin_spec}</strong>
                   </div>
-                  <div style={{ padding: "6px 8px", backgroundColor: "#090909", borderRadius: "2px" }}>
-                    <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Diamond Cut</span>
-                    <strong style={{ color: "#ffffff" }}>{product.shape}</strong>
-                  </div>
-                  <div style={{ padding: "6px 8px", backgroundColor: "#090909", borderRadius: "2px" }}>
-                    <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Carat Weight</span>
-                    <strong style={{ color: "#ffffff" }}>{product.carat}</strong>
-                  </div>
-                  <div style={{ padding: "6px 8px", backgroundColor: "#090909", borderRadius: "2px" }}>
-                    <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Clarity</span>
-                    <strong style={{ color: "#ffffff" }}>{product.clarity}</strong>
-                  </div>
-                  <div style={{ padding: "6px 8px", backgroundColor: "#090909", borderRadius: "2px" }}>
-                    <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Colour Grade</span>
-                    <strong style={{ color: "#ffffff" }}>{product.color}</strong>
-                  </div>
-                  <div style={{ padding: "6px 8px", backgroundColor: "#090909", borderRadius: "2px" }}>
-                    <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Certification</span>
-                    <strong style={{ color: "#ffffff" }}>{product.certification}</strong>
-                  </div>
-                  {product.certificate_number && (
+                  {product.diamond_origin_spec !== "Plain Metal" ? (
+                    <>
+                      <div style={{ padding: "6px 8px", backgroundColor: "#090909", borderRadius: "2px" }}>
+                        <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Diamond Cut</span>
+                        <strong style={{ color: "#ffffff" }}>{product.shape}</strong>
+                      </div>
+                      <div style={{ padding: "6px 8px", backgroundColor: "#090909", borderRadius: "2px" }}>
+                        <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Carat Weight</span>
+                        <strong style={{ color: "#ffffff" }}>{product.carat}</strong>
+                      </div>
+                      {product.clarity && (
+                        <div style={{ padding: "6px 8px", backgroundColor: "#090909", borderRadius: "2px" }}>
+                          <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Clarity</span>
+                          <strong style={{ color: "#ffffff" }}>{product.clarity}</strong>
+                        </div>
+                      )}
+                      {product.color && (
+                        <div style={{ padding: "6px 8px", backgroundColor: "#090909", borderRadius: "2px" }}>
+                          <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Colour Grade</span>
+                          <strong style={{ color: "#ffffff" }}>{product.color}</strong>
+                        </div>
+                      )}
+                      {product.certification && (
+                        <div style={{ padding: "6px 8px", backgroundColor: "#090909", borderRadius: "2px" }}>
+                          <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Certification</span>
+                          <strong style={{ color: "#ffffff" }}>{product.certification}</strong>
+                        </div>
+                      )}
+                      {product.certificate_number && (
+                        <div style={{ padding: "6px 8px", backgroundColor: "#090909", borderRadius: "2px" }}>
+                          <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Certificate No.</span>
+                          <strong style={{ color: "#ffffff" }}>{product.certificate_number}</strong>
+                        </div>
+                      )}
+                    </>
+                  ) : (
                     <div style={{ padding: "6px 8px", backgroundColor: "#090909", borderRadius: "2px" }}>
-                      <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Certificate No.</span>
-                      <strong style={{ color: "#ffffff" }}>{product.certificate_number}</strong>
+                      <span style={{ color: "#777777", display: "block", fontSize: "9.5px", textTransform: "uppercase" }}>Design Style</span>
+                      <strong style={{ color: "#ffffff" }}>Plain Precious Metal Band</strong>
                     </div>
                   )}
                 </div>

@@ -384,13 +384,14 @@ export default function CategoryListing({
               formattedMetal = p.metal_karat ? `${p.metal_karat} ${mClean}` : `18K ${mClean}`;
             }
 
-            const rawCarat = p.diamond_spec?.total_carat_weight || p.diamond_spec?.carat_weight || p.diamond_spec?.caratWeight || "1.00";
-            const formattedCarat = String(rawCarat).includes("ct") ? String(rawCarat) : `${rawCarat}ct`;
+            const isPlain = p.diamond_cut === "plain" || (!p.diamond_type && !parseFloat(String(p.diamond_spec?.total_carat_weight || 0)) && !parseFloat(String(p.diamond_spec?.carat_weight || 0)));
+            const rawCarat = isPlain ? "0" : (p.diamond_spec?.total_carat_weight || p.diamond_spec?.carat_weight || p.diamond_spec?.caratWeight || "1.00");
+            const formattedCarat = isPlain || parseFloat(String(rawCarat)) === 0 ? "" : (String(rawCarat).includes("ct") ? String(rawCarat) : `${rawCarat}ct`);
 
             const rawOrigin = p.diamond_spec?.diamond_origin || "lab_grown";
-            const formattedOrigin = rawOrigin === "natural" ? "Natural Diamond" : "Lab Grown Diamond";
+            const formattedOrigin = isPlain ? "Plain Metal" : (rawOrigin === "natural" ? "Natural Diamond" : "Lab Grown Diamond");
 
-            let rawStyle = p.earring_style || p.earring_type || p.diamond_cut || p.necklace_style || p.bracelet_type || "Classic";
+            let rawStyle = isPlain ? "Plain Metal" : (p.earring_style || p.earring_type || p.diamond_cut || p.necklace_style || p.bracelet_type || "Classic");
             const styleLower = String(rawStyle).toLowerCase();
             if (styleLower.includes("hoop")) rawStyle = "Hoop Earrings";
             else if (styleLower.includes("stud")) rawStyle = "Stud Earrings";

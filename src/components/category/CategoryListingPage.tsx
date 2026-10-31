@@ -779,7 +779,7 @@ export default function CategoryListingPage({
                                 fontWeight: "600",
                               }}
                             >
-                              {product.metal} {product.carat ? `• ${product.carat}` : ""}
+                              {product.metal} {product.carat && !product.carat.startsWith("0") && product.carat !== "Plain" ? `• ${product.carat}` : ""}
                             </div>
 
                             <h3

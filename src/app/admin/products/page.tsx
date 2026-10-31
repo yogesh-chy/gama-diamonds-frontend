@@ -53,6 +53,7 @@ const COLOUR_GRADE_OPTIONS = ["D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
 const CLARITY_GRADE_OPTIONS = ["FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2", "I1", "I2"];
 const CERT_LAB_OPTIONS = ["GIA", "IGI", "HRD", "EGL", "none"];
 const DIAMOND_SHAPE_OPTIONS = [
+  { value: "plain", label: "Plain / No Diamond" },
   { value: "round", label: "Round Brilliant" },
   { value: "princess", label: "Princess" },
   { value: "cushion", label: "Cushion" },
@@ -1039,27 +1040,29 @@ export default function AdminProductsPage() {
       const rawSpec = formData.diamond_spec || {};
       const centerCarat = parseNumOrNull(rawSpec.center_carat_weight);
       const sideCarat = parseNumOrNull(rawSpec.side_carat_weight);
-      const totalCarat = parseNumOrNull(rawSpec.total_carat_weight) || parseNumOrNull(rawSpec.carat_weight) || 1.0;
+      const isPlain = formData.diamond_cut === "plain" || (!formData.diamond_type && !parseFloat(String(rawSpec.total_carat_weight || 0)) && !parseFloat(String(rawSpec.carat_weight || 0)));
+      const parsedCarat = parseNumOrNull(rawSpec.total_carat_weight) ?? parseNumOrNull(rawSpec.carat_weight);
+      const totalCarat = isPlain ? 0.0 : (parsedCarat ?? 1.0);
       const diamondValue = parseNumOrNull(rawSpec.diamond_value);
 
       const cleanedDiamondSpec = {
-        diamond_origin: rawSpec.diamond_origin || "lab_grown",
-        diamond_shape: rawSpec.diamond_shape || formData.diamond_cut || "round",
-        carat_weight: totalCarat || 1.0,
-        center_carat_weight: centerCarat,
-        side_carat_weight: sideCarat,
+        diamond_origin: isPlain ? "lab_grown" : (rawSpec.diamond_origin || "lab_grown"),
+        diamond_shape: isPlain ? "plain" : (rawSpec.diamond_shape || formData.diamond_cut || "round"),
+        carat_weight: totalCarat,
+        center_carat_weight: isPlain ? null : centerCarat,
+        side_carat_weight: isPlain ? null : sideCarat,
         total_carat_weight: totalCarat,
         diamond_value: diamondValue,
-        number_of_diamonds: rawSpec.number_of_diamonds ? parseInt(String(rawSpec.number_of_diamonds)) : 1,
-        cut_grade: rawSpec.cut_grade || "excellent",
-        colour_grade: (rawSpec.colour_grade || "F").replace(/\s+color/i, "").trim().toUpperCase() || "F",
-        clarity_grade: rawSpec.clarity_grade || "VS1",
-        polish: rawSpec.polish || "",
-        symmetry: rawSpec.symmetry || "",
-        fluorescence: rawSpec.fluorescence || "",
-        certification_lab: rawSpec.certification_lab || "GIA",
-        certificate_number: rawSpec.certificate_number || "",
-        certificate_url: rawSpec.certificate_url || "",
+        number_of_diamonds: isPlain ? 0 : (rawSpec.number_of_diamonds ? parseInt(String(rawSpec.number_of_diamonds)) : 1),
+        cut_grade: isPlain ? null : (rawSpec.cut_grade || "excellent"),
+        colour_grade: isPlain ? null : ((rawSpec.colour_grade || "F").replace(/\s+color/i, "").trim().toUpperCase() || "F"),
+        clarity_grade: isPlain ? null : (rawSpec.clarity_grade || "VS1"),
+        polish: isPlain ? "" : (rawSpec.polish || ""),
+        symmetry: isPlain ? "" : (rawSpec.symmetry || ""),
+        fluorescence: isPlain ? "" : (rawSpec.fluorescence || ""),
+        certification_lab: isPlain ? "none" : (rawSpec.certification_lab || "GIA"),
+        certificate_number: isPlain ? "" : (rawSpec.certificate_number || ""),
+        certificate_url: isPlain ? "" : (rawSpec.certificate_url || ""),
       };
 
       const targetStock = formData.total_stock !== undefined ? parseInt(String(formData.total_stock)) || 0 : 10;
@@ -1249,8 +1252,9 @@ export default function AdminProductsPage() {
         styles: mapIdArray(formData.styles),
         collections: mapIdArray(formData.collections),
         related_products: mapIdArray(formData.related_products),
-        diamond_type: mapId(formData.diamond_type),
+        diamond_type: isPlain ? null : mapId(formData.diamond_type),
         brand: mapId(formData.brand),
+        diamond_cut: isPlain ? "plain" : (formData.diamond_cut || null),
         diamond_spec: cleanedDiamondSpec,
         variants: cleanedVariants,
       } as Partial<AdminProduct>;
@@ -1627,7 +1631,11 @@ export default function AdminProductsPage() {
                           <div>
                             <p style={{ fontWeight: 600, color: "#ffffff", margin: 0, fontSize: "12px" }}>{prod.name}</p>
                             <p style={{ fontSize: "10px", color: "#888888", margin: "2px 0 0", textTransform: "capitalize" }}>
-                              {prod.diamond_cut ? `${prod.diamond_cut} Cut` : prod.metal_type?.replace("-", " ") || "Custom Piece"}
+                              {prod.diamond_cut && prod.diamond_cut !== "plain"
+                                ? `${prod.diamond_cut} Cut`
+                                : prod.diamond_cut === "plain"
+                                ? "Plain Metal"
+                                : prod.metal_type?.replace("-", " ") || "Custom Piece"}
                             </p>
                           </div>
                         </div>
@@ -2025,7 +2033,7 @@ export default function AdminProductsPage() {
                       );
                     })()}
 
-                    {/* Diamond Shape */}
+                    {/* Diamond Shape / Size */}
                     {(() => {
                       const activeCat = formData.category || "engagement-rings";
                       const isEng = activeCat === "engagement-rings" || activeCat === "rings";
@@ -2037,28 +2045,38 @@ export default function AdminProductsPage() {
 
                       return (
                         <div style={fieldGroupStyle}>
-                          <label style={labelStyle}>{isEng ? "Diamond Shape *" : "Diamond Shape"}</label>
+                          <label style={labelStyle}>{isEng ? "Diamond Shape / Size *" : "Diamond Shape / Size"}</label>
                           <LuxurySelect
                             value={currentShape}
                             onChange={(val) => {
+                              const isPlain = val === "plain" || val === "";
                               setFormData({
                                 ...formData,
-                                diamond_cut: val,
+                                diamond_cut: isPlain ? "plain" : val,
+                                diamond_type: isPlain ? null : formData.diamond_type || diamondTypesList[0]?.id || 1,
                                 diamond_spec: {
                                   ...(formData.diamond_spec || {}),
-                                  diamond_shape: val,
+                                  diamond_shape: isPlain ? "plain" : val,
+                                  ...(isPlain
+                                    ? {
+                                        carat_weight: "0.00",
+                                        total_carat_weight: "0.00",
+                                        center_carat_weight: "0.00",
+                                        side_carat_weight: "0.00",
+                                        number_of_diamonds: 0,
+                                      }
+                                    : formData.diamond_spec?.carat_weight === "0.00"
+                                    ? {
+                                        carat_weight: "1.00",
+                                        total_carat_weight: "1.00",
+                                        number_of_diamonds: 1,
+                                      }
+                                    : {}),
                                 },
                               });
                             }}
                             size="sm"
-                            options={
-                              isEng
-                                ? DIAMOND_SHAPE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))
-                                : [
-                                    { value: "", label: "None / Plain Metal" },
-                                    ...DIAMOND_SHAPE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label })),
-                                  ]
-                            }
+                            options={DIAMOND_SHAPE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))}
                           />
                         </div>
                       );
@@ -2577,13 +2595,41 @@ export default function AdminProductsPage() {
                     <input
                       type="checkbox"
                       id="has_diamonds_check"
-                      checked={Boolean(formData.diamond_type || formData.diamond_spec?.total_carat_weight || formData.diamond_spec?.carat_weight)}
+                      checked={Boolean(
+                        formData.diamond_cut !== "plain" &&
+                        (formData.diamond_type ||
+                          (formData.diamond_spec?.total_carat_weight && parseFloat(String(formData.diamond_spec.total_carat_weight)) > 0) ||
+                          (formData.diamond_spec?.carat_weight && parseFloat(String(formData.diamond_spec.carat_weight)) > 0))
+                      )}
                       onChange={(e) => {
                         const checked = e.target.checked;
                         if (!checked) {
-                          setFormData({ ...formData, diamond_type: null });
+                          setFormData({
+                            ...formData,
+                            diamond_type: null,
+                            diamond_cut: "plain",
+                            diamond_spec: {
+                              ...(formData.diamond_spec || {}),
+                              diamond_shape: "plain",
+                              total_carat_weight: "0.00",
+                              carat_weight: "0.00",
+                              number_of_diamonds: 0,
+                            },
+                          });
                         } else {
-                          setFormData({ ...formData, diamond_type: diamondTypesList[0]?.id || 1 });
+                          const nextCut = formData.diamond_cut === "plain" ? "round" : (formData.diamond_cut || "round");
+                          setFormData({
+                            ...formData,
+                            diamond_type: diamondTypesList[0]?.id || 1,
+                            diamond_cut: nextCut,
+                            diamond_spec: {
+                              ...(formData.diamond_spec || {}),
+                              diamond_shape: nextCut,
+                              total_carat_weight: "1.00",
+                              carat_weight: "1.00",
+                              number_of_diamonds: 1,
+                            },
+                          });
                         }
                       }}
                       style={{ accentColor: "#c6a45f", width: 16, height: 16 }}
@@ -2593,7 +2639,7 @@ export default function AdminProductsPage() {
                     </label>
                   </div>
 
-                  {!formData.diamond_type && !formData.diamond_spec?.total_carat_weight && !formData.diamond_spec?.carat_weight ? (
+                  {formData.diamond_cut === "plain" || (!formData.diamond_type && !parseFloat(String(formData.diamond_spec?.total_carat_weight || 0)) && !parseFloat(String(formData.diamond_spec?.carat_weight || 0))) ? (
                     <div style={{ padding: "32px", textAlign: "center", color: "#888888", fontSize: "11px", border: "1px dashed rgba(255, 255, 255, 0.15)" }}>
                       This product is marked as plain metal (No Diamonds). Select "Diamond Product" above to configure 4Cs diamond attributes.
                     </div>
@@ -2617,7 +2663,37 @@ export default function AdminProductsPage() {
                         </div>
 
                         <div style={fieldGroupStyle}>
-                          <label style={labelStyle}>Carat Weight</label>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                            <label style={{ ...labelStyle, margin: 0 }}>Diamond Size / Carat Weight</label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setFormData({
+                                  ...formData,
+                                  diamond_type: null,
+                                  diamond_cut: "plain",
+                                  diamond_spec: {
+                                    ...(formData.diamond_spec || {}),
+                                    diamond_shape: "plain",
+                                    total_carat_weight: "0.00",
+                                    carat_weight: "0.00",
+                                    number_of_diamonds: 0,
+                                  },
+                                });
+                                toast.success("Set to Plain (No Diamond)");
+                              }}
+                              style={{
+                                background: "none",
+                                border: "1px solid rgba(198, 164, 95, 0.4)",
+                                color: "#c6a45f",
+                                fontSize: "9px",
+                                padding: "2px 6px",
+                                cursor: "pointer",
+                              }}
+                            >
+                              Set Plain (0.00ct)
+                            </button>
+                          </div>
                           <input
                             type="number"
                             step="0.01"
@@ -2626,9 +2702,60 @@ export default function AdminProductsPage() {
                               ...formData,
                               diamond_spec: { ...(formData.diamond_spec || {}), total_carat_weight: e.target.value, carat_weight: e.target.value }
                             })}
-                            placeholder="e.g. 1.00"
+                            placeholder="e.g. 1.00 (or 0.00 for Plain)"
                             style={inputStyle}
                           />
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "6px" }}>
+                            {["Plain (0ct)", "0.50ct", "0.75ct", "1.00ct", "1.50ct", "2.00ct"].map((preset) => {
+                              const isP = preset.startsWith("Plain");
+                              const cVal = isP ? "0.00" : preset.replace("ct", "");
+                              return (
+                                <button
+                                  key={preset}
+                                  type="button"
+                                  onClick={() => {
+                                    if (isP) {
+                                      setFormData({
+                                        ...formData,
+                                        diamond_type: null,
+                                        diamond_cut: "plain",
+                                        diamond_spec: {
+                                          ...(formData.diamond_spec || {}),
+                                          diamond_shape: "plain",
+                                          total_carat_weight: "0.00",
+                                          carat_weight: "0.00",
+                                          number_of_diamonds: 0,
+                                        },
+                                      });
+                                    } else {
+                                      setFormData({
+                                        ...formData,
+                                        diamond_type: formData.diamond_type || diamondTypesList[0]?.id || 1,
+                                        diamond_cut: formData.diamond_cut === "plain" ? "round" : formData.diamond_cut || "round",
+                                        diamond_spec: {
+                                          ...(formData.diamond_spec || {}),
+                                          diamond_shape: formData.diamond_cut === "plain" ? "round" : formData.diamond_cut || "round",
+                                          total_carat_weight: cVal,
+                                          carat_weight: cVal,
+                                          number_of_diamonds: 1,
+                                        },
+                                      });
+                                    }
+                                  }}
+                                  style={{
+                                    padding: "2px 6px",
+                                    fontSize: "9px",
+                                    backgroundColor: "rgba(255, 255, 255, 0.05)",
+                                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                                    color: "#cccccc",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  {preset}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
 
                         <div style={fieldGroupStyle}>
