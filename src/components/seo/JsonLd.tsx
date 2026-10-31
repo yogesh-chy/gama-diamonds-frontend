@@ -12,6 +12,14 @@ const SITE_URL = "https://www.gamajewels.com";
 const SITE_NAME = "Gama Jewels";
 const LOGO_URL = `${SITE_URL}/favicon.ico`;
 
+/**
+ * Safely serialize JSON-LD to prevent HTML script breakout / XSS attacks.
+ * Replaces '<' with unicode '\u003c' so `</script>` cannot prematurely close the script tag.
+ */
+function safeJsonLdStringify(schema: object): string {
+  return JSON.stringify(schema).replace(/</g, "\\u003c");
+}
+
 // ── Organization + WebSite Schema (for homepage) ──
 export function OrganizationJsonLd() {
   const schema = {
@@ -66,7 +74,7 @@ export function OrganizationJsonLd() {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLdStringify(schema) }}
     />
   );
 }
@@ -121,7 +129,7 @@ export function LocalBusinessJsonLd() {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLdStringify(schema) }}
     />
   );
 }
@@ -215,7 +223,7 @@ export function ProductJsonLd({
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLdStringify(schema) }}
     />
   );
 }
@@ -241,7 +249,7 @@ export function BreadcrumbJsonLd({ items }: { items: BreadcrumbItem[] }) {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLdStringify(schema) }}
     />
   );
 }
@@ -269,7 +277,7 @@ export function FAQJsonLd({ items }: { items: FAQItem[] }) {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLdStringify(schema) }}
     />
   );
 }
@@ -312,7 +320,7 @@ export function CollectionJsonLd({
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLdStringify(schema) }}
     />
   );
 }
