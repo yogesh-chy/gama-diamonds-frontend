@@ -690,8 +690,12 @@ export default function AdminProductsPage() {
       return;
     }
 
-    const generated = metals.flatMap((metal) =>
-      dimensions.map((dim, dimIndex) => {
+    const generated = metals.flatMap((metal) => {
+      const existingMetalImg = (formData.variants || []).find(
+        (v) => (v.metal_type || "yellow-gold") === metal.metal_type && (v.metal_karat || "18K") === metal.metal_karat && v.images && v.images.length > 0
+      )?.images;
+
+      return dimensions.map((dim, dimIndex) => {
         const dimClean = dim.replace(/[^a-zA-Z0-9]/g, "");
         const variantIndex = dimIndex + 1;
         const sku = `${baseSku}-${metal.code}${dimClean ? `-${dimClean}` : ""}-${String(variantIndex).padStart(2, "0")}`;
@@ -709,10 +713,10 @@ export default function AdminProductsPage() {
           stock: 10,
           is_active: true,
           is_default: false,
-          images: [],
+          images: existingMetalImg ? [...existingMetalImg] : [],
         };
-      })
-    ).map((v, idx) => ({ ...v, is_default: idx === 0 }));
+      });
+    }).map((v, idx) => ({ ...v, is_default: idx === 0 }));
 
     setFormData((prev) => ({
       ...prev,
@@ -1372,7 +1376,21 @@ export default function AdminProductsPage() {
 
   const updateVariant = (idx: number, patch: Partial<NonNullable<AdminProduct["variants"]>[number]>) => {
     const updated = [...(formData.variants || [])];
-    updated[idx] = { ...updated[idx], ...patch };
+    const target = { ...updated[idx], ...patch };
+
+    // Auto-inherit image of the metal if metal was changed
+    if (patch.metal_type || patch.metal_karat) {
+      const mType = target.metal_type || "yellow-gold";
+      const mKarat = target.metal_karat || "18K";
+      const matchingWithImg = updated.find(
+        (v, i) => i !== idx && (v.metal_type || "yellow-gold") === mType && (v.metal_karat || "18K") === mKarat && v.images && v.images.length > 0
+      );
+      if (matchingWithImg && matchingWithImg.images) {
+        target.images = [...matchingWithImg.images];
+      }
+    }
+
+    updated[idx] = target;
     const totalStock = updated.reduce((sum, v) => sum + (v.stock || 0), 0);
     const isDef = updated[idx]?.is_default || idx === 0 || updated.length === 1;
     const syncedPatch: Partial<AdminProduct> = {
@@ -1390,6 +1408,9 @@ export default function AdminProductsPage() {
   const addManualVariant = () => {
     const current = formData.variants || [];
     const baseSku = formData.sku || generateAutoSku(formData.category, formData.name);
+    const existingMetalImg = current.find(
+      (v) => (v.metal_type || "yellow-gold") === "yellow-gold" && (v.metal_karat || "18K") === "18K" && v.images && v.images.length > 0
+    )?.images;
     setFormData({
       ...formData,
       variants: [
@@ -1407,7 +1428,7 @@ export default function AdminProductsPage() {
           stock: 10,
           is_active: true,
           is_default: current.length === 0,
-          images: [],
+          images: existingMetalImg ? [...existingMetalImg] : [],
         },
       ],
     });
@@ -2992,7 +3013,7 @@ export default function AdminProductsPage() {
                               <th style={{ padding: "8px" }}>Weight (g)</th>
                               <th style={{ padding: "8px" }}>Price ($ USD)</th>
                               <th style={{ padding: "8px" }}>Stock</th>
-                              <th style={{ padding: "8px" }}>Variant Image</th>
+                              <th style={{ padding: "8px", textAlign: "center" }}>Metal Image</th>
                               <th style={{ padding: "8px", textAlign: "right" }}>Action</th>
                             </tr>
                           </thead>
@@ -3088,56 +3109,24 @@ export default function AdminProductsPage() {
                                     />
                                   </td>
 
-                                  {/* PER-VARIANT CLOUDINARY UPLOAD BUTTON */}
-                                  <td style={{ padding: "8px" }}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                                      {varImg ? (
-                                        <img src={varImg} alt="" style={{ width: 26, height: 26, objectFit: "cover", border: "1px solid rgba(255, 255, 255, 0.2)" }} />
-                                      ) : null}
-                                      <label
-                                        htmlFor={`var-file-${idx}`}
+                                  {/* DISPLAY INHERITED METAL IMAGE — CLEAN SINGLE IMAGE PER METAL */}
+                                  <td style={{ padding: "8px", textAlign: "center" }}>
+                                    {varImg ? (
+                                      <img
+                                        src={varImg}
+                                        alt=""
                                         style={{
-                                          padding: "4px 8px",
-                                          backgroundColor: "rgba(198, 164, 95, 0.15)",
-                                          border: "1px solid rgba(198, 164, 95, 0.3)",
-                                          color: "#c6a45f",
-                                          fontSize: "10px",
-                                          cursor: "pointer",
-                                          whiteSpace: "nowrap",
-                                          display: "inline-flex",
-                                          alignItems: "center",
-                                          gap: "4px",
+                                          width: 26,
+                                          height: 26,
+                                          objectFit: "cover",
+                                          border: "1px solid rgba(198, 164, 95, 0.4)",
+                                          borderRadius: "2px",
+                                          display: "inline-block",
                                         }}
-                                      >
-                                        <Upload style={{ width: 10, height: 10 }} />
-                                        <span>{variantUploadingIdx === idx ? "..." : varImg ? "Change" : "Upload"}</span>
-                                      </label>
-                                      <input
-                                        id={`var-file-${idx}`}
-                                        type="file"
-                                        accept="image/*"
-                                        style={{ display: "none" }}
-                                        onChange={(e) => e.target.files && handleVariantImageUpload(e.target.files, idx)}
                                       />
-                                      {varImg && (
-                                        <button
-                                          type="button"
-                                          onClick={() => handleSyncVariantImageToSameMetal(idx)}
-                                          title="Sync this image across all sizes of this metal"
-                                          style={{
-                                            padding: "3px 6px",
-                                            backgroundColor: "rgba(255, 255, 255, 0.05)",
-                                            border: "1px solid rgba(255, 255, 255, 0.15)",
-                                            color: "#c6a45f",
-                                            fontSize: "9px",
-                                            cursor: "pointer",
-                                            whiteSpace: "nowrap",
-                                          }}
-                                        >
-                                          Sync sizes
-                                        </button>
-                                      )}
-                                    </div>
+                                    ) : (
+                                      <span style={{ fontSize: "10px", color: "#666" }}>—</span>
+                                    )}
                                   </td>
 
                                   <td style={{ padding: "8px", textAlign: "right" }}>
