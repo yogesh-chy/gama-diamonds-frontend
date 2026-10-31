@@ -264,8 +264,17 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
 
   const dynamicPrice = selectedVariantPrice ?? (product?.price || 0);
 
-  // Gallery images definition
-  const rawVariantImgUrl = selectedVariant?.images?.find((i: any) => i.isPrimary || i.is_primary)?.url || selectedVariant?.images?.[0]?.url;
+  // Gallery images definition — single image per metal shared across all sizes
+  const metalGroupImg = variants.find(
+    (v) =>
+      (v.metal_type || (v as any).metalType) === (selectedVariant?.metal_type || (selectedVariant as any)?.metalType) &&
+      (v.metal_karat || (v as any).metalKarat) === (selectedVariant?.metal_karat || (selectedVariant as any)?.metalKarat) &&
+      v.images && v.images.length > 0
+  )?.images?.[0]?.url;
+  const rawVariantImgUrl =
+    selectedVariant?.images?.find((i: any) => i.isPrimary || i.is_primary)?.url ||
+    selectedVariant?.images?.[0]?.url ||
+    metalGroupImg;
   const variantImgUrl = resolveMediaUrl(rawVariantImgUrl, { width: 1200, type: "image" });
   const rawImageList = product?.images || [];
   const galleryImages = variantImgUrl

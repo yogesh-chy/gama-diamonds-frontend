@@ -416,15 +416,23 @@ export default function AdminProductsPage() {
       const file = fileArr[0];
       const localBlob = URL.createObjectURL(file);
 
-      // Optimistically update all variants sharing this metal
+      // Optimistically update: attach image only to the FIRST variant of this metal group
       setFormData((prev) => {
+        let assignedFirst = false;
         const updatedVariants = (prev.variants || []).map((v) => {
           const vType = v.metal_type || "yellow-gold";
           const vKarat = v.metal_karat || "18K";
           if (vType === metalType && (vKarat === metalKarat || !metalKarat)) {
+            if (!assignedFirst) {
+              assignedFirst = true;
+              return {
+                ...v,
+                images: [{ url: localBlob, isPrimary: true }],
+              };
+            }
             return {
               ...v,
-              images: [{ url: localBlob, isPrimary: true }],
+              images: [],
             };
           }
           return v;
@@ -435,14 +443,23 @@ export default function AdminProductsPage() {
       const res = await adminApi.uploadMedia(file);
       const uploadedUrl = res.data.url;
 
+      // Store only ONE image per metal: save on the first variant, clear from secondary sizes to save storage
       setFormData((prev) => {
+        let assignedFirst = false;
         const updatedVariants = (prev.variants || []).map((v) => {
           const vType = v.metal_type || "yellow-gold";
           const vKarat = v.metal_karat || "18K";
           if (vType === metalType && (vKarat === metalKarat || !metalKarat)) {
+            if (!assignedFirst) {
+              assignedFirst = true;
+              return {
+                ...v,
+                images: [{ url: uploadedUrl, isPrimary: true }],
+              };
+            }
             return {
               ...v,
-              images: [{ url: uploadedUrl, isPrimary: true }],
+              images: [],
             };
           }
           return v;
@@ -1097,9 +1114,17 @@ export default function AdminProductsPage() {
       const targetMetalKarat = defaultVar?.metal_karat || formData.metal_karat || "18K";
       const targetBasePrice = defaultVar?.price !== undefined ? (typeof defaultVar.price === "number" ? defaultVar.price : parseFloat(String(defaultVar.price || 0))) : targetPrice;
 
-      // Strip camelCase aliases to prevent DRF from overwriting snake_case values
-      // (DRF processes metalType after metal_type via source="metal_type", so the
-      // old camelCase value was silently overwriting the new snake_case value)
+      // Strictly ONE image per metal group: find each metal's image and assign to the first variant only.
+      // Secondary sizes do NOT store or send duplicate images, saving database and storage consumption.
+      const metalImagesMap = new Map<string, any[]>();
+      rawVariants.forEach((v) => {
+        const mKey = `${v.metal_type || targetMetalType}__${v.metal_karat || targetMetalKarat}`;
+        if (!metalImagesMap.has(mKey) && v.images && v.images.length > 0) {
+          metalImagesMap.set(mKey, v.images);
+        }
+      });
+
+      const assignedMetalImageKeys = new Set<string>();
       const cleanedVariants = rawVariants.map((v, i) => {
         // Destructure out ALL camelCase aliases that DRF maps to snake_case sources
         const {
@@ -1111,6 +1136,13 @@ export default function AdminProductsPage() {
           created_at: _ca, updated_at: _ua, display_price: _dp,
           ...rest
         } = v as Record<string, unknown>;
+
+        const mKey = `${v.metal_type || (v as any).metalType || targetMetalType}__${v.metal_karat || (v as any).metalKarat || targetMetalKarat}`;
+        let singleImagePayload: any[] = [];
+        if (!assignedMetalImageKeys.has(mKey) && metalImagesMap.has(mKey)) {
+          singleImagePayload = metalImagesMap.get(mKey)!;
+          assignedMetalImageKeys.add(mKey);
+        }
 
         return {
           ...rest,
@@ -1130,7 +1162,7 @@ export default function AdminProductsPage() {
           allow_backorder: v.allow_backorder ?? (v as any).allowBackorder ?? false,
           is_active: v.is_active ?? (v as any).isActive ?? true,
           is_default: v.is_default ?? (v as any).isDefault ?? (i === 0),
-          images: v.images || [],
+          images: singleImagePayload,
         };
       });
 
@@ -3146,7 +3178,12 @@ export default function AdminProductsPage() {
                           </thead>
                           <tbody>
                             {(formData.variants || []).map((variant, idx) => {
-                              const varImg = resolveMediaUrl(variant.images && variant.images.length > 0 ? variant.images[0].url : null);
+                              const metalSample = (formData.variants || []).find(
+                                (v) => (v.metal_type || "yellow-gold") === (variant.metal_type || "yellow-gold") &&
+                                       (v.metal_karat || "18K") === (variant.metal_karat || "18K") &&
+                                       v.images && v.images.length > 0
+                              )?.images?.[0]?.url;
+                              const varImg = resolveMediaUrl(metalSample || (variant.images && variant.images.length > 0 ? variant.images[0].url : null));
                               return (
                                 <tr key={idx} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.05)" }}>
                                   <td style={{ padding: "8px", textAlign: "center" }}>
