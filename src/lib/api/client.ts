@@ -172,21 +172,12 @@ export function optimizeMediaUrl(
 ): string {
   if (!url) return "";
 
-  // Cloudinary optimizations
-  if (url.includes("res.cloudinary.com")) {
-    const isVideo = options?.type === "video" || url.includes("/video/upload/");
+  // Cloudinary image optimizations (WebP/AVIF auto-format & quality)
+  if (url.includes("res.cloudinary.com") && url.includes("/image/upload/")) {
     const widthParam = options?.width ? `w_${options.width}` : "";
-
-    if (isVideo && url.includes("/video/upload/")) {
-      if (!url.includes("/video/upload/q_auto") && !url.includes("/video/upload/vc_auto")) {
-        const transforms = ["q_auto", "vc_auto", widthParam].filter(Boolean).join(",");
-        return url.replace("/video/upload/", `/video/upload/${transforms}/`);
-      }
-    } else if (url.includes("/image/upload/")) {
-      if (!url.includes("/image/upload/f_auto") && !url.includes("/image/upload/q_auto")) {
-        const transforms = ["f_auto", "q_auto", widthParam].filter(Boolean).join(",");
-        return url.replace("/image/upload/", `/image/upload/${transforms}/`);
-      }
+    if (!url.includes("/image/upload/f_auto") && !url.includes("/image/upload/q_auto")) {
+      const transforms = ["f_auto", "q_auto", widthParam].filter(Boolean).join(",");
+      return url.replace("/image/upload/", `/image/upload/${transforms}/`);
     }
   }
 

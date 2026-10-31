@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -105,7 +105,6 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVideoMuted, setIsVideoMuted] = useState(true);
   const [isVideoPlaying, setIsVideoPlaying] = useState(true);
-  const [isVideoBuffering, setIsVideoBuffering] = useState(false);
   const [activeTab, setActiveTab] = useState<"details" | "spec" | "shipping">("details");
 
   // Fetch real backend product data
@@ -251,6 +250,14 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
 
   const dynamicPrice = selectedVariantPrice ?? (product?.price || 0);
 
+  // Gallery images definition
+  const rawVariantImgUrl = selectedVariant?.images?.find((i: any) => i.isPrimary || i.is_primary)?.url || selectedVariant?.images?.[0]?.url;
+  const variantImgUrl = resolveMediaUrl(rawVariantImgUrl, { width: 1200, type: "image" });
+  const rawImageList = product?.images || [];
+  const galleryImages = variantImgUrl
+    ? [variantImgUrl, ...rawImageList.filter((url) => url !== variantImgUrl)]
+    : rawImageList;
+
   const handleAddToCart = async () => {
     if (!product) return;
     try {
@@ -282,38 +289,35 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     }
   };
 
-  // Build Media Items safely
-  const rawVariantImgUrl = selectedVariant?.images?.find((i: any) => i.isPrimary || i.is_primary)?.url || selectedVariant?.images?.[0]?.url;
-  const variantImgUrl = resolveMediaUrl(rawVariantImgUrl, { width: 1200, type: "image" });
-  const rawImageList = product?.images || [];
-  const galleryImages = variantImgUrl
-    ? [variantImgUrl, ...rawImageList.filter((url) => url !== variantImgUrl)]
-    : rawImageList;
+  // Build Media Items safely with useMemo to prevent unnecessary re-renders
+  const mediaItems: { type: "image" | "video"; src?: string; alt: string; isFallback?: boolean }[] = useMemo(() => {
 
-  const mediaItems: { type: "image" | "video"; src?: string; alt: string; isFallback?: boolean }[] = [
-    ...galleryImages.map((img, i) => ({
-      type: "image" as const,
-      src: resolveMediaUrl(img, { width: 1200, type: "image" }),
-      alt: `${product?.title || "Product"} view ${i + 1}`,
-    })),
-  ];
+    const items: { type: "image" | "video"; src?: string; alt: string; isFallback?: boolean }[] = [
+      ...galleryImages.map((img, i) => ({
+        type: "image" as const,
+        src: resolveMediaUrl(img, { width: 1200, type: "image" }),
+        alt: `${product?.title || "Product"} view ${i + 1}`,
+      })),
+    ];
 
-  if (product?.video_url) {
-    mediaItems.push({
-      type: "video" as const,
-      src: resolveMediaUrl(product.video_url, { type: "video" }),
-      alt: "360° Showcase",
-    });
-  }
+    if (product?.video_url) {
+      items.push({
+        type: "video" as const,
+        src: resolveMediaUrl(product.video_url),
+        alt: "360° Showcase",
+      });
+    }
 
-  // If no images exist, show a clean luxury placeholder slide
-  if (mediaItems.length === 0) {
-    mediaItems.push({
-      type: "image" as const,
-      alt: product?.title || "Product Image",
-      isFallback: true,
-    });
-  }
+    if (items.length === 0) {
+      items.push({
+        type: "image" as const,
+        alt: product?.title || "Product Image",
+        isFallback: true,
+      });
+    }
+
+    return items;
+  }, [galleryImages, product?.video_url, product?.title]);
 
   const totalSlides = mediaItems.length;
 
@@ -370,23 +374,35 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     const isCurrentVideo = mediaItems[selectedSlide]?.type === "video";
     if (isCurrentVideo) {
       setIsPlayingVideo(true);
-      if (videoRef.current) {
-        videoRef.current.currentTime = 0;
-        videoRef.current.play().then(() => setIsVideoPlaying(true)).catch(() => {
-          if (videoRef.current) {
-            videoRef.current.muted = true;
-            setIsVideoMuted(true);
-            videoRef.current.play().then(() => setIsVideoPlaying(true)).catch(() => {});
-          }
-        });
+      const vid = videoRef.current;
+      if (vid) {
+        vid.muted = isVideoMuted;
+        vid.playsInline = true;
+        const playPromise = vid.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              setIsVideoPlaying(true);
+            })
+            .catch(() => {
+              // If browser strictly requires muted on first play
+              if (vid) {
+                vid.muted = true;
+                setIsVideoMuted(true);
+                vid.play().then(() => setIsVideoPlaying(true)).catch(() => {
+                  setIsVideoPlaying(false);
+                });
+              }
+            });
+        }
       }
     } else {
       setIsPlayingVideo(false);
-      if (videoRef.current) {
+      if (videoRef.current && !videoRef.current.paused) {
         videoRef.current.pause();
       }
     }
-  }, [selectedSlide, mediaItems]);
+  }, [selectedSlide]);
 
   const slideVariants = {
     enter: (direction: number) => ({
@@ -746,12 +762,6 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                         loop
                         playsInline
                         preload="auto"
-                        onWaiting={() => setIsVideoBuffering(true)}
-                        onCanPlay={() => setIsVideoBuffering(false)}
-                        onPlaying={() => {
-                          setIsVideoPlaying(true);
-                          setIsVideoBuffering(false);
-                        }}
                         onPlay={() => setIsVideoPlaying(true)}
                         onPause={() => setIsVideoPlaying(false)}
                         onClick={() => {
@@ -771,39 +781,6 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                           cursor: "pointer",
                         }}
                       />
-
-                      {/* Buffering Indicator */}
-                      {isVideoBuffering && (
-                        <div
-                          style={{
-                            position: "absolute",
-                            inset: 0,
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            backgroundColor: "rgba(0, 0, 0, 0.5)",
-                            backdropFilter: "blur(4px)",
-                            zIndex: 4,
-                            pointerEvents: "none",
-                          }}
-                        >
-                          <Loader2 size={30} className="animate-spin" color="#c6a45f" />
-                          <span
-                            style={{
-                              marginTop: "10px",
-                              fontFamily: "'Poppins', sans-serif",
-                              fontSize: "10.5px",
-                              fontWeight: 600,
-                              letterSpacing: "1.5px",
-                              color: "#c6a45f",
-                              textTransform: "uppercase",
-                            }}
-                          >
-                            Loading 360° Video...
-                          </span>
-                        </div>
-                      )}
 
                       {/* Top-left Minimal Luxury Badge */}
                       <div
