@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, RotateCcw, ChevronDown } from "lucide-react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
+import ProductCardVideoPreview from "@/components/ui/ProductCardVideoPreview";
 import ProductGridSkeleton from "@/components/ui/ProductCardSkeleton";
 import LuxurySelect from "@/components/ui/LuxurySelect";
 import { useCurrency } from "@/context/CurrencyContext";
@@ -19,6 +20,7 @@ export interface ProductItem {
   badge?: string;
   inStock: boolean;
   image?: string;
+  videoUrl?: string;
   diamondType?: "Lab Grown Diamond" | "Natural Diamond";
   carat?: string;
   style?: string;
@@ -422,6 +424,7 @@ export default function CategoryListing({
               carat: formattedCarat,
               style: rawStyle,
               image: mainImage,
+              videoUrl: resolveMediaUrl(p.video_url || p.videoUrl) || undefined,
             };
           });
 
@@ -1629,7 +1632,14 @@ export default function CategoryListing({
                       )}
 
                       <div className="product-image-block">
-                        {product.image ? (
+                        {product.videoUrl ? (
+                          <ProductCardVideoPreview
+                            videoUrl={product.videoUrl}
+                            imageUrl={product.image}
+                            title={product.title}
+                            width={380}
+                          />
+                        ) : product.image ? (
                           <img
                             src={product.image}
                             alt={product.title}

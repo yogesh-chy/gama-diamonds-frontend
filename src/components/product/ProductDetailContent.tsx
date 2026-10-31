@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
@@ -37,6 +37,8 @@ import { productsApi } from "@/lib/api/products";
 import { cartApi } from "@/lib/api/orders";
 import { resolveMediaUrl } from "@/lib/api/client";
 import { toast } from "sonner";
+import GamaVideoPlayer from "@/components/ui/GamaVideoPlayer";
+import { getVideoPosterUrl } from "@/lib/cloudinaryVideo";
 
 interface ProductDetailProps {
   productId: string;
@@ -754,202 +756,21 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                         overflow: "hidden",
                       }}
                     >
-                      <video
-                        ref={videoRef}
-                        src={currentMedia.src}
-                        autoPlay
-                        muted={isVideoMuted}
-                        loop
-                        playsInline
-                        preload="auto"
-                        onPlay={() => setIsVideoPlaying(true)}
-                        onPause={() => setIsVideoPlaying(false)}
-                        onClick={() => {
-                          if (videoRef.current) {
-                            if (videoRef.current.paused) {
-                              videoRef.current.play().then(() => setIsVideoPlaying(true)).catch(() => {});
-                            } else {
-                              videoRef.current.pause();
-                              setIsVideoPlaying(false);
-                            }
-                          }
-                        }}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "contain",
-                          cursor: "pointer",
-                        }}
+                      <GamaVideoPlayer
+                        src={currentMedia.src || ""}
+                        poster={getVideoPosterUrl(currentMedia.src || "", { width: 720 }) || undefined}
+                        alt={`${product?.title || "Product"} 360 Showcase`}
+                        width={720}
+                        autoPlay={true}
+                        muted={true}
+                        loop={true}
+                        showBadge={true}
+                        badgeText="360° View"
+                        showCustomControls={true}
+                        pauseWhenOutOfView={true}
+                        onFullscreen={() => setIsFullscreen(true)}
+                        style={{ width: "100%", height: "100%" }}
                       />
-
-                      {/* Top-left Minimal Luxury Badge */}
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: "12px",
-                          left: "12px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "5px",
-                          padding: "4px 10px",
-                          backgroundColor: "rgba(0, 0, 0, 0.7)",
-                          border: "1px solid rgba(198, 164, 95, 0.35)",
-                          backdropFilter: "blur(6px)",
-                          fontSize: "9.5px",
-                          fontWeight: 700,
-                          letterSpacing: "1.5px",
-                          color: "#c6a45f",
-                          textTransform: "uppercase",
-                          pointerEvents: "none",
-                          borderRadius: "2px",
-                          zIndex: 3,
-                        }}
-                      >
-                        <Sparkles size={11} color="#c6a45f" />
-                        <span>360° View</span>
-                      </div>
-
-                      {/* Centered Play Overlay when Paused */}
-                      {!isVideoPlaying && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (videoRef.current) {
-                              videoRef.current.play().then(() => setIsVideoPlaying(true)).catch(() => {});
-                            }
-                          }}
-                          style={{
-                            position: "absolute",
-                            inset: 0,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            backgroundColor: "rgba(0, 0, 0, 0.35)",
-                            border: "none",
-                            cursor: "pointer",
-                            zIndex: 2,
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: "50px",
-                              height: "50px",
-                              borderRadius: "50%",
-                              backgroundColor: "rgba(0, 0, 0, 0.8)",
-                              border: "1.5px solid #c6a45f",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              boxShadow: "0 0 16px rgba(198, 164, 95, 0.35)",
-                            }}
-                          >
-                            <Play size={20} fill="#c6a45f" color="#c6a45f" style={{ marginLeft: "2px" }} />
-                          </div>
-                        </button>
-                      )}
-
-                      {/* Bottom-right Minimal Custom Controls (Gold Luxury Pattern) */}
-                      <div
-                        style={{
-                          position: "absolute",
-                          bottom: "12px",
-                          right: "12px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "4px",
-                          padding: "3px 6px",
-                          backgroundColor: "rgba(0, 0, 0, 0.7)",
-                          border: "1px solid rgba(198, 164, 95, 0.3)",
-                          backdropFilter: "blur(6px)",
-                          borderRadius: "2px",
-                          zIndex: 4,
-                        }}
-                      >
-                        {/* Play/Pause */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (videoRef.current) {
-                              if (isVideoPlaying) {
-                                videoRef.current.pause();
-                                setIsVideoPlaying(false);
-                              } else {
-                                videoRef.current.play().then(() => setIsVideoPlaying(true)).catch(() => {});
-                              }
-                            }
-                          }}
-                          title={isVideoPlaying ? "Pause" : "Play"}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            color: "#c6a45f",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            padding: "4px",
-                          }}
-                        >
-                          {isVideoPlaying ? (
-                            <Pause size={13} fill="#c6a45f" color="#c6a45f" />
-                          ) : (
-                            <Play size={13} fill="#c6a45f" color="#c6a45f" />
-                          )}
-                        </button>
-
-                        <div style={{ width: "1px", height: "10px", backgroundColor: "rgba(198, 164, 95, 0.25)" }} />
-
-                        {/* Mute/Unmute */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const nextMuted = !isVideoMuted;
-                            setIsVideoMuted(nextMuted);
-                            if (videoRef.current) {
-                              videoRef.current.muted = nextMuted;
-                            }
-                          }}
-                          title={isVideoMuted ? "Unmute" : "Mute"}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            color: "#c6a45f",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            padding: "4px",
-                          }}
-                        >
-                          {isVideoMuted ? <VolumeX size={13} /> : <Volume2 size={13} />}
-                        </button>
-
-                        <div style={{ width: "1px", height: "10px", backgroundColor: "rgba(198, 164, 95, 0.25)" }} />
-
-                        {/* Fullscreen */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsFullscreen(true);
-                          }}
-                          title="Fullscreen"
-                          style={{
-                            background: "none",
-                            border: "none",
-                            color: "#c6a45f",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            padding: "4px",
-                          }}
-                        >
-                          <Maximize2 size={12} />
-                        </button>
-                      </div>
                     </div>
                   )}
                 </motion.div>
@@ -979,9 +800,32 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                     }}
                   >
                     {item.type === "video" ? (
-                      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", backgroundColor: "#0e0e0e", gap: "2px" }}>
-                        <Play size={10} fill="#c6a45f" color="#c6a45f" />
-                        <span style={{ fontSize: "7px", letterSpacing: "0.5px", color: "#c6a45f", fontWeight: 700 }}>360°</span>
+                      <div style={{ width: "100%", height: "100%", position: "relative", backgroundColor: "#0e0e0e" }}>
+                        <img
+                          src={getVideoPosterUrl(item.src || "", { width: 80, height: 80, crop: "fill" }) || undefined}
+                          alt="Video thumbnail"
+                          loading="lazy"
+                          decoding="async"
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = "none";
+                          }}
+                        />
+                        <div
+                          style={{
+                            position: "absolute",
+                            inset: 0,
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor: "rgba(0, 0, 0, 0.45)",
+                            gap: "2px",
+                          }}
+                        >
+                          <Play size={10} fill="#c6a45f" color="#c6a45f" />
+                          <span style={{ fontSize: "7px", letterSpacing: "0.5px", color: "#c6a45f", fontWeight: 700 }}>360°</span>
+                        </div>
                       </div>
                     ) : item.src ? (
                       <img src={item.src} alt={item.alt} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -1371,14 +1215,22 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
               <X size={18} />
             </button>
             {currentMedia.type === "video" ? (
-              <video
-                src={currentMedia.src}
-                controls
-                autoPlay
-                playsInline
-                style={{ maxWidth: "85vw", maxHeight: "85vh", objectFit: "contain" }}
+              <div
+                style={{ width: "85vw", height: "85vh", maxWidth: "1080px", maxHeight: "800px", position: "relative" }}
                 onClick={(e) => e.stopPropagation()}
-              />
+              >
+                <GamaVideoPlayer
+                  src={currentMedia.src}
+                  alt={currentMedia.alt || "Fullscreen Video"}
+                  width={1080}
+                  autoPlay={true}
+                  muted={false}
+                  showCustomControls={true}
+                  showBadge={true}
+                  badgeText="360° View"
+                  style={{ width: "100%", height: "100%" }}
+                />
+              </div>
             ) : (
               <img
                 src={currentMedia.src}

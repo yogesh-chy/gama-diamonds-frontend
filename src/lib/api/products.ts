@@ -131,6 +131,8 @@ export interface ProductItem {
   isFeatured?: boolean;
   video_url?: string | null;
   videoUrl?: string | null;
+  video_hls_url?: string | null;
+  video_poster_url?: string | null;
   thumbnail?: string | null;
   image?: string | null;
   styles?: number[];

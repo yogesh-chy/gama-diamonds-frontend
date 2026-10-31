@@ -7,6 +7,7 @@ import { useCurrency } from "@/context/CurrencyContext";
 import { productsApi } from "@/lib/api/products";
 import { resolveMediaUrl } from "@/lib/api/client";
 import ProductGridSkeleton from "@/components/ui/ProductCardSkeleton";
+import ProductCardVideoPreview from "@/components/ui/ProductCardVideoPreview";
 
 export interface WeddingProduct {
   id: string;
@@ -15,6 +16,7 @@ export interface WeddingProduct {
   metal: string;
   price: number; // in GBP
   image: string;
+  videoUrl?: string;
   badge?: "BESTSELLER" | "POPULAR" | "NEW" | "CUSTOMISABLE" | "EXCLUSIVE";
   href: string;
 }
@@ -158,6 +160,7 @@ export default function WeddingProductGrid({
             metal: formattedMetal,
             price: rawPrice,
             image: mainImage,
+            videoUrl: resolveMediaUrl(item.video_url || item.videoUrl) || undefined,
             badge: item.is_featured ? "BESTSELLER" : undefined,
             href: `/product/${item.id || item.slug}`,
           };
@@ -353,25 +356,34 @@ export default function WeddingProductGrid({
                     backgroundColor: "#0a0a0a",
                   }}
                 >
-                  <img
-                    src={prod.image}
-                    alt={prod.title}
-                    loading="lazy"
-                    decoding="async"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      objectPosition: "center",
-                      transition: "transform 0.6s ease",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.transform = "scale(1.08)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.transform = "scale(1)")
-                    }
-                  />
+                  {prod.videoUrl ? (
+                    <ProductCardVideoPreview
+                      videoUrl={prod.videoUrl}
+                      imageUrl={prod.image}
+                      title={prod.title}
+                      width={380}
+                    />
+                  ) : (
+                    <img
+                      src={prod.image}
+                      alt={prod.title}
+                      loading="lazy"
+                      decoding="async"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        objectPosition: "center",
+                        transition: "transform 0.6s ease",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.transform = "scale(1.08)")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.transform = "scale(1)")
+                      }
+                    />
+                  )}
                 </div>
 
                 {/* Product Meta & Information */}

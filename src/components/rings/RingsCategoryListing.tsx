@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, RotateCcw, ChevronDown } from "lucide-react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
+import ProductCardVideoPreview from "@/components/ui/ProductCardVideoPreview";
 import ProductGridSkeleton from "@/components/ui/ProductCardSkeleton";
 import LuxurySelect from "@/components/ui/LuxurySelect";
 import { useCurrency } from "@/context/CurrencyContext";
@@ -20,6 +21,7 @@ interface Product {
   badge?: string;
   inStock: boolean;
   image?: string;
+  videoUrl?: string;
 }
 
 const METALS_LIST = [
@@ -74,6 +76,7 @@ export default function RingsCategoryListing({ shapeSlug = "round-brilliant" }: 
             badge: item.is_featured ? "FEATURED" : undefined,
             inStock: (item.total_stock || 0) > 0 || (item.variants?.some((v: any) => v.stock > 0)),
             image: resolveMediaUrl(item.thumbnail || item.images?.find((img: any) => img.isPrimary || img.is_primary)?.url || item.images?.[0]?.url || item.variants?.[0]?.images?.[0]?.url || item.image),
+            videoUrl: resolveMediaUrl(item.video_url || item.videoUrl) || undefined,
           };
         });
         setProducts(mapped);
@@ -684,7 +687,14 @@ export default function RingsCategoryListing({ shapeSlug = "round-brilliant" }: 
 
                     {/* Product Image Box */}
                     <div style={{ width: "100%", height: "240px", marginBottom: "16px", overflow: "hidden", position: "relative" }}>
-                      {product.image ? (
+                      {product.videoUrl ? (
+                        <ProductCardVideoPreview
+                          videoUrl={product.videoUrl}
+                          imageUrl={product.image}
+                          title={product.title}
+                          width={380}
+                        />
+                      ) : product.image ? (
                         <img
                           src={product.image}
                           alt={product.title}

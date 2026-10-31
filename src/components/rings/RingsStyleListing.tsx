@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, RotateCcw, ChevronDown } from "lucide-react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
+import ProductCardVideoPreview from "@/components/ui/ProductCardVideoPreview";
 import ProductGridSkeleton from "@/components/ui/ProductCardSkeleton";
 import LuxurySelect from "@/components/ui/LuxurySelect";
 import { useCurrency } from "@/context/CurrencyContext";
@@ -24,6 +25,7 @@ interface Product {
   badge?: string;
   inStock: boolean;
   image?: string | null;
+  videoUrl?: string;
 }
 
 const STYLE_NAMES: Record<string, string> = {
@@ -120,6 +122,7 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
               badge: p.is_featured ? "FEATURED" : undefined,
               inStock: (p.total_stock || 0) > 0,
               image: resolveMediaUrl(p.thumbnail || p.images?.find((img: any) => img.isPrimary || img.is_primary)?.url || p.images?.[0]?.url || p.variants?.[0]?.images?.[0]?.url || p.image),
+              videoUrl: resolveMediaUrl(p.video_url || p.videoUrl) || undefined,
             };
           });
           setProductList(mapped);
@@ -1024,7 +1027,14 @@ export default function RingsStyleListing({ styleSlug }: RingsStyleListingProps)
                     {product.badge && <span className="product-badge">{product.badge}</span>}
 
                     <div className="product-image-block">
-                      {product.image ? (
+                      {product.videoUrl ? (
+                        <ProductCardVideoPreview
+                          videoUrl={product.videoUrl}
+                          imageUrl={product.image || undefined}
+                          title={product.title}
+                          width={380}
+                        />
+                      ) : product.image ? (
                         <img src={product.image} alt={product.title} loading="lazy" decoding="async" />
                       ) : (
                         <ImagePlaceholder
