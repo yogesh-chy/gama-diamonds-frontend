@@ -264,22 +264,90 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
 
   const dynamicPrice = selectedVariantPrice ?? (product?.price || 0);
 
-  // Gallery images definition — single image per metal shared across all sizes
-  const metalGroupImg = variants.find(
-    (v) =>
-      (v.metal_type || (v as any).metalType) === (selectedVariant?.metal_type || (selectedVariant as any)?.metalType) &&
-      (v.metal_karat || (v as any).metalKarat) === (selectedVariant?.metal_karat || (selectedVariant as any)?.metalKarat) &&
-      v.images && v.images.length > 0
-  )?.images?.[0]?.url;
-  const rawVariantImgUrl =
-    selectedVariant?.images?.find((i: any) => i.isPrimary || i.is_primary)?.url ||
-    selectedVariant?.images?.[0]?.url ||
-    metalGroupImg;
-  const variantImgUrl = resolveMediaUrl(rawVariantImgUrl, { width: 1200, type: "image" });
-  const rawImageList = product?.images || [];
-  const galleryImages = variantImgUrl
-    ? [variantImgUrl, ...rawImageList.filter((url) => url !== variantImgUrl)]
-    : rawImageList;
+  // Exactly ONE image per unique metal group (never duplicate images per size variant)
+  const metalImages = useMemo(() => {
+    const list: { metalKey: string; metalLabel: string; url: string; variantId: number }[] = [];
+    const seenMetals = new Set<string>();
+    const seenUrls = new Set<string>();
+
+    (variants || []).forEach((v) => {
+      const mType = (v.metal_type || (v as any).metalType || "").toLowerCase();
+      const mKarat = (v.metal_karat || (v as any).metalKarat || "").trim();
+      const metalKey = `${mType}__${mKarat}`;
+      const img = v.images?.find((i: any) => i.isPrimary || i.is_primary)?.url || v.images?.[0]?.url;
+      const cleanImg = resolveMediaUrl(img);
+
+      if (cleanImg && !seenMetals.has(metalKey) && !seenUrls.has(cleanImg)) {
+        seenMetals.add(metalKey);
+        seenUrls.add(cleanImg);
+        const metalLabel = [mKarat, mType.replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase())].filter(Boolean).join(" ");
+        list.push({
+          metalKey,
+          metalLabel: metalLabel || "Precious Metal",
+          url: cleanImg,
+          variantId: v.id,
+        });
+      }
+    });
+
+    return list;
+  }, [variants]);
+
+  const selectedMetalType = (selectedVariant?.metal_type || (selectedVariant as any)?.metalType || "").toLowerCase();
+  const selectedMetalKarat = (selectedVariant?.metal_karat || (selectedVariant as any)?.metalKarat || "").trim();
+  const currentMetalKey = `${selectedMetalType}__${selectedMetalKarat}`;
+  const currentMetalEntry = metalImages.find((m) => m.metalKey === currentMetalKey) || metalImages[0];
+  const currentMetalImage = currentMetalEntry?.url;
+
+  // General non-variant product images
+  const generalProductImages = useMemo(() => {
+    const metalUrls = new Set(metalImages.map((m) => m.url));
+    const seen = new Set<string>();
+    const list: string[] = [];
+    (product?.images || []).forEach((img) => {
+      const clean = resolveMediaUrl(img);
+      if (clean && !metalUrls.has(clean) && !seen.has(clean)) {
+        seen.add(clean);
+        list.push(clean);
+      }
+    });
+    return list;
+  }, [product?.images, metalImages]);
+
+  // Gallery images: ONLY ONE image per metal, plus unique general product photos. Never one image per size variant!
+  const galleryImages = useMemo(() => {
+    const result: string[] = [];
+    const seen = new Set<string>();
+
+    // 1. Current selected metal image comes first
+    if (currentMetalImage) {
+      seen.add(currentMetalImage);
+      result.push(currentMetalImage);
+    }
+
+    // 2. Exactly one image for each other unique metal
+    metalImages.forEach((m) => {
+      if (!seen.has(m.url)) {
+        seen.add(m.url);
+        result.push(m.url);
+      }
+    });
+
+    // 3. General non-variant product images
+    generalProductImages.forEach((url) => {
+      if (!seen.has(url)) {
+        seen.add(url);
+        result.push(url);
+      }
+    });
+
+    // Fallback if empty
+    if (result.length === 0 && (product?.images || []).length > 0) {
+      return Array.from(new Set(product!.images));
+    }
+
+    return result;
+  }, [currentMetalImage, metalImages, generalProductImages, product?.images]);
 
   const handleAddToCart = async () => {
     if (!product) return;
@@ -313,14 +381,19 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
   };
 
   // Build Media Items safely with useMemo to prevent unnecessary re-renders
-  const mediaItems: { type: "image" | "video"; src?: string; poster?: string; alt: string; isFallback?: boolean }[] = useMemo(() => {
+  const mediaItems: { type: "image" | "video"; src?: string; poster?: string; alt: string; metalKey?: string; variantId?: number; isFallback?: boolean }[] = useMemo(() => {
 
-    const items: { type: "image" | "video"; src?: string; poster?: string; alt: string; isFallback?: boolean }[] = [
-      ...galleryImages.map((img, i) => ({
-        type: "image" as const,
-        src: resolveMediaUrl(img, { width: 1200, type: "image" }),
-        alt: `${product?.title || "Product"} view ${i + 1}`,
-      })),
+    const items: { type: "image" | "video"; src?: string; poster?: string; alt: string; metalKey?: string; variantId?: number; isFallback?: boolean }[] = [
+      ...galleryImages.map((img, i) => {
+        const matchingMetal = metalImages.find((m) => m.url === img);
+        return {
+          type: "image" as const,
+          src: resolveMediaUrl(img, { width: 1200, type: "image" }),
+          alt: matchingMetal ? `${product?.title || "Product"} — ${matchingMetal.metalLabel}` : `${product?.title || "Product"} view ${i + 1}`,
+          metalKey: matchingMetal?.metalKey,
+          variantId: matchingMetal?.variantId,
+        };
+      }),
     ];
 
     if (product?.video_url) {
@@ -347,7 +420,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     }
 
     return items;
-  }, [galleryImages, product?.video_url, product?.video_poster_url, product?.title]);
+  }, [galleryImages, metalImages, product?.video_url, product?.video_poster_url, product?.title]);
 
   const totalSlides = mediaItems.length;
 
@@ -733,7 +806,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
               {/* Animated Slides */}
               <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
                 <motion.div
-                  key={`${selectedSlide}-${variantImgUrl || 'default'}`}
+                  key={`${selectedSlide}-${currentMetalImage || 'default'}`}
                   custom={slideDirection}
                   variants={slideVariants}
                   initial="enter"
@@ -811,7 +884,12 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                 {mediaItems.map((item, idx) => (
                   <button
                     key={idx}
-                    onClick={() => goToSlide(idx)}
+                    onClick={() => {
+                      goToSlide(idx);
+                      if (item.variantId) {
+                        handleSelectVariant(item.variantId);
+                      }
+                    }}
                     style={{
                       flexShrink: 0,
                       width: "40px",
@@ -986,7 +1064,23 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                       <button
                         key={m}
                         type="button"
-                        onClick={() => setSelectedMetal(m)}
+                        onClick={() => {
+                          setSelectedMetal(m);
+                          const found = variants.find((v) => {
+                            const mType = (v.metal_type || v.metalType || "").replace("-", " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
+                            const mKarat = v.metal_karat || v.metalKarat || "";
+                            const mName = [mKarat, mType].filter(Boolean).join(" ");
+                            return mName.toLowerCase() === m.toLowerCase() || mType.toLowerCase() === m.toLowerCase();
+                          });
+                          if (found) {
+                            setSelectedVariant(found);
+                            const mKey = `${(found.metal_type || (found as any).metalType || "").toLowerCase()}__${((found.metal_karat || (found as any).metalKarat || "")).trim()}`;
+                            const targetIdx = mediaItems.findIndex((it) => it.metalKey === mKey);
+                            if (targetIdx >= 0) {
+                              goToSlide(targetIdx);
+                            }
+                          }
+                        }}
                         style={{
                           padding: "10px 12px",
                           fontSize: "11px",
