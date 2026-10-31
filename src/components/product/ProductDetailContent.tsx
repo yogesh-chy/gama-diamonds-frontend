@@ -63,6 +63,8 @@ interface ProductData {
   certificate_url?: string;
   badge: string;
   video_url: string | null;
+  video_poster_url?: string | null;
+  video_hls_url?: string | null;
   description: string;
   images: string[];
 }
@@ -190,6 +192,8 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
           badge: p.is_featured ? "FEATURED" : "SIGNATURE",
           description: p.description || "Meticulously crafted by master goldsmiths, featuring hand-selected certified diamonds handset into solid precious metal. Designed for everlasting brilliance.",
           video_url: p.video_url || p.videoUrl || null,
+          video_poster_url: p.video_poster_url || null,
+          video_hls_url: p.video_hls_url || null,
           images: imagesList,
         };
 
@@ -292,9 +296,9 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
   };
 
   // Build Media Items safely with useMemo to prevent unnecessary re-renders
-  const mediaItems: { type: "image" | "video"; src?: string; alt: string; isFallback?: boolean }[] = useMemo(() => {
+  const mediaItems: { type: "image" | "video"; src?: string; poster?: string; alt: string; isFallback?: boolean }[] = useMemo(() => {
 
-    const items: { type: "image" | "video"; src?: string; alt: string; isFallback?: boolean }[] = [
+    const items: { type: "image" | "video"; src?: string; poster?: string; alt: string; isFallback?: boolean }[] = [
       ...galleryImages.map((img, i) => ({
         type: "image" as const,
         src: resolveMediaUrl(img, { width: 1200, type: "image" }),
@@ -303,9 +307,16 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     ];
 
     if (product?.video_url) {
+      const resolvedVideo = resolveMediaUrl(product.video_url);
+      const generatedPoster =
+        product.video_poster_url ||
+        getVideoPosterUrl(product.video_url, { width: 720 }) ||
+        galleryImages[0] ||
+        "";
       items.push({
         type: "video" as const,
-        src: resolveMediaUrl(product.video_url),
+        src: resolvedVideo,
+        poster: generatedPoster,
         alt: "360° Showcase",
       });
     }
@@ -319,7 +330,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
     }
 
     return items;
-  }, [galleryImages, product?.video_url, product?.title]);
+  }, [galleryImages, product?.video_url, product?.video_poster_url, product?.title]);
 
   const totalSlides = mediaItems.length;
 
@@ -758,7 +769,7 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                     >
                       <GamaVideoPlayer
                         src={currentMedia.src || ""}
-                        poster={getVideoPosterUrl(currentMedia.src || "", { width: 720 }) || undefined}
+                        poster={currentMedia.poster || getVideoPosterUrl(currentMedia.src || "", { width: 720 }) || galleryImages[0] || undefined}
                         alt={`${product?.title || "Product"} 360 Showcase`}
                         width={720}
                         autoPlay={true}
@@ -802,13 +813,20 @@ export default function ProductDetailContent({ productId }: ProductDetailProps) 
                     {item.type === "video" ? (
                       <div style={{ width: "100%", height: "100%", position: "relative", backgroundColor: "#0e0e0e" }}>
                         <img
-                          src={getVideoPosterUrl(item.src || "", { width: 80, height: 80, crop: "fill" }) || undefined}
+                          src={
+                            item.poster ||
+                            getVideoPosterUrl(item.src || "", { width: 80, height: 80, crop: "fill" }) ||
+                            galleryImages[0] ||
+                            "/shopbycategory/engement_ring.png"
+                          }
                           alt="Video thumbnail"
                           loading="lazy"
                           decoding="async"
                           style={{ width: "100%", height: "100%", objectFit: "cover" }}
                           onError={(e) => {
-                            (e.currentTarget as HTMLElement).style.display = "none";
+                            if (galleryImages[0] && (e.currentTarget as HTMLImageElement).src !== galleryImages[0]) {
+                              (e.currentTarget as HTMLImageElement).src = galleryImages[0];
+                            }
                           }}
                         />
                         <div

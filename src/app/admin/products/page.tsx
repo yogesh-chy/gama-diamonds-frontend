@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import LuxurySelect from "@/components/ui/LuxurySelect";
+import GamaVideoPlayer from "@/components/ui/GamaVideoPlayer";
+import { getVideoPosterUrl } from "@/lib/cloudinaryVideo";
 import { adminApi, AdminProduct, AdminCategory, AdminSubcategory, AdminTaxonomyItem } from "@/lib/api/admin";
 import { resolveMediaUrl } from "@/lib/api/client";
 
@@ -965,6 +967,9 @@ export default function AdminProductsPage() {
       next_day_delivery_available: prod.next_day_delivery_available || "no",
       made_to_order: prod.made_to_order || "no",
       gender: prod.gender || "women",
+      estimated_delivery_time: (!prod.estimated_delivery_time || String(prod.estimated_delivery_time).includes("3-5"))
+        ? "14-15 Days"
+        : prod.estimated_delivery_time,
     });
     setSelectedVariantMetals([]);
     setSelectedVariantSizes([]);
@@ -979,12 +984,14 @@ export default function AdminProductsPage() {
         .then((res) => {
           const fullProd = (res as any)?.data?.data || (res as any)?.data || res;
           const freshVideo = fullProd?.video_url || fullProd?.videoUrl || "";
-          if (freshVideo) {
-            setFormData((prev) => ({
-              ...prev,
-              video_url: prev.video_url || freshVideo,
-            }));
-          }
+          const freshDelivery = fullProd?.estimated_delivery_time;
+          setFormData((prev) => ({
+            ...prev,
+            ...(freshVideo ? { video_url: prev.video_url || freshVideo } : {}),
+            estimated_delivery_time: (!freshDelivery || String(freshDelivery).includes("3-5"))
+              ? "14-15 Days"
+              : freshDelivery,
+          }));
         })
         .catch(() => {});
     }
@@ -1255,6 +1262,10 @@ export default function AdminProductsPage() {
       payload.video_url = finalVideoUrl;
       if (videoExplicitlyRemoved) {
         (payload as Record<string, unknown>).remove_video = true;
+      }
+
+      if (!payload.estimated_delivery_time || String(payload.estimated_delivery_time).includes("3-5")) {
+        payload.estimated_delivery_time = "14-15 Days";
       }
 
       // Ensure availability choice fields always have valid choices ("yes", "no", "on_request")
@@ -3252,7 +3263,20 @@ export default function AdminProductsPage() {
 
                     {formData.video_url ? (
                       <div style={{ display: "flex", flexDirection: "column", gap: "8px", border: "1px solid rgba(255, 255, 255, 0.15)", backgroundColor: "#000000", padding: "10px" }}>
-                        <video src={formData.video_url} controls style={{ width: "100%", maxHeight: 220, backgroundColor: "#050505" }} />
+                        <div style={{ width: "100%", height: "240px", backgroundColor: "#050505", position: "relative", overflow: "hidden" }}>
+                          <GamaVideoPlayer
+                            src={resolveMediaUrl(formData.video_url)}
+                            poster={getVideoPosterUrl(formData.video_url, { width: 480 }) || undefined}
+                            autoPlay={false}
+                            muted={true}
+                            loop={true}
+                            showBadge={true}
+                            badgeText="Preview"
+                            showCustomControls={true}
+                            lazy={false}
+                            style={{ width: "100%", height: "100%" }}
+                          />
+                        </div>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <span style={{ fontSize: "10px", color: "#888888", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "80%" }}>
                             {formData.video_url}
@@ -3323,7 +3347,11 @@ export default function AdminProductsPage() {
                       <label style={labelStyle}>Estimated Delivery Time</label>
                       <input
                         type="text"
-                        value={formData.estimated_delivery_time || "14-15 Days"}
+                        value={
+                          !formData.estimated_delivery_time || String(formData.estimated_delivery_time).includes("3-5")
+                            ? "14-15 Days"
+                            : formData.estimated_delivery_time
+                        }
                         onChange={(e) => setFormData({ ...formData, estimated_delivery_time: e.target.value })}
                         placeholder="14-15 Days"
                         style={inputStyle}

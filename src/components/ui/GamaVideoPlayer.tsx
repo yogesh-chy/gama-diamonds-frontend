@@ -82,30 +82,33 @@ export default function GamaVideoPlayer({
 
   // Resolve video sources based on strategy
   const resolveSources = useCallback(() => {
-    if (!src) return { hls: null, mp4: "" };
+    if (!src) return { hls: null, mp4: "", original: "" };
 
     const detected = detectVideoFormat(src);
 
-    if (detected === "hls") {
-      return { hls: src, mp4: "" };
-    }
-
-    if (strategy === "mp4") {
-      return { hls: null, mp4: getOptimizedMp4Url(src, { width }) };
+    if (detected === "hls" || src.includes(".m3u8")) {
+      return { hls: src, mp4: "", original: src };
     }
 
     if (strategy === "hls") {
       const hlsUrl = getHlsStreamingUrl(src);
-      return { hls: hlsUrl, mp4: getOptimizedMp4Url(src, { width }) };
+      return { hls: hlsUrl, mp4: getOptimizedMp4Url(src, { width }), original: src };
     }
 
-    // Auto strategy: If Cloudinary, attempt HLS with MP4 fallback
+    if (strategy === "mp4") {
+      return { hls: null, mp4: getOptimizedMp4Url(src, { width }), original: src };
+    }
+
+    // Auto strategy: deliver optimized MP4 with immediate fallback to original src
     if (isCloudinaryUrl(src)) {
-      const hlsUrl = getHlsStreamingUrl(src);
-      return { hls: hlsUrl, mp4: getOptimizedMp4Url(src, { width }) };
+      return {
+        hls: null,
+        mp4: getOptimizedMp4Url(src, { width }),
+        original: src,
+      };
     }
 
-    return { hls: null, mp4: src };
+    return { hls: null, mp4: src, original: src };
   }, [src, strategy, width]);
 
   // Viewport IntersectionObserver for lazy loading & auto-pausing
@@ -145,8 +148,10 @@ export default function GamaVideoPlayer({
     const video = videoRef.current;
     if (!video) return;
 
-    const { hls: hlsUrl, mp4: mp4Url } = resolveSources();
+    const { hls: hlsUrl, mp4: mp4Url, original } = resolveSources();
     let cancelled = false;
+
+    setHasError(false);
 
     // Cleanup any existing HLS instance
     if (hlsRef.current) {
@@ -154,13 +159,58 @@ export default function GamaVideoPlayer({
       hlsRef.current = null;
     }
 
-    // Attempt HLS if available
+    const startPlayback = () => {
+      if (!autoPlay || !video || cancelled) return;
+      video.muted = isMuted;
+      video.playsInline = playsInline;
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            if (!cancelled) setIsPlaying(true);
+          })
+          .catch(() => {
+            if (!cancelled && video) {
+              video.muted = true;
+              setIsMuted(true);
+              video
+                .play()
+                .then(() => setIsPlaying(true))
+                .catch(() => setIsPlaying(false));
+            }
+          });
+      }
+    };
+
+    // Attempt HLS if requested and available
     if (hlsUrl) {
       // 1. Native Safari HLS
       if (video.canPlayType("application/vnd.apple.mpegurl")) {
         video.src = hlsUrl;
         setActiveSource(hlsUrl);
         setIsUsingHls(true);
+        video.onloadedmetadata = () => startPlayback();
+        video.onerror = () => {
+          if (!cancelled) {
+            const fallback = mp4Url || original;
+            if (fallback) {
+              video.src = fallback;
+              setActiveSource(fallback);
+              setIsUsingHls(false);
+              video.onerror = () => {
+                if (original && fallback !== original) {
+                  video.src = original;
+                  setActiveSource(original);
+                } else {
+                  setHasError(true);
+                }
+              };
+              startPlayback();
+            } else {
+              setHasError(true);
+            }
+          }
+        };
       }
       // 2. hls.js for Chrome, Firefox, Edge, Android
       else if (Hls.isSupported()) {
@@ -180,63 +230,65 @@ export default function GamaVideoPlayer({
           }
         });
 
-        // Error handling with graceful fallback to optimized MP4
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          if (!cancelled) {
+            startPlayback();
+          }
+        });
+
+        // Error handling with graceful fallback to optimized MP4 / direct MP4
         hls.on(Hls.Events.ERROR, (_, data) => {
           if (data.fatal) {
-            if (data.type === Hls.ErrorTypes.NETWORK_ERROR && mp4Url) {
-              // HLS profile not ready yet — seamlessly fall back to optimized MP4
-              hls.destroy();
-              hlsRef.current = null;
-              if (video && !cancelled) {
-                video.src = mp4Url;
-                setActiveSource(mp4Url);
+            hls.destroy();
+            hlsRef.current = null;
+            if (video && !cancelled) {
+              const fallback = mp4Url || original;
+              if (fallback) {
+                video.src = fallback;
+                setActiveSource(fallback);
                 setIsUsingHls(false);
-                if (autoPlay) {
-                  video.play().catch(() => setIsPlaying(false));
-                }
+                video.onerror = () => {
+                  if (original && fallback !== original) {
+                    video.src = original;
+                    setActiveSource(original);
+                    startPlayback();
+                  } else {
+                    setHasError(true);
+                  }
+                };
+                startPlayback();
+              } else {
+                setHasError(true);
               }
-            } else {
-              hls.destroy();
-              hlsRef.current = null;
-              setHasError(true);
             }
           }
         });
-      } else if (mp4Url) {
-        // Fallback to MP4 if HLS is completely unsupported
-        video.src = mp4Url;
-        setActiveSource(mp4Url);
-        setIsUsingHls(false);
+      } else {
+        const fallback = mp4Url || original;
+        if (fallback) {
+          video.src = fallback;
+          setActiveSource(fallback);
+          setIsUsingHls(false);
+          video.onloadedmetadata = () => startPlayback();
+        }
       }
-    } else if (mp4Url) {
-      // Direct MP4
-      video.src = mp4Url;
-      setActiveSource(mp4Url);
+    } else {
+      // Direct MP4 / Optimized MP4
+      const primaryMp4 = mp4Url || original;
+      video.src = primaryMp4;
+      setActiveSource(primaryMp4);
       setIsUsingHls(false);
-    }
-
-    // Autoplay handling
-    if (autoPlay) {
-      video.muted = isMuted;
-      video.playsInline = playsInline;
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            if (!cancelled) setIsPlaying(true);
-          })
-          .catch(() => {
-            if (!cancelled) {
-              // Modern browser autoplay restrictions: ensure muted and retry once
-              video.muted = true;
-              setIsMuted(true);
-              video
-                .play()
-                .then(() => setIsPlaying(true))
-                .catch(() => setIsPlaying(false));
-            }
-          });
-      }
+      video.onloadedmetadata = () => startPlayback();
+      video.onerror = () => {
+        if (!cancelled && original && primaryMp4 !== original) {
+          video.src = original;
+          setActiveSource(original);
+          video.onerror = () => setHasError(true);
+          startPlayback();
+        } else {
+          setHasError(true);
+        }
+      };
     }
 
     return () => {
@@ -244,6 +296,10 @@ export default function GamaVideoPlayer({
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
+      }
+      if (video) {
+        video.onloadedmetadata = null;
+        video.onerror = null;
       }
     };
   }, [isInView, src, autoPlay, isMuted, playsInline, resolveSources]);
