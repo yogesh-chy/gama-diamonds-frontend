@@ -320,6 +320,9 @@ export const adminApi = {
   // --- Products ---
   getProducts: (params?: ApiQueryParams) =>
     apiClient.get<{ success: boolean; data: AdminProduct[]; pagination?: unknown }> ("/products/", { params }),
+
+  getProduct: (id: number | string) =>
+    apiClient.get<AdminProduct>(`/products/${id}/`),
   
   createProduct: (payload: Partial<AdminProduct>) =>
     apiClient.post<AdminProduct>("/products/", payload),

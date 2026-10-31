@@ -178,6 +178,7 @@ export default function AdminProductsPage() {
   const [saving, setSaving] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [videoExplicitlyRemoved, setVideoExplicitlyRemoved] = useState(false);
   const [variantUploadingIdx, setVariantUploadingIdx] = useState<number | null>(null);
 
   // Variant Matrix Generator Selection (starts empty so only user-chosen variants are generated)
@@ -448,6 +449,7 @@ export default function AdminProductsPage() {
         return;
       }
       const res = await adminApi.uploadMedia(file);
+      setVideoExplicitlyRemoved(false);
       setFormData((prev) => ({ ...prev, video_url: res.data.url }));
       toast.success(`Video uploaded successfully`);
     } catch (err) {
@@ -701,6 +703,7 @@ export default function AdminProductsPage() {
     });
     setSelectedVariantMetals([]);
     setSelectedVariantSizes([]);
+    setVideoExplicitlyRemoved(false);
     setActiveTab("basic");
     setIsModalOpen(true);
   };
@@ -793,8 +796,26 @@ export default function AdminProductsPage() {
     });
     setSelectedVariantMetals([]);
     setSelectedVariantSizes([]);
+    setVideoExplicitlyRemoved(false);
     setActiveTab("basic");
     setIsModalOpen(true);
+
+    // Fetch full fresh product details to guarantee video_url is preserved even if list was cached
+    if (prod.id) {
+      adminApi
+        .getProduct(prod.id)
+        .then((res) => {
+          const fullProd = (res as any)?.data?.data || (res as any)?.data || res;
+          const freshVideo = fullProd?.video_url || fullProd?.videoUrl || "";
+          if (freshVideo) {
+            setFormData((prev) => ({
+              ...prev,
+              video_url: prev.video_url || freshVideo,
+            }));
+          }
+        })
+        .catch(() => {});
+    }
   };
 
   const handleDelete = async (id: number) => {
@@ -1050,6 +1071,19 @@ export default function AdminProductsPage() {
         diamond_spec: cleanedDiamondSpec,
         variants: cleanedVariants,
       } as Partial<AdminProduct>;
+
+      // Safeguard: Preserve existing product video unless the user explicitly clicked "Remove Video"
+      const existingVideo = editingProduct?.video_url || editingProduct?.videoUrl || "";
+      const finalVideoUrl = formData.video_url
+        ? formData.video_url
+        : videoExplicitlyRemoved
+        ? ""
+        : existingVideo;
+
+      payload.video_url = finalVideoUrl;
+      if (videoExplicitlyRemoved) {
+        (payload as Record<string, unknown>).remove_video = true;
+      }
 
       // Ensure availability choice fields always have valid choices ("yes", "no", "on_request")
       const availabilityKeys = [
@@ -2900,7 +2934,10 @@ export default function AdminProductsPage() {
                           </span>
                           <button
                             type="button"
-                            onClick={() => setFormData({ ...formData, video_url: "" })}
+                            onClick={() => {
+                              setVideoExplicitlyRemoved(true);
+                              setFormData((prev) => ({ ...prev, video_url: "" }));
+                            }}
                             style={{ padding: "4px 8px", backgroundColor: "rgba(244, 63, 94, 0.2)", border: "1px solid rgba(244, 63, 94, 0.4)", color: "#f43f5e", fontSize: "10px", cursor: "pointer" }}
                           >
                             Remove Video
