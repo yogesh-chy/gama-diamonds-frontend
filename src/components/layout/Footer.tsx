@@ -259,8 +259,8 @@ export default function Footer() {
                 <div className="footer-contact-item" style={{ alignItems: "flex-start", marginTop: "4px" }}>
                   <FileText size={15} className="footer-contact-icon" style={{ marginTop: "2px" }} />
                   <span style={{ fontSize: "11px", color: "#999999", lineHeight: "1.5" }}>
-                    GSTIN/UIN: <strong style={{ color: "#ffffff" }}>27ASQPD0518A1Z8</strong> <br />
-                    PAN/IT NO : <strong style={{ color: "#ffffff" }}>ASQPD0518A</strong>
+                    GSTIN/UIN: <strong style={{ color: "#ffffff" }}></strong> <br />
+                    PAN/IT NO : <strong style={{ color: "#ffffff" }}></strong>
                   </span>
                 </div>
               </div>
